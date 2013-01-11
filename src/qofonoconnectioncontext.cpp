@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2013 Jolla Ltd.
-** Contact: http://www.qt-project.org/legal
+** Contact: lorn.potter@gmail.com
 **
 
 **
