@@ -1,0 +1,31 @@
+<!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN"
+"http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
+<node name="">
+	<interface name="org.ofono.SupplementaryServices">
+		<method name="Initiate">
+			<arg type="s" direction="in"/>
+			<arg type="s" direction="out"/>
+			<arg type="v" direction="out"/>
+		</method>
+		<method name="Respond">
+			<arg type="s" direction="in"/>
+			<arg type="s" direction="out"/>
+		</method>
+		<method name="Cancel"/>
+		<method name="GetProperties">
+			<arg type="a{sv}" direction="out"/>
+			<annotation name="org.qtproject.QtDBus.QtTypeName.Out0" value="QVariantMap"/>
+		</method>
+		<signal name="NotificationReceived">
+			<arg type="s"/>
+		</signal>
+		<signal name="RequestReceived">
+			<arg type="s"/>
+		</signal>
+		<signal name="PropertyChanged">
+			<arg type="s"/>
+			<arg type="v"/>
+		</signal>
+	</interface>
+
+</node>

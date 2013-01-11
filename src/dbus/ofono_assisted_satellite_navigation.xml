@@ -1,0 +1,16 @@
+<!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN"
+"http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
+<node name="">
+	<interface name="org.ofono.AssistedSatelliteNavigation">
+		<method name="SendPositioning">
+			<arg type="s" direction="in"/>
+		</method>
+		<method name="RegisterPositioningRequestAgent">
+			<arg type="o" direction="in"/>
+		</method>
+		<method name="UnregisterPositioningRequestAgent">
+			<arg type="o" direction="in"/>
+		</method>
+
+</interface>
+</node>

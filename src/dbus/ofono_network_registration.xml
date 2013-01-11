@@ -1,0 +1,25 @@
+<!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN"
+"http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
+<node name="">
+	<interface name="org.ofono.NetworkRegistration">
+		<method name="GetProperties">
+			<arg type="a{sv}" direction="out"/>
+			<annotation name="org.qtproject.QtDBus.QtTypeName.Out0" value="QVariantMap"/>
+		</method>
+		<method name="Register"/>
+		<method name="Deregister"/>
+		<method name="GetOperators">
+			<arg type="a(oa{sv})" direction="out"/>
+			<annotation name="org.qtproject.QtDBus.QtTypeName.Out0" value="QArrayOfPathProperties"/>
+		</method>
+		<method name="Scan">
+			<arg type="a(oa{sv})" direction="out"/>
+			<annotation name="org.qtproject.QtDBus.QtTypeName.Out0" value="QArrayOfPathProperties"/>
+		</method>
+		<signal name="PropertyChanged">
+			<arg type="s"/>
+			<arg type="v"/>
+		</signal>
+	</interface>
+
+</node>
