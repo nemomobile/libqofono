@@ -1,13 +1,35 @@
-# Compiled Object files
-*.slo
-*.lo
-*.o
-
-# Compiled Dynamic libraries
-*.so
-*.dylib
-
-# Compiled Static libraries
-*.lai
-*.la
+*~
 *.a
+*.la
+*.core
+*.moc
+*.o
+*.obj
+*.orig
+*.swp
+*.rej
+*.so
+*.pbxuser
+*.mode1
+*.mode1v3
+*_pch.h.cpp
+*_resource.rc
+.#*
+*.*#
+core
+.qmake.cache
+.qmake.vars
+config.log
+*.prl
+tags
+.DS_Store
+*.debug
+Makefile*
+*.app
+*.pro.user
+*.qmlproject.user
+*.gcov
+moc_*.cpp
+ui_*.h
+qrc_*.cpp
+
