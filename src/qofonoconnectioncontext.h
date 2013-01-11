@@ -62,6 +62,8 @@ class QOfonoConnectionContext : public QObject
     Q_PROPERTY(QVariantMap settings READ settings NOTIFY settingsChanged)
     Q_PROPERTY(QVariantMap IPv6Settings READ IPv6Settings NOTIFY IPv6SettingsChanged)
 
+    Q_PROPERTY(QString contextPath READ contextPath WRITE setContextPath)
+
 public:
     explicit QOfonoConnectionContext(QObject *parent = 0);
     ~QOfonoConnectionContext();
