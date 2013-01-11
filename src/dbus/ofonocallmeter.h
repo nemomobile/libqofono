@@ -8,8 +8,8 @@
  * Do not edit! All changes made to it will be lost.
  */
 
-#ifndef OFONOCALLMETER_H_1357936120
-#define OFONOCALLMETER_H_1357936120
+#ifndef OFONOCALLMETER_H_1357940298
+#define OFONOCALLMETER_H_1357940298
 
 #include <QtCore/QObject>
 #include <QtCore/QByteArray>

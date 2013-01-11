@@ -8,8 +8,8 @@
  * Do not edit! All changes made to it will be lost.
  */
 
-#ifndef OFONOSMARTMESSAGING_H_1357936120
-#define OFONOSMARTMESSAGING_H_1357936120
+#ifndef OFONOSMARTMESSAGING_H_1357940298
+#define OFONOSMARTMESSAGING_H_1357940298
 
 #include <QtCore/QObject>
 #include <QtCore/QByteArray>

@@ -1,7 +1,7 @@
 TEMPLATE = subdirs
 CONFIG += ordered
-SUBDIRS += src plugin
-#src/dbus 
+SUBDIRS += src plugin ofonotest
+
 # tools tests
 
 #tools.depends = src

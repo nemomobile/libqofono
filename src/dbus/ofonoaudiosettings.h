@@ -8,8 +8,8 @@
  * Do not edit! All changes made to it will be lost.
  */
 
-#ifndef OFONOAUDIOSETTINGS_H_1357936120
-#define OFONOAUDIOSETTINGS_H_1357936120
+#ifndef OFONOAUDIOSETTINGS_H_1357940298
+#define OFONOAUDIOSETTINGS_H_1357940298
 
 #include <QtCore/QObject>
 #include <QtCore/QByteArray>

@@ -8,8 +8,8 @@
  * Do not edit! All changes made to it will be lost.
  */
 
-#ifndef OFONOSIMTOOLKIT_H_1357936120
-#define OFONOSIMTOOLKIT_H_1357936120
+#ifndef OFONOSIMTOOLKIT_H_1357940298
+#define OFONOSIMTOOLKIT_H_1357940298
 
 #include <QtCore/QObject>
 #include <QtCore/QByteArray>

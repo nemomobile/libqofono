@@ -8,8 +8,8 @@
  * Do not edit! All changes made to it will be lost.
  */
 
-#ifndef OFONOMODEM_H_1357936120
-#define OFONOMODEM_H_1357936120
+#ifndef OFONOMODEM_H_1357940298
+#define OFONOMODEM_H_1357940298
 
 #include <QtCore/QObject>
 #include <QtCore/QByteArray>

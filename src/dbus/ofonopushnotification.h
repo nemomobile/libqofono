@@ -8,8 +8,8 @@
  * Do not edit! All changes made to it will be lost.
  */
 
-#ifndef OFONOPUSHNOTIFICATION_H_1357936120
-#define OFONOPUSHNOTIFICATION_H_1357936120
+#ifndef OFONOPUSHNOTIFICATION_H_1357940298
+#define OFONOPUSHNOTIFICATION_H_1357940298
 
 #include <QtCore/QObject>
 #include <QtCore/QByteArray>

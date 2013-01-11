@@ -1,9 +1,9 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Lorn Potter
+** Copyright (C) 2013 Jolla Ltd.
 ** Contact: http://www.qt-project.org/legal
 **
-** This file is part of the QtSensors module of the Qt Toolkit.
+
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
