@@ -50,12 +50,55 @@ class QOfonoConnectionContextPrivate;
 class QOfonoConnectionContext : public QObject
 {
     Q_OBJECT
+    Q_PROPERTY(bool active READ active WRITE setActive NOTIFY activeChanged)
+    Q_PROPERTY(QString accessPointName READ accessPointName WRITE setAccessPointName NOTIFY accessPointNameChanged)
+    Q_PROPERTY(QString type READ type WRITE setType NOTIFY nameChanged)
+    Q_PROPERTY(QString username READ username WRITE setUsername NOTIFY usernameChanged)
+    Q_PROPERTY(QString password READ password WRITE setPassword NOTIFY passwordChanged)
+    Q_PROPERTY(QString protocol READ protocol WRITE setProtocol NOTIFY protocolChanged)
+    Q_PROPERTY(QString name READ name WRITE setName NOTIFY nameChanged)
+    Q_PROPERTY(QString messageProxy READ messageProxy WRITE setMessageProxy NOTIFY messageProxyChanged)
+    Q_PROPERTY(QString messageCenter READ messageCenter WRITE setMessageCenter NOTIFY messageCenterChanged)
+    Q_PROPERTY(QVariantMap settings READ settings NOTIFY settingsChanged)
+    Q_PROPERTY(QVariantMap IPv6Settings READ IPv6Settings NOTIFY IPv6SettingsChanged)
+
 public:
     explicit QOfonoConnectionContext(QObject *parent = 0);
     ~QOfonoConnectionContext();
 
     void setContextPath(const QString &idPath);
     QString contextPath() const;
+
+    bool active() const;
+    void setActive(bool);
+
+    QString accessPointName() const;
+    void setAccessPointName(const QString &);
+
+    QString type() const;
+    void setType(const QString &);
+
+    QString username() const;
+    void setUsername(const QString &);
+
+    QString password() const;
+    void setPassword(const QString &);
+
+    QString protocol() const;
+    void setProtocol(const QString &);
+
+    QString name() const;
+    void setName(const QString &);
+
+    QString messageProxy() const;
+    void setMessageProxy(const QString &);
+
+    QString messageCenter() const;
+    void setMessageCenter(const QString &);
+
+    QVariantMap settings() const;
+    QVariantMap IPv6Settings() const;
+
 
 Q_SIGNALS:
     void activeChanged(const bool);

@@ -80,32 +80,32 @@ void QOfonoDeclarativePlugin::registerTypes(const char *uri)
 
     qmlRegisterType<QOfonoNetworkRegistration>(uri,0,2,"NetworkRegistration");
 
- //   qmlRegisterType<OfonoCellBroadcast>(uri,0,2,"OfonoCellBroadcast");
+ //   qmlRegisterType<QOfonoCellBroadcast>(uri,0,2,"OfonoCellBroadcast");
 
-    //    qmlRegisterType<OfonoMessage>(uri,0,2,"Message");
-    //    qmlRegisterType<OfonoMessageManager>(uri,0,2,"MessageManager");
-    //    qmlRegisterType<OfonoMessageWaiting>(uri,0,2,"MessageWaiting");
+    //    qmlRegisterType<QOfonoMessage>(uri,0,2,"Message");
+    //    qmlRegisterType<QOfonoMessageManager>(uri,0,2,"MessageManager");
+    //    qmlRegisterType<QOfonoMessageWaiting>(uri,0,2,"MessageWaiting");
 
-    //    qmlRegisterType<OfonoCallSettings>(uri,0,2,"OfonoCallSettings");
+    //    qmlRegisterTypeQ<OfonoCallSettings>(uri,0,2,"OfonoCallSettings");
 
-//  qmlRegisterType<OfonoCallBarring>(uri,0,2,"OfonoCallBarring");
- //   qmlRegisterType<OfonoCallForwarding>(uri,0,2,"OfonoCallForwarding");
- //   qmlRegisterType<OfonoCallMeter>(uri,0,2,"OfonoCallMeter");
-
-
-
-    //    qmlRegisterType<OfonoNetworkOperator>(uri,0,2,"NetworkOperator");
+//  qmlRegisterType<QOfonoCallBarring>(uri,0,2,"OfonoCallBarring");
+ //   qmlRegisterType<QOfonoCallForwarding>(uri,0,2,"OfonoCallForwarding");
+ //   qmlRegisterType<QOfonoCallMeter>(uri,0,2,"OfonoCallMeter");
 
 
-//    qmlRegisterType<OfonoPhonebook>(uri,0,2,"Phonebook"); //TODO
 
-//    qmlRegisterType<OfonoSmartMessaging>(uri,0,2,"SmartMessaging");
-//    qmlRegisterType<OfonoSmartMessagingAgent>(uri,0,2,"SmartMessagingAgent");
+    //    qmlRegisterType<QOfonoNetworkOperator>(uri,0,2,"NetworkOperator");
 
-//    qmlRegisterType<OfonoSupplementaryServices>(uri,0,2,"SupplementaryServices");
 
-//    qmlRegisterType<OfonoVoiceCall>(uri,0,2,"VoiceCall");
-//    qmlRegisterType<OfonoVoiceCallManager>(uri,0,2,"VoiceCallManager");
+//    qmlRegisterType<QOfonoPhonebook>(uri,0,2,"Phonebook"); //TODO
+
+//    qmlRegisterType<QOfonoSmartMessaging>(uri,0,2,"SmartMessaging");
+//    qmlRegisterType<QOfonoSmartMessagingAgent>(uri,0,2,"SmartMessagingAgent");
+
+//    qmlRegisterType<QOfonoSupplementaryServices>(uri,0,2,"SupplementaryServices");
+
+//    qmlRegisterType<QOfonoVoiceCall>(uri,0,2,"VoiceCall");
+//    qmlRegisterType<QOfonoVoiceCallManager>(uri,0,2,"VoiceCallManager");
 
 }
 

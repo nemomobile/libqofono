@@ -17,6 +17,10 @@ DEFINES += QOFONO_LIBRARY
 
 include(dbus/dbus.pro)
 
+isEmpty(PREFIX) {
+  PREFIX=/usr
+}
+
 OTHER_FILES += \
     dbus/ofono_assisted_satellite_navigation.xml \
     dbus/ofono_audio_settings.xml \
@@ -100,9 +104,9 @@ HEADERS += $$PUBLIC_HEADERS \
     qofonoconnectioncontext.h \
     qofononetworkregistration.h
 
-target.path = $$[QT_INSTALL_PREFIX]/lib
+target.path = $$INSTALL_ROOT$$PREFIX/lib
 headers.files = $$PUBLIC_HEADERS
-headers.path = $$[QT_INSTALL_PREFIX]/include/qofono
+headers.path = $$INSTALL_ROOT$$PREFIX/include/qofono
 
 CONFIG += create_pc create_prl
 

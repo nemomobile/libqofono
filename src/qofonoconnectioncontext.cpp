@@ -125,3 +125,149 @@ void QOfonoConnectionContext::propertyChanged(const QString &property, const QDB
         Q_EMIT IPv6SettingsChanged(map);
     }
 }
+
+bool QOfonoConnectionContext::active() const
+{
+    if (d_ptr->context)
+        return d_ptr->properties["Active"].value<bool>();
+    else
+        return false;
+}
+
+QString QOfonoConnectionContext::accessPointName() const
+{
+    if (d_ptr->context)
+        return d_ptr->properties["QDBusVariant"].value<QString>();
+    else
+        return QString();
+}
+
+QString QOfonoConnectionContext::type() const
+{
+    if (d_ptr->context)
+        return d_ptr->properties["Type"].value<QString>();
+    else
+        return QString();
+}
+
+QString QOfonoConnectionContext::username() const
+{
+    if (d_ptr->context)
+        return d_ptr->properties["Username"].value<QString>();
+    else
+        return QString();
+}
+
+QString QOfonoConnectionContext::password() const
+{
+    if (d_ptr->context)
+        return d_ptr->properties["Password"].value<QString>();
+    else
+        return QString();
+}
+
+QString QOfonoConnectionContext::protocol() const
+{
+    if (d_ptr->context)
+        return d_ptr->properties["Protocol"].value<QString>();
+    else
+        return QString();
+}
+
+QString QOfonoConnectionContext::name() const
+{
+    if (d_ptr->context)
+        return d_ptr->properties["Name"].value<QString>();
+    else
+        return QString();
+}
+
+QString QOfonoConnectionContext::messageProxy() const
+{
+    if (d_ptr->context)
+        return d_ptr->properties["MessageProxy"].value<QString>();
+    else
+        return QString();
+}
+
+QString QOfonoConnectionContext::messageCenter() const
+{
+    if  (d_ptr->context)
+        return d_ptr->properties["MessageCenter"].value<QString>();
+    else
+        return QString();
+}
+
+QVariantMap QOfonoConnectionContext::settings() const
+{
+    QVariantMap map;
+    if (d_ptr->context)
+        d_ptr->properties["Settings"].value<QDBusArgument>()>>map;
+
+    return map;
+
+}
+
+QVariantMap QOfonoConnectionContext::IPv6Settings() const
+{
+    QVariantMap map;
+    if (d_ptr->context)
+        d_ptr->properties["IPv6Settings"].value<QDBusArgument>()>>map;
+
+    return map;
+}
+
+void QOfonoConnectionContext::setActive(const bool value)
+{
+    if (d_ptr->context)
+        d_ptr->context->SetProperty(QLatin1String("Active"),QDBusVariant(value));
+}
+
+void QOfonoConnectionContext::setAccessPointName(const QString &value)
+{
+    if (d_ptr->context)
+        d_ptr->context->SetProperty(QLatin1String("AccessPointName"),QDBusVariant(value));
+}
+
+void QOfonoConnectionContext::setType(const QString &value)
+{
+    if (d_ptr->context)
+        d_ptr->context->SetProperty(QLatin1String("Type"),QDBusVariant(value));
+}
+
+void QOfonoConnectionContext::setUsername(const QString &value)
+{
+    if (d_ptr->context)
+        d_ptr->context->SetProperty(QLatin1String("Username"),QDBusVariant(value));
+}
+
+void QOfonoConnectionContext::setPassword(const QString &value)
+{
+    if (d_ptr->context)
+        d_ptr->context->SetProperty(QLatin1String("Password"),QDBusVariant(value));
+}
+
+void QOfonoConnectionContext::setProtocol(const QString &value)
+{
+    if (d_ptr->context)
+        d_ptr->context->SetProperty(QLatin1String("Protocol"),QDBusVariant(value));
+}
+
+void QOfonoConnectionContext::setName(const QString &value)
+{
+    if (d_ptr->context)
+        d_ptr->context->SetProperty(QLatin1String("Name"),QDBusVariant(value));
+}
+
+void QOfonoConnectionContext::setMessageProxy(const QString &value)
+{
+    if (d_ptr->context)
+        d_ptr->context->SetProperty(QLatin1String("MessageProxy"),QDBusVariant(value));
+}
+
+void QOfonoConnectionContext::setMessageCenter(const QString &value)
+{
+    if (d_ptr->context)
+        d_ptr->context->SetProperty(QLatin1String("MessageCenter"),QDBusVariant(value));
+}
+
