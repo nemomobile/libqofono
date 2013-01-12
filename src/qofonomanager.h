@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2013 Jolla Ltd.
-** Contact: lorn.potter@gmail.com
+** Contact: lorn.potter@jollamobile.com
 **
 
 **
