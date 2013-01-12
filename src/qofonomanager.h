@@ -50,11 +50,14 @@ class QOfonoManagerPrivate;
 class QOfonoManager : public QObject
 {
     Q_OBJECT
+
+    Q_PROPERTY(QStringList modems READ modems CONSTANT)
+
 public:
     explicit QOfonoManager(QObject *parent = 0);
     ~QOfonoManager();
 
-    Q_INVOKABLE QStringList getModems();
+    QStringList modems();
     
 Q_SIGNALS: // SIGNALS
     void modemAdded(const QString &modemPath);

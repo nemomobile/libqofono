@@ -41,6 +41,32 @@
 
 #include "qofonoconnectionmanager.h"
 #include "dbus/ofonoconnectionmanager.h"
+#include "dbustypes.h"
+
+
+struct OfonoContextStruct {
+    QDBusObjectPath path;
+    QVariantMap properties;
+};
+typedef QList<OfonoContextStruct> OfonoContextList;
+Q_DECLARE_METATYPE(OfonoContextStruct)
+Q_DECLARE_METATYPE(OfonoContextList)
+
+QDBusArgument &operator<<(QDBusArgument &argument, const OfonoContextStruct &modem)
+{
+    argument.beginStructure();
+    argument << modem.path << modem.properties;
+    argument.endStructure();
+    return argument;
+}
+
+const QDBusArgument &operator>>(const QDBusArgument &argument, OfonoContextStruct &modem)
+{
+    argument.beginStructure();
+    argument >> modem.path >> modem.properties;
+    argument.endStructure();
+    return argument;
+}
 
 class QOfonoConnectionManagerPrivate
 {
@@ -49,12 +75,16 @@ public:
     QString modemPath;
     OfonoConnectionManager *connman;
     QVariantMap properties;
+    QStringList contexts;
 };
 
 QOfonoConnectionManagerPrivate::QOfonoConnectionManagerPrivate() :
     modemPath(QString())
    , connman(0)
+  ,contexts(QStringList())
 {
+    qDBusRegisterMetaType<OfonoContextStruct>();
+    qDBusRegisterMetaType<OfonoContextList>();
 }
 
 QOfonoConnectionManager::QOfonoConnectionManager(QObject *parent) :
@@ -81,6 +111,25 @@ void QOfonoConnectionManager::setModemPath(const QString &path)
             QDBusReply<QVariantMap> reply;
             reply = d_ptr->connman->GetProperties();
             d_ptr->properties = reply.value();
+
+            QDBusReply<OfonoContextList> reply2;
+            OfonoContextList contexts;
+            QStringList contextList;
+
+            QDBusMessage request;
+
+            request = QDBusMessage::createMethodCall("org.ofono",
+                                                     "org.ofono.ConnectionManager",
+                                                     path,
+                                                     "GetContexts");
+
+            reply2 = QDBusConnection::systemBus().call(request);
+
+            contexts = reply2;
+            foreach(OfonoContextStruct context, contexts) {
+                contextList << context.path.path();
+            }
+            d_ptr->contexts = contextList;
         }
     }
 }
@@ -98,11 +147,15 @@ void QOfonoConnectionManager::deactivateAll()
 void QOfonoConnectionManager::addContext(const QString &type)
 {
     d_ptr->connman->AddContext(type);
+    if (!d_ptr->contexts.contains(type))
+        d_ptr->contexts.append(type);
 }
 
 void QOfonoConnectionManager::removeContext(const QString &path)
 {
     d_ptr->connman->RemoveContext(QDBusObjectPath(path));
+    if (d_ptr->contexts.contains(path))
+        d_ptr->contexts.removeOne(path);
 }
 
 bool QOfonoConnectionManager::attached() const
@@ -176,4 +229,9 @@ void QOfonoConnectionManager::propertyChanged(const QString& property, const QDB
     } else if (property == QLatin1String("Powered")) {
         Q_EMIT poweredChanged(value.value<bool>());
     }
+}
+
+QStringList QOfonoConnectionManager::contexts()
+{
+    return d_ptr->contexts;
 }

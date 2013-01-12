@@ -82,6 +82,10 @@ public:
     uint strength() const;
     QString baseStation() const;
 
+    Q_INVOKABLE void registration();
+    Q_INVOKABLE void getOperators();
+    Q_INVOKABLE void scan();
+
 Q_SIGNALS:
     void modeChanged(const QString &mode);
     void statusChanged(const QString &status);
@@ -95,9 +99,6 @@ Q_SIGNALS:
     void baseStationChanged(const QString &baseStation);
 
 public slots:
-    void registration();
-    void getOperators();
-    void scan();
 
 private:
     QOfonoNetworkRegistrationPrivate *d_ptr;

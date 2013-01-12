@@ -56,11 +56,11 @@ QOfonoModemPrivate::QOfonoModemPrivate() :
     modemPath(QString())
   , modem(0)
 {
-
 }
 
 QOfonoModem::QOfonoModem(QObject *parent) :
     QObject(parent)
+  , d_ptr(new QOfonoModemPrivate)
 {
 }
 

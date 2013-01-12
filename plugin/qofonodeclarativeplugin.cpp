@@ -72,7 +72,7 @@ void QOfonoDeclarativePlugin::registerTypes(const char *uri)
 {
     Q_ASSERT(QLatin1String(uri) == QLatin1String("MeeGo.QOfono"));
 
-    qmlRegisterType<QOfonoManager>(uri,0,2,"ModemManager");
+    qmlRegisterType<QOfonoManager>(uri,0,2,"Manager");
     qmlRegisterType<QOfonoModem>(uri,0,2,"Modem");
 
     qmlRegisterType<QOfonoConnectionManager>(uri,0,2,"OfonoConnMan");

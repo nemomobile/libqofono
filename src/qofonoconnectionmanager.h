@@ -57,11 +57,11 @@ class QOfonoConnectionManager : public QObject
     Q_PROPERTY(bool powered READ powered WRITE setPowered NOTIFY poweredChanged)
 
     Q_PROPERTY(QString modemPath READ modemPath WRITE setModemPath)
+    Q_PROPERTY(QStringList contexts READ contexts CONSTANT)
 
 public:
     explicit QOfonoConnectionManager(QObject *parent = 0);
     ~QOfonoConnectionManager();
-
 
     QString modemPath() const;
     void setModemPath(const QString &path);
@@ -75,6 +75,8 @@ public:
 
     bool powered() const;
     void setPowered(const bool);
+
+    QStringList contexts();
 
 Q_SIGNALS:
     void attachedChanged(bool value);

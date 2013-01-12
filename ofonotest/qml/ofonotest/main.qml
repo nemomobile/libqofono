@@ -3,8 +3,8 @@ import MeeGo.QOfono 0.2
 
 
 Rectangle {
-    width: 360
-    height: 360
+    width: 480
+    height: 560
     Text {
         id: textLine
         anchors.centerIn: parent
@@ -20,18 +20,22 @@ Rectangle {
         }
     }
 
+    Manager {
+        id: manager
+    }
+
     OfonoConnMan {
        id: ofono1
        Component.onCompleted: {
 //           active: true //set radio packet active
-           console.log(ofono1.modems)
+       //    console.log(manager.modems)
        }
-       modemPath: ofono1.modems[0]
+       modemPath: manager.modems[0]
     }
 
     Modem {
         id: modem1
-        modemPath: ofono1.modems[0]
+       modemPath: manager.modems[0]
     }
 
     ContextConnection {
@@ -45,10 +49,10 @@ Rectangle {
         }
     }
     NetworkRegistration {
-        modemPath: ofono1.modems[0]
-        id: registration
+        modemPath: manager.modems[0]
+        id: netreg
         Component.onCompleted: {
-            textLine2.text = registration.name;// + " "+registration.strength
+            textLine2.text = (modem1.powered ? registration.name : "not powered")
         }
     }
 }

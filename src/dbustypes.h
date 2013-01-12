@@ -52,18 +52,18 @@ struct OfonoPathProperties
 
 Q_DECLARE_METATYPE(OfonoPathProperties)
 
-QDBusArgument &operator<<(QDBusArgument &argument,
-                          const OfonoPathProperties &mystruct);
+//QDBusArgument &operator<<(QDBusArgument &argument,
+//                          const OfonoPathProperties &mystruct);
 
-const QDBusArgument &operator>>(const QDBusArgument &argument,
-                                OfonoPathProperties &mystruct);
+//const QDBusArgument &operator>>(const QDBusArgument &argument,
+//                                OfonoPathProperties &mystruct);
 
 typedef QList<OfonoPathProperties> QArrayOfPathProperties;
 
 Q_DECLARE_METATYPE (QArrayOfPathProperties)
 
-inline void registerMyDataTypes() {
-    qDBusRegisterMetaType<OfonoPathProperties>();
-    qDBusRegisterMetaType<QArrayOfPathProperties>();
-}
+//inline void registerMyDataTypes() {
+//    qDBusRegisterMetaType<OfonoPathProperties>();
+//    qDBusRegisterMetaType<QArrayOfPathProperties>();
+//}
 #endif // DBUSTYPES_H

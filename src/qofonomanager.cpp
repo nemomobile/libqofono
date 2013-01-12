@@ -43,6 +43,30 @@
 #include "dbus/ofonomanager.h"
 #include <QVariant>
 
+struct OfonoModemStruct {
+    QDBusObjectPath path;
+    QVariantMap properties;
+};
+typedef QList<OfonoModemStruct> OfonoModemList;
+Q_DECLARE_METATYPE(OfonoModemStruct)
+Q_DECLARE_METATYPE(OfonoModemList)
+
+QDBusArgument &operator<<(QDBusArgument &argument, const OfonoModemStruct &modem)
+{
+    argument.beginStructure();
+    argument << modem.path << modem.properties;
+    argument.endStructure();
+    return argument;
+}
+
+const QDBusArgument &operator>>(const QDBusArgument &argument, OfonoModemStruct &modem)
+{
+    argument.beginStructure();
+    argument >> modem.path >> modem.properties;
+    argument.endStructure();
+    return argument;
+}
+
 class QOfonoManagerPrivate
 {
 public:
@@ -55,6 +79,22 @@ QOfonoManagerPrivate::QOfonoManagerPrivate() :
  ofonoManager(0)
 , modems(QStringList())
 {
+    qDBusRegisterMetaType<OfonoModemStruct>();
+    qDBusRegisterMetaType<OfonoModemList>();
+
+    QDBusReply<OfonoModemList> reply;
+    OfonoModemList modemList;
+    QDBusMessage request;
+
+    request = QDBusMessage::createMethodCall("org.ofono",
+                                             "/", "org.ofono.Manager",
+                                             "GetModems");
+    reply = QDBusConnection::systemBus().call(request);
+    modemList = reply;
+
+    foreach(OfonoModemStruct modem, modemList) {
+        modems << modem.path.path();
+    }
 }
 
 QOfonoManager::QOfonoManager(QObject *parent) :
@@ -69,13 +109,8 @@ QOfonoManager::~QOfonoManager()
     delete d_ptr;
 }
 
-QStringList QOfonoManager::getModems()
+QStringList QOfonoManager::modems()
 {
-    d_ptr->modems.clear();
-    QDBusPendingReply<QVariantMap> reply = d_ptr->ofonoManager->GetModems();
-    Q_FOREACH(const QString &modem,reply.value().keys()) {
-        d_ptr->modems << modem;
-    }
     return d_ptr->modems;
 }
 
