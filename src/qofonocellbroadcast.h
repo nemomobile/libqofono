@@ -1,9 +1,9 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Jolla Ltd.
-** Contact: lorn.potter@gmail.com
+** Copyright (C) 2013 Lorn Potter
+** Contact: http://www.qt-project.org/legal
 **
-
+** This file is part of the QtSensors module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -39,18 +39,46 @@
 **
 ****************************************************************************/
 
-#ifndef DBUSTYPES_H
-#define DBUSTYPES_H
-#include <QtDBus>
-#include <QVariant>
+#ifndef QOFONOCELLBROADCAST_H
+#define QOFONOCELLBROADCAST_H
 
-struct OfonoPathProperties
+#include <QObject>
+#include <QDBusVariant>
+
+class QOfonoCellBroadcastPrivate;
+class QOfonoCellBroadcast : public QObject
 {
-    QDBusObjectPath path;
-    QVariantMap properties;
-};
-typedef QList<OfonoPathProperties> QArrayOfPathProperties;
-Q_DECLARE_METATYPE(OfonoPathProperties)
-Q_DECLARE_METATYPE (QArrayOfPathProperties)
+    Q_OBJECT
+    Q_PROPERTY(QString modemPath READ modemPath WRITE setModemPath)
 
-#endif // DBUSTYPES_H
+    Q_PROPERTY(bool enabled READ enabled WRITE setEnabled NOTIFY enabledChanged)
+    Q_PROPERTY(QString topics READ topics NOTIFY topicsChanged)
+
+public:
+    explicit QOfonoCellBroadcast(QObject *parent = 0);
+    ~QOfonoCellBroadcast();
+
+    QString modemPath() const;
+    void setModemPath(const QString &path);
+
+    bool enabled() const;
+    void setEnabled(bool b);
+
+    QString topics() const;
+    void setTopics(const QString &) const;
+
+Q_SIGNALS:
+    void enabledChanged(bool);
+    void topicsChanged(const QString &);
+    void incomingBroadcast(const QString &, quint16);
+    void emergencyBroadcast(const QString &, const QVariantMap &);
+
+public slots:
+    
+private:
+    QOfonoCellBroadcastPrivate *d_ptr;
+private slots:
+    void propertyChanged(const QString &property,const QDBusVariant &value);
+};
+
+#endif // QOFONOCELLBROADCAST_H

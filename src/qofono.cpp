@@ -44,4 +44,5 @@
 
 Qofono::Qofono()
 {
+    qDebug() << Q_FUNC_INFO;
 }

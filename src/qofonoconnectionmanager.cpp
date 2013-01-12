@@ -43,31 +43,6 @@
 #include "dbus/ofonoconnectionmanager.h"
 #include "dbustypes.h"
 
-
-struct OfonoContextStruct {
-    QDBusObjectPath path;
-    QVariantMap properties;
-};
-typedef QList<OfonoContextStruct> OfonoContextList;
-Q_DECLARE_METATYPE(OfonoContextStruct)
-Q_DECLARE_METATYPE(OfonoContextList)
-
-QDBusArgument &operator<<(QDBusArgument &argument, const OfonoContextStruct &modem)
-{
-    argument.beginStructure();
-    argument << modem.path << modem.properties;
-    argument.endStructure();
-    return argument;
-}
-
-const QDBusArgument &operator>>(const QDBusArgument &argument, OfonoContextStruct &modem)
-{
-    argument.beginStructure();
-    argument >> modem.path >> modem.properties;
-    argument.endStructure();
-    return argument;
-}
-
 class QOfonoConnectionManagerPrivate
 {
 public:
@@ -83,8 +58,8 @@ QOfonoConnectionManagerPrivate::QOfonoConnectionManagerPrivate() :
    , connman(0)
   ,contexts(QStringList())
 {
-    qDBusRegisterMetaType<OfonoContextStruct>();
-    qDBusRegisterMetaType<OfonoContextList>();
+//    qDBusRegisterMetaType<OfonoModemStruct>();
+//    qDBusRegisterMetaType<OfonoModemList>();
 }
 
 QOfonoConnectionManager::QOfonoConnectionManager(QObject *parent) :
@@ -103,6 +78,7 @@ void QOfonoConnectionManager::setModemPath(const QString &path)
     if (!d_ptr->connman) {
         d_ptr->modemPath = path;
         d_ptr->connman = new OfonoConnectionManager("org.ofono", path, QDBusConnection::systemBus(),this);
+        qDebug() << Q_FUNC_INFO <<  d_ptr->connman->isValid();
 
         if (d_ptr->connman) {
             connect(d_ptr->connman,SIGNAL(PropertyChanged(QString,QDBusVariant)),
@@ -112,21 +88,18 @@ void QOfonoConnectionManager::setModemPath(const QString &path)
             reply = d_ptr->connman->GetProperties();
             d_ptr->properties = reply.value();
 
-            QDBusReply<OfonoContextList> reply2;
-            OfonoContextList contexts;
+            QArrayOfPathProperties contexts;
             QStringList contextList;
 
-            QDBusMessage request;
-
-            request = QDBusMessage::createMethodCall("org.ofono",
+            QDBusMessage request = QDBusMessage::createMethodCall("org.ofono",
                                                      "org.ofono.ConnectionManager",
                                                      path,
                                                      "GetContexts");
 
-            reply2 = QDBusConnection::systemBus().call(request);
+            QDBusReply<QArrayOfPathProperties> reply2 = QDBusConnection::systemBus().call(request);
 
             contexts = reply2;
-            foreach(OfonoContextStruct context, contexts) {
+            foreach(OfonoPathProperties context, contexts) {
                 contextList << context.path.path();
             }
             d_ptr->contexts = contextList;

@@ -1,9 +1,9 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Jolla Ltd.
-** Contact: lorn.potter@gmail.com
+** Copyright (C) 2013 Lorn Potter
+** Contact: http://www.qt-project.org/legal
 **
-
+** This file is part of the QtSensors module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -39,18 +39,59 @@
 **
 ****************************************************************************/
 
-#ifndef DBUSTYPES_H
-#define DBUSTYPES_H
-#include <QtDBus>
-#include <QVariant>
+#ifndef QOFONONETWORKOPERATOR_H
+#define QOFONONETWORKOPERATOR_H
 
-struct OfonoPathProperties
+#include <QObject>
+#include <QDBusVariant>
+#include <QStringList>
+
+class QOfonoNetworkOperatorPrivate;
+class QOfonoNetworkOperator : public QObject
 {
-    QDBusObjectPath path;
-    QVariantMap properties;
-};
-typedef QList<OfonoPathProperties> QArrayOfPathProperties;
-Q_DECLARE_METATYPE(OfonoPathProperties)
-Q_DECLARE_METATYPE (QArrayOfPathProperties)
+    Q_OBJECT
+    Q_PROPERTY(QString operatorPath READ operatorPath WRITE setOperatorPath)
 
-#endif // DBUSTYPES_H
+    Q_PROPERTY(QString name READ name NOTIFY nameChanged)
+    Q_PROPERTY(QString status READ status NOTIFY statusChanged)
+    Q_PROPERTY(QString mcc READ mcc NOTIFY mccChanged)
+    Q_PROPERTY(QString mnc READ mnc NOTIFY mncChanged)
+    Q_PROPERTY(QStringList technologies READ technologies NOTIFY technologiesChanged)
+    Q_PROPERTY(QString additionalInfo READ additionalInfo NOTIFY additionalInfoChanged)
+
+public:
+    explicit QOfonoNetworkOperator(QObject *parent = 0);
+    ~QOfonoNetworkOperator();
+
+    QString operatorPath() const;
+    void setOperatorPath(const QString &path);
+
+    QString name() const;
+    QString status() const;
+    QString mcc() const;
+    QString mnc() const;
+    QStringList technologies() const;
+    QString additionalInfo() const;
+
+    Q_INVOKABLE void registerOperator();
+Q_SIGNALS:
+
+    void nameChanged(const QString &name);
+    void statusChanged(const QString &status);
+    void mccChanged(const QString &mcc);
+    void mncChanged(const QString &mnc);
+    void technologiesChanged(const QStringList &technologies);
+    void additionalInfoChanged(const QString &additionalInfo);
+
+public slots:
+
+private:
+    QOfonoNetworkOperatorPrivate *d_ptr;
+
+private slots:
+    void propertyChanged(const QString &property, const QDBusVariant &value);
+
+
+};
+
+#endif // QOFONONETWORKOPERATOR_H

@@ -42,16 +42,9 @@
 #include "qofonomanager.h"
 #include "dbus/ofonomanager.h"
 #include <QVariant>
+#include "dbustypes.h"
 
-struct OfonoModemStruct {
-    QDBusObjectPath path;
-    QVariantMap properties;
-};
-typedef QList<OfonoModemStruct> OfonoModemList;
-Q_DECLARE_METATYPE(OfonoModemStruct)
-Q_DECLARE_METATYPE(OfonoModemList)
-
-QDBusArgument &operator<<(QDBusArgument &argument, const OfonoModemStruct &modem)
+QDBusArgument &operator<<(QDBusArgument &argument, const OfonoPathProperties &modem)
 {
     argument.beginStructure();
     argument << modem.path << modem.properties;
@@ -59,14 +52,13 @@ QDBusArgument &operator<<(QDBusArgument &argument, const OfonoModemStruct &modem
     return argument;
 }
 
-const QDBusArgument &operator>>(const QDBusArgument &argument, OfonoModemStruct &modem)
+const QDBusArgument &operator>>(const QDBusArgument &argument, OfonoPathProperties &modem)
 {
     argument.beginStructure();
     argument >> modem.path >> modem.properties;
     argument.endStructure();
     return argument;
 }
-
 class QOfonoManagerPrivate
 {
 public:
@@ -79,11 +71,11 @@ QOfonoManagerPrivate::QOfonoManagerPrivate() :
  ofonoManager(0)
 , modems(QStringList())
 {
-    qDBusRegisterMetaType<OfonoModemStruct>();
-    qDBusRegisterMetaType<OfonoModemList>();
+    qDBusRegisterMetaType<OfonoPathProperties>();
+    qDBusRegisterMetaType<QArrayOfPathProperties>();
 
-    QDBusReply<OfonoModemList> reply;
-    OfonoModemList modemList;
+    QDBusReply<QArrayOfPathProperties> reply;
+    QArrayOfPathProperties modemList;
     QDBusMessage request;
 
     request = QDBusMessage::createMethodCall("org.ofono",
@@ -92,9 +84,10 @@ QOfonoManagerPrivate::QOfonoManagerPrivate() :
     reply = QDBusConnection::systemBus().call(request);
     modemList = reply;
 
-    foreach(OfonoModemStruct modem, modemList) {
+    foreach(OfonoPathProperties modem, modemList) {
         modems << modem.path.path();
     }
+    qDebug() << modems;
 }
 
 QOfonoManager::QOfonoManager(QObject *parent) :
@@ -111,6 +104,7 @@ QOfonoManager::~QOfonoManager()
 
 QStringList QOfonoManager::modems()
 {
+    qDebug() << Q_FUNC_INFO <<  d_ptr->modems;
     return d_ptr->modems;
 }
 

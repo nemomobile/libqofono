@@ -55,4 +55,7 @@ Rectangle {
             textLine2.text = (modem1.powered ? registration.name : "not powered")
         }
     }
+    NetworkOperator {
+        id: netop
+    }
 }
