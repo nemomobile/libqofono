@@ -20,7 +20,7 @@ Rectangle {
         }
     }
 
-    Manager {
+    OfonoManager {
         id: manager
     }
 
@@ -33,12 +33,12 @@ Rectangle {
        modemPath: manager.modems[0]
     }
 
-    Modem {
+    OfonoModem {
         id: modem1
        modemPath: manager.modems[0]
     }
 
-    ContextConnection {
+    OfonoContextConnection {
         id: context1
          contextPath : ofono1.contexts[0]
         Component.onCompleted: {
@@ -48,14 +48,14 @@ Rectangle {
             textLine.text = context1.active ? "online" : "offline"
         }
     }
-    NetworkRegistration {
+    OfonoNetworkRegistration {
         modemPath: manager.modems[0]
         id: netreg
         Component.onCompleted: {
             textLine2.text = (modem1.powered ? registration.name : "not powered")
         }
     }
-    NetworkOperator {
+    OfonoNetworkOperator {
         id: netop
     }
 }

@@ -73,16 +73,16 @@ void QOfonoDeclarativePlugin::registerTypes(const char *uri)
 {
     Q_ASSERT(QLatin1String(uri) == QLatin1String("MeeGo.QOfono"));
 
-    qmlRegisterType<QOfonoManager>(uri,0,2,"Manager");
-    qmlRegisterType<QOfonoModem>(uri,0,2,"Modem");
+    qmlRegisterType<QOfonoManager>(uri,0,2,"OfonoManager");
+    qmlRegisterType<QOfonoModem>(uri,0,2,"OfonoModem");
 
     qmlRegisterType<QOfonoConnectionManager>(uri,0,2,"OfonoConnMan");
-    qmlRegisterType<QOfonoConnectionContext>(uri,0,2,"ContextConnection");
+    qmlRegisterType<QOfonoConnectionContext>(uri,0,2,"OfonoContextConnection");
 
-    qmlRegisterType<QOfonoNetworkRegistration>(uri,0,2,"NetworkRegistration");
-    qmlRegisterType<QOfonoNetworkOperator>(uri,0,2,"NetworkOperator");
+    qmlRegisterType<QOfonoNetworkRegistration>(uri,0,2,"OfonoNetworkRegistration");
+    qmlRegisterType<QOfonoNetworkOperator>(uri,0,2,"OfonoNetworkOperator");
 
-    qmlRegisterType<QOfonoCellBroadcast>(uri,0,2,"CellBroadcast");
+    qmlRegisterType<QOfonoCellBroadcast>(uri,0,2,"OfonoCellBroadcast");
 
     //    qmlRegisterTypeQ<OfonoCallSettings>(uri,0,2,"CallSettings");
     //  qmlRegisterType<QOfonoCallBarring>(uri,0,2,"CallBarring");
