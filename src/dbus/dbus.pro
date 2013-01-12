@@ -13,10 +13,12 @@
 #system(qdbusxml2cpp -c OfonoNetworkOperator -p ofononetworkoperator -N ofono_network_operator.xml)
 #system(qdbusxml2cpp -c OfonoPhonebook -p ofonophonebook -N ofono_phonebook.xml)
 #system(qdbusxml2cpp -c OfonoPushNotification -p ofonopushnotification -N ofono_push_notification.xml)
+#system(qdbusxml2cpp -c OfonoRadioSettings -p ofonoradiosettings -N ofono_radio_settings.xml)
 #system(qdbusxml2cpp -c OfonoSimManager -p ofonosimmanager -N ofono_simmanager.xml)
 #system(qdbusxml2cpp -c OfonoSimToolkit -p ofonosimtoolkit -N ofono_simtoolkit.xml)
 #system(qdbusxml2cpp -c OfonoSmartMessaging -p ofonosmartmessaging -N ofono_smart_messaging.xml)
 #system(qdbusxml2cpp -c OfonoSupplimentaryServices -p ofonosupplimentaryservices -N ofono_supplementary_services.xml)
+#system(qdbusxml2cpp -c OfonoTextTelephony -p ofonotexttelephony -N ofono_text_telephony.xml)
 #system(qdbusxml2cpp -c OfonoVoiceCall -p ofonovoicecall -N ofono_voice_call.xml)
 
 ## these have types that qt doesn't understand. to regenerate them, uncomment these, and then add #include "dbustypes.h"

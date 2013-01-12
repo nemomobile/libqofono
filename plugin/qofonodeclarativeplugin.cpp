@@ -47,23 +47,24 @@
 #include "qofonoconnectioncontext.h"
 #include "qofononetworkregistration.h"
 
+#include "qofononetworkoperator.h"
+#include "qofonocellbroadcast.h"
+
 //#include "qofonocallbarring.h"
 //#include "qofonocallforwarding.h"
 //#include "qofonocallmeter.h"
 //#include "qofonocallsettings.h"
 //#include "qofonocallvolume.h"
 
-//#include "qofonocellbroadcast.h"
 //#include "qofonomessage.h"
 //#include "qofonomessagemanager.h"
 //#include "qofonomessagewaiting.h"
-//#include "qofonomodeminterface.h"
-//#include "qofononetworkoperator.h"
 //#include "qofonophonebook.h"
 //#include "qofonoradiosettings.h"
 //#include "qofonosimmanager.h"
 //#include "qofonosmartmessaging.h"
 //#include "qofonosupplementaryservices.h"
+//#include "qofonotexttelephony.h"
 //#include "qofonovoicecall.h"
 //#include "qofonovoicecallmanager.h"
 
@@ -79,22 +80,26 @@ void QOfonoDeclarativePlugin::registerTypes(const char *uri)
     qmlRegisterType<QOfonoConnectionContext>(uri,0,2,"ContextConnection");
 
     qmlRegisterType<QOfonoNetworkRegistration>(uri,0,2,"NetworkRegistration");
+    qmlRegisterType<QOfonoNetworkOperator>(uri,0,2,"NetworkOperator");
 
- //   qmlRegisterType<QOfonoCellBroadcast>(uri,0,2,"OfonoCellBroadcast");
+    qmlRegisterType<QOfonoCellBroadcast>(uri,0,2,"CellBroadcast");
+
+    //    qmlRegisterTypeQ<OfonoCallSettings>(uri,0,2,"CallSettings");
+    //  qmlRegisterType<QOfonoCallBarring>(uri,0,2,"CallBarring");
+    //   qmlRegisterType<QOfonoCallForwarding>(uri,0,2,"CallForwarding");
+    //   qmlRegisterType<QOfonoCallMeter>(uri,0,2,"CallMeter");
+
+    //    qmlRegisterType<QOfonoVoiceCall>(uri,0,2,"VoiceCall");
+    //    qmlRegisterType<QOfonoVoiceCallManager>(uri,0,2,"VoiceCallManager");
+
+    //    qmlRegisterType<QOfonoRadioSettings>(uri,0,2,"RadioSettings");
+    //    qmlRegisterType<QOfonoSimManager>(uri,0,2,"SimManager");
+    //    qmlRegisterType<QOfonoSimToolkit>(uri,0,2,"SimToolkit");
+    //    qmlRegisterType<QOfonoTextTelephony>(uri,0,2,"TextTelephony");
 
     //    qmlRegisterType<QOfonoMessage>(uri,0,2,"Message");
     //    qmlRegisterType<QOfonoMessageManager>(uri,0,2,"MessageManager");
     //    qmlRegisterType<QOfonoMessageWaiting>(uri,0,2,"MessageWaiting");
-
-    //    qmlRegisterTypeQ<OfonoCallSettings>(uri,0,2,"OfonoCallSettings");
-
-//  qmlRegisterType<QOfonoCallBarring>(uri,0,2,"OfonoCallBarring");
- //   qmlRegisterType<QOfonoCallForwarding>(uri,0,2,"OfonoCallForwarding");
- //   qmlRegisterType<QOfonoCallMeter>(uri,0,2,"OfonoCallMeter");
-
-
-
-    //    qmlRegisterType<QOfonoNetworkOperator>(uri,0,2,"NetworkOperator");
 
 
 //    qmlRegisterType<QOfonoPhonebook>(uri,0,2,"Phonebook"); //TODO
@@ -104,8 +109,6 @@ void QOfonoDeclarativePlugin::registerTypes(const char *uri)
 
 //    qmlRegisterType<QOfonoSupplementaryServices>(uri,0,2,"SupplementaryServices");
 
-//    qmlRegisterType<QOfonoVoiceCall>(uri,0,2,"VoiceCall");
-//    qmlRegisterType<QOfonoVoiceCallManager>(uri,0,2,"VoiceCallManager");
 
 }
 

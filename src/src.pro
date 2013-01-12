@@ -40,10 +40,12 @@ OTHER_FILES += \
     dbus/ofono_network_registration.xml \
     dbus/ofono_phonebook.xml \
     dbus/ofono_push_notification.xml \
+    dbus/ofono_radio_settings.xml \
     dbus/ofono_simmanager.xml \
     dbus/ofono_simtoolkit.xml \
     dbus/ofono_smart_messaging.xml \
     dbus/ofono_supplementary_services.xml \
+    dbus/ofono_text_telephony.xml \
     dbus/ofono_voice_call.xml \
     dbus/ofono_voicecallmanager.xml \
     version.pri \
@@ -72,10 +74,12 @@ DBUS_FILES +=\
     dbus/ofononetworkregistration\
     dbus/ofonophonebook\
     dbus/ofonopushnotification\
+    dbus/ofonoradiosettings\
     dbus/ofonosimmanager\
     dbus/ofonosimtoolkit\
     dbus/ofonosmartmessaging\
     dbus/ofonosupplimentaryservices\
+    dbus/ofonotexttelephony\
     dbus/ofonovoicecall\
     dbus/ofonovoicecallmanager
 
@@ -90,7 +94,9 @@ SOURCES += $$DBUS_SOURCES\
     qofonomodem.cpp \
     qofonoconnectionmanager.cpp \
     qofonoconnectioncontext.cpp \
-    qofononetworkregistration.cpp
+    qofononetworkregistration.cpp \
+    qofononetworkoperator.cpp \
+    qofonocellbroadcast.cpp
 
 PUBLIC_HEADERS += $$DBUS_HEADERS\
         qofono.h\
@@ -102,7 +108,9 @@ HEADERS += $$PUBLIC_HEADERS \
     qofonomodem.h \
     qofonoconnectionmanager.h \
     qofonoconnectioncontext.h \
-    qofononetworkregistration.h
+    qofononetworkregistration.h \
+    qofononetworkoperator.h \
+    qofonocellbroadcast.h
 
 target.path = $$INSTALL_ROOT$$PREFIX/lib
 headers.files = $$PUBLIC_HEADERS
