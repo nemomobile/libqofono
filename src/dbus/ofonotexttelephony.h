@@ -8,8 +8,8 @@
  * Do not edit! All changes made to it will be lost.
  */
 
-#ifndef OFONOTEXTTELEPHONY_H_1358017588
-#define OFONOTEXTTELEPHONY_H_1358017588
+#ifndef OFONOTEXTTELEPHONY_H_1358114429
+#define OFONOTEXTTELEPHONY_H_1358114429
 
 #include <QtCore/QObject>
 #include <QtCore/QByteArray>
@@ -40,6 +40,13 @@ public Q_SLOTS: // METHODS
     {
         QList<QVariant> argumentList;
         return asyncCallWithArgumentList(QLatin1String("GetProperties"), argumentList);
+    }
+
+    inline QDBusPendingReply<> SetProperty(const QString &in0, const QDBusVariant &in1)
+    {
+        QList<QVariant> argumentList;
+        argumentList << QVariant::fromValue(in0) << QVariant::fromValue(in1);
+        return asyncCallWithArgumentList(QLatin1String("SetProperty"), argumentList);
     }
 
 Q_SIGNALS: // SIGNALS

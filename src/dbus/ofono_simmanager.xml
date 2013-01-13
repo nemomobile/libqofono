@@ -32,6 +32,10 @@
 			<arg type="s" direction="in"/>
 			<arg type="s" direction="in"/>
 		</method>
+		<method name="GetIcon">
+			<arg type="y" direction="in"/>
+			<arg type="ay" direction="out"/>
+		</method>
 		<signal name="PropertyChanged">
 			<arg type="s"/>
 			<arg type="v"/>

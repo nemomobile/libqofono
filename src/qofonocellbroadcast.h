@@ -4,7 +4,6 @@
 ** Contact: lorn.potter@jollamobile.com
 **
 **
-**
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
 ** Licensees holding valid commercial Qt licenses may use this file in

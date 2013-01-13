@@ -9,10 +9,12 @@
 			<arg type="o" direction="in"/>
 		</method>
 		<method name="SendBusinessCard">
+			<arg type="s" direction="in"/>
 			<arg type="ay" direction="in"/>
 			<arg type="o" direction="out"/>
 		</method>
 		<method name="SendAppointment">
+			<arg type="s" direction="in"/>
 			<arg type="ay" direction="in"/>
 			<arg type="o" direction="out"/>
 		</method>

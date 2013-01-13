@@ -137,7 +137,7 @@ bool QOfonoConnectionContext::active() const
 QString QOfonoConnectionContext::accessPointName() const
 {
     if (d_ptr->context)
-        return d_ptr->properties["QDBusVariant"].value<QString>();
+        return d_ptr->properties["AccessPointName"].value<QString>();
     else
         return QString();
 }

@@ -8,8 +8,10 @@
  * Do not edit! All changes made to it will be lost.
  */
 
-#ifndef OFONOVOICECALLMANAGER_H_1357881777
-#define OFONOVOICECALLMANAGER_H_1357881777
+#ifndef OFONOVOICECALLMANAGER_H_1358108334
+#define OFONOVOICECALLMANAGER_H_1358108334
+
+#include "dbustypes.h"
 
 #include <QtCore/QObject>
 #include <QtCore/QByteArray>
@@ -19,7 +21,6 @@
 #include <QtCore/QStringList>
 #include <QtCore/QVariant>
 #include <QtDBus/QtDBus>
-#include "dbustypes.h"
 
 /*
  * Proxy class for interface org.ofono.VoiceCallManager
@@ -113,8 +114,10 @@ public Q_SLOTS: // METHODS
     }
 
 Q_SIGNALS: // SIGNALS
+    void BarringActive(const QString &in0);
     void CallAdded(const QDBusObjectPath &in0, const QVariantMap &in1);
     void CallRemoved(const QDBusObjectPath &in0);
+    void Forwarded(const QString &in0);
     void PropertyChanged(const QString &in0, const QDBusVariant &in1);
 };
 

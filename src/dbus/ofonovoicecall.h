@@ -8,8 +8,8 @@
  * Do not edit! All changes made to it will be lost.
  */
 
-#ifndef OFONOVOICECALL_H_1357940298
-#define OFONOVOICECALL_H_1357940298
+#ifndef OFONOVOICECALL_H_1358103518
+#define OFONOVOICECALL_H_1358103518
 
 #include <QtCore/QObject>
 #include <QtCore/QByteArray>
@@ -40,6 +40,13 @@ public Q_SLOTS: // METHODS
     {
         QList<QVariant> argumentList;
         return asyncCallWithArgumentList(QLatin1String("Answer"), argumentList);
+    }
+
+    inline QDBusPendingReply<> Deflect(const QString &in0)
+    {
+        QList<QVariant> argumentList;
+        argumentList << QVariant::fromValue(in0);
+        return asyncCallWithArgumentList(QLatin1String("Deflect"), argumentList);
     }
 
     inline QDBusPendingReply<QVariantMap> GetProperties()

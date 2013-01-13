@@ -6,6 +6,10 @@
 			<arg type="a{sv}" direction="out"/>
             <annotation name="org.qtproject.QtDBus.QtTypeName.Out0" value="QVariantMap"/>
 		</method>
+		<method name="SetProperty">
+			<arg type="s" direction="in"/>
+			<arg type="v" direction="in"/>
+		</method>
 		<signal name="PropertyChanged">
 			<arg type="s"/>
 			<arg type="v"/>

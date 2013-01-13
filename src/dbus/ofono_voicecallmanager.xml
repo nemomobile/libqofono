@@ -43,6 +43,12 @@
 		<signal name="CallRemoved">
 			<arg type="o"/>
 		</signal>
+		<signal name="BarringActive">
+			<arg type="s"/>
+		</signal>
+		<signal name="Forwarded">
+			<arg type="s"/>
+		</signal>
 	</interface>
 
 </node>

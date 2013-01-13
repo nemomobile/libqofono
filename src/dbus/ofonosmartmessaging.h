@@ -8,8 +8,8 @@
  * Do not edit! All changes made to it will be lost.
  */
 
-#ifndef OFONOSMARTMESSAGING_H_1357940298
-#define OFONOSMARTMESSAGING_H_1357940298
+#ifndef OFONOSMARTMESSAGING_H_1358100870
+#define OFONOSMARTMESSAGING_H_1358100870
 
 #include <QtCore/QObject>
 #include <QtCore/QByteArray>
@@ -43,17 +43,17 @@ public Q_SLOTS: // METHODS
         return asyncCallWithArgumentList(QLatin1String("RegisterAgent"), argumentList);
     }
 
-    inline QDBusPendingReply<QDBusObjectPath> SendAppointment(const QByteArray &in0)
+    inline QDBusPendingReply<QDBusObjectPath> SendAppointment(const QString &in0, const QByteArray &in1)
     {
         QList<QVariant> argumentList;
-        argumentList << QVariant::fromValue(in0);
+        argumentList << QVariant::fromValue(in0) << QVariant::fromValue(in1);
         return asyncCallWithArgumentList(QLatin1String("SendAppointment"), argumentList);
     }
 
-    inline QDBusPendingReply<QDBusObjectPath> SendBusinessCard(const QByteArray &in0)
+    inline QDBusPendingReply<QDBusObjectPath> SendBusinessCard(const QString &in0, const QByteArray &in1)
     {
         QList<QVariant> argumentList;
-        argumentList << QVariant::fromValue(in0);
+        argumentList << QVariant::fromValue(in0) << QVariant::fromValue(in1);
         return asyncCallWithArgumentList(QLatin1String("SendBusinessCard"), argumentList);
     }
 

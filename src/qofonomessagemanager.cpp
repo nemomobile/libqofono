@@ -194,7 +194,8 @@ void QOfonoMessageManager::sendMessage(const QString &numberTo, const QString &m
 QStringList QOfonoMessageManager::messages()
 {
     if (d_ptr->messageManager)
-        d_ptr->messageList;
+        return d_ptr->messageList;
+    return QStringList();
 }
 
 

@@ -12,6 +12,9 @@
 		</method>
 		<method name="Answer"/>
 		<method name="Hangup"/>
+		<method name="Deflect">
+			<arg type="s" direction="in"/>
+		</method>
 		<signal name="PropertyChanged">
 			<arg type="s"/>
 			<arg type="v"/>

@@ -58,8 +58,6 @@ QOfonoConnectionManagerPrivate::QOfonoConnectionManagerPrivate() :
    , connman(0)
   ,contexts(QStringList())
 {
-//    qDBusRegisterMetaType<OfonoModemStruct>();
-//    qDBusRegisterMetaType<OfonoModemList>();
 }
 
 QOfonoConnectionManager::QOfonoConnectionManager(QObject *parent) :
@@ -98,7 +96,7 @@ void QOfonoConnectionManager::setModemPath(const QString &path)
 
             QDBusReply<QArrayOfPathProperties> reply2 = QDBusConnection::systemBus().call(request);
 
-            contexts = reply2;
+            contexts = reply2.value();
             foreach(OfonoPathProperties context, contexts) {
                 contextList << context.path.path();
             }

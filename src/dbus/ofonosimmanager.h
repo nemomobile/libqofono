@@ -8,8 +8,8 @@
  * Do not edit! All changes made to it will be lost.
  */
 
-#ifndef OFONOSIMMANAGER_H_1357940298
-#define OFONOSIMMANAGER_H_1357940298
+#ifndef OFONOSIMMANAGER_H_1358064457
+#define OFONOSIMMANAGER_H_1358064457
 
 #include <QtCore/QObject>
 #include <QtCore/QByteArray>
@@ -48,6 +48,13 @@ public Q_SLOTS: // METHODS
         QList<QVariant> argumentList;
         argumentList << QVariant::fromValue(in0) << QVariant::fromValue(in1);
         return asyncCallWithArgumentList(QLatin1String("EnterPin"), argumentList);
+    }
+
+    inline QDBusPendingReply<QByteArray> GetIcon(uchar in0)
+    {
+        QList<QVariant> argumentList;
+        argumentList << QVariant::fromValue(in0);
+        return asyncCallWithArgumentList(QLatin1String("GetIcon"), argumentList);
     }
 
     inline QDBusPendingReply<QVariantMap> GetProperties()

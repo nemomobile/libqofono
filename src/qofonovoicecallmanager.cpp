@@ -107,8 +107,8 @@ QStringList QOfonoVoiceCallManager::emergencyNumbers() const
 {
     if(d_ptr->voiceCallManager)
        return  d_ptr->properties["EmergencyNumbers"].toStringList();
-    else
-        QStringList();
+
+    return QStringList();
 }
 
 QStringList QOfonoVoiceCallManager::getCalls() const
