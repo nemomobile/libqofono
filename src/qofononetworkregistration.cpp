@@ -191,3 +191,30 @@ QString QOfonoNetworkRegistration::baseStation() const
         return QString();
 }
 
+void QOfonoNetworkRegistration::propertyChanged(const QString &property, const QDBusVariant &dbusvalue)
+{    QVariant value = dbusvalue.variant();
+     d_ptr->properties.insert(property, value);
+
+    if (property == QLatin1String("Mode")) {
+        Q_EMIT modeChanged(value.value<QString>());
+    } else if (property == QLatin1String("Status")) {
+        Q_EMIT statusChanged(value.value<QString>());
+    } else if (property == QLatin1String("LocationAreaCode")) {
+        Q_EMIT locationAreaCodeChanged(value.value<uint>());
+    } else if (property == QLatin1String("CellId")) {
+        Q_EMIT cellIdChanged(value.value<uint>());
+    } else if (property == QLatin1String("MobileCountryCode")) {
+        Q_EMIT mccChanged(value.value<QString>());
+    } else if (property == QLatin1String("MobileNetworkCode")) {
+        Q_EMIT mncChanged(value.value<QString>());
+    } else if (property == QLatin1String("Technology")) {
+        Q_EMIT technologyChanged(value.value<QString>());
+    } else if (property == QLatin1String("Name")) {
+        Q_EMIT nameChanged(value.value<QString>());
+    } else if (property == QLatin1String("Strength")) {
+        Q_EMIT strengthChanged(value.value<uint>());
+    } else if (property == QLatin1String("BaseStation")) {
+        Q_EMIT baseStationChanged(value.value<QString>());
+    }
+
+}
