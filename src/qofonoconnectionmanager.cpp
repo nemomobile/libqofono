@@ -89,16 +89,10 @@ void QOfonoConnectionManager::setModemPath(const QString &path)
             QArrayOfPathProperties contexts;
             QStringList contextList;
 
-            QDBusMessage request = QDBusMessage::createMethodCall("org.ofono",
-                                                     "org.ofono.ConnectionManager",
-                                                     path,
-                                                     "GetContexts");
-
-            QDBusReply<QArrayOfPathProperties> reply2 = QDBusConnection::systemBus().call(request);
-
-            contexts = reply2.value();
-            foreach(OfonoPathProperties context, contexts) {
-                contextList << context.path.path();
+            QDBusReply<QArrayOfPathProperties> reply2 = d_ptr->connman->GetContexts();
+            contexts = reply2;
+            foreach(OfonoPathProperties context, reply2.value()) {
+                contextList.append(context.path.path());
             }
             d_ptr->contexts = contextList;
         }
