@@ -77,7 +77,7 @@ QString QOfonoConnectionContext::contextPath() const
 
 void QOfonoConnectionContext::setContextPath(const QString &idPath)
 {
-    if (!d_ptr) {
+    if (!d_ptr->context) {
         d_ptr->context = new OfonoConnectionContext("org.ofono", idPath, QDBusConnection::systemBus(),this);
 
         if (d_ptr->context->isValid()) {
