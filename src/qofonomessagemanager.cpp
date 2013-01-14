@@ -74,10 +74,10 @@ QOfonoMessageManager::~QOfonoMessageManager()
 void QOfonoMessageManager::setModemPath(const QString &path)
 {
     if (!d_ptr->messageManager) {
-        d_ptr->modemPath = path;
         d_ptr->messageManager = new OfonoMessageManager("org.ofono", path, QDBusConnection::systemBus(),this);
 
-        if (d_ptr->messageManager) {
+        if (d_ptr->messageManager->isValid()) {
+            d_ptr->modemPath = path;
             connect(d_ptr->messageManager,SIGNAL(PropertyChanged(QString,QDBusVariant)),
                     this,SLOT(propertyChanged(QString,QDBusVariant)));
             connect(d_ptr->messageManager,SIGNAL(ImmediateMessage(QString,QVariantMap)),

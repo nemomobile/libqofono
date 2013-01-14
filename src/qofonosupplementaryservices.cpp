@@ -72,10 +72,11 @@ QOfonoSupplementaryServices::~QOfonoSupplementaryServices()
 void QOfonoSupplementaryServices::setModemPath(const QString &path)
 {
     if (!d_ptr->supplementaryServices) {
-        d_ptr->modemPath = path;
         d_ptr->supplementaryServices = new OfonoSupplementaryServices("org.ofono", path, QDBusConnection::systemBus(),this);
 
-        if (d_ptr->supplementaryServices) {
+        if (d_ptr->supplementaryServices->isValid()) {
+            d_ptr->modemPath = path;
+
             connect(d_ptr->supplementaryServices,SIGNAL(PropertyChanged(QString,QDBusVariant)),
                     this,SLOT(propertyChanged(QString,QDBusVariant)));
 

@@ -72,10 +72,10 @@ QOfonoCallForwarding::~QOfonoCallForwarding()
 void QOfonoCallForwarding::setModemPath(const QString &path)
 {
     if (!d_ptr->callForward) {
-        d_ptr->modemPath = path;
         d_ptr->callForward = new OfonoCallForwarding("org.ofono", path, QDBusConnection::systemBus(),this);
 
-        if (d_ptr->callForward) {
+        if (d_ptr->callForward->isValid()) {
+            d_ptr->modemPath = path;
             connect(d_ptr->callForward,SIGNAL(PropertyChanged(QString,QDBusVariant)),
                     this,SLOT(propertyChanged(QString,QDBusVariant)));
 

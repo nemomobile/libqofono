@@ -71,9 +71,10 @@ void QOfonoSmartMessagingAgent::setAgentPath(const QString &path)
 {
     if (!d_ptr->smartAdaptor) {
         d_ptr->agentPath = path;
-        qDebug() << Q_FUNC_INFO << path;
-        smAgentPath = path;
         d_ptr->smartAdaptor = new QOfonoSmartMessagingAgentAdaptor(this);
+        if (d_ptr->smartAdaptor)
+            smAgentPath = path;
+
         if (!QDBusConnection::systemBus().registerObject(smAgentPath, this)) {
             qDebug() << "object not registered";
         }

@@ -72,10 +72,11 @@ QOfonoTextTelephony::~QOfonoTextTelephony()
 void QOfonoTextTelephony::setModemPath(const QString &path)
 {
     if (!d_ptr->textTelephony) {
-        d_ptr->modemPath = path;
         d_ptr->textTelephony = new OfonoTextTelephony("org.ofono", path, QDBusConnection::systemBus(),this);
 
-        if (d_ptr->textTelephony) {
+        if (d_ptr->textTelephony->isValid()) {
+            d_ptr->modemPath = path;
+
             connect(d_ptr->textTelephony,SIGNAL(PropertyChanged(QString,QDBusVariant)),
                     this,SLOT(propertyChanged(QString,QDBusVariant)));
 

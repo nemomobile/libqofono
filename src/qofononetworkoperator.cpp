@@ -71,9 +71,10 @@ QOfonoNetworkOperator::~QOfonoNetworkOperator()
 void QOfonoNetworkOperator::setOperatorPath(const QString &path)
 {
     if (!d_ptr->networkOperator) {
-        d_ptr->modemPath = path;
         d_ptr->networkOperator = new OfonoNetworkOperator("org.ofono", path, QDBusConnection::systemBus(),this);
-        if (d_ptr->networkOperator) {
+        if (d_ptr->networkOperator->isValid()) {
+            d_ptr->modemPath = path;
+
             connect(d_ptr->networkOperator,SIGNAL(PropertyChanged(QString,QDBusVariant)),
                     this,SLOT(propertyChanged(QString,QDBusVariant)));
 

@@ -78,10 +78,10 @@ QString QOfonoConnectionContext::contextPath() const
 void QOfonoConnectionContext::setContextPath(const QString &idPath)
 {
     if (!d_ptr) {
-        d_ptr->contextPath = idPath;
         d_ptr->context = new OfonoConnectionContext("org.ofono", idPath, QDBusConnection::systemBus(),this);
 
-        if (d_ptr->context) {
+        if (d_ptr->context->isValid()) {
+            d_ptr->contextPath = idPath;
             connect(d_ptr->context,SIGNAL(PropertyChanged(QString,QDBusVariant)),
                     this,SLOT(propertyChanged(QString,QDBusVariant)));
 

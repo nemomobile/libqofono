@@ -72,10 +72,10 @@ QOfonoCellBroadcast::~QOfonoCellBroadcast()
 void QOfonoCellBroadcast::setModemPath(const QString &path)
 {
     if (!d_ptr->cellBroadcast) {
-        d_ptr->modemPath = path;
         d_ptr->cellBroadcast = new OfonoCellBroadcast("org.ofono", path, QDBusConnection::systemBus(),this);
 
-        if (d_ptr->cellBroadcast) {
+        if (d_ptr->cellBroadcast->isValid()) {
+            d_ptr->modemPath = path;
             connect(d_ptr->cellBroadcast,SIGNAL(PropertyChanged(QString,QDBusVariant)),
                     this,SLOT(propertyChanged(QString,QDBusVariant)));
             connect(d_ptr->cellBroadcast,SIGNAL(IncomingBroadcast(QString,quint16)),

@@ -72,10 +72,11 @@ QOfonoRadioSettings::~QOfonoRadioSettings()
 void QOfonoRadioSettings::setModemPath(const QString &path)
 {
     if (!d_ptr->radioSettings) {
-        d_ptr->modemPath = path;
         d_ptr->radioSettings = new OfonoRadioSettings("org.ofono", path, QDBusConnection::systemBus(),this);
 
-        if (d_ptr->radioSettings) {
+        if (d_ptr->radioSettings->isValid()) {
+            d_ptr->modemPath = path;
+
             connect(d_ptr->radioSettings,SIGNAL(PropertyChanged(QString,QDBusVariant)),
                     this,SLOT(propertyChanged(QString,QDBusVariant)));
 

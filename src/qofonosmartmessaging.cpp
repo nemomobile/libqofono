@@ -70,8 +70,10 @@ QOfonoSmartMessaging::~QOfonoSmartMessaging()
 void QOfonoSmartMessaging::setModemPath(const QString &path)
 {
     if (!d_ptr->smartMessaging) {
-        d_ptr->modemPath = path;
         d_ptr->smartMessaging = new OfonoSmartMessaging("org.ofono", path, QDBusConnection::systemBus(),this);
+        if (d_ptr->smartMessaging->isValid())
+            d_ptr->modemPath = path;
+
     }
 }
 

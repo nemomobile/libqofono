@@ -72,10 +72,10 @@ QOfonoCallMeter::~QOfonoCallMeter()
 void QOfonoCallMeter::setModemPath(const QString &path)
 {
     if (!d_ptr->callMeter) {
-        d_ptr->modemPath = path;
         d_ptr->callMeter = new OfonoCallMeter("org.ofono", path, QDBusConnection::systemBus(),this);
 
-        if (d_ptr->callMeter) {
+        if (d_ptr->callMeter->isValid()) {
+            d_ptr->modemPath = path;
             connect(d_ptr->callMeter,SIGNAL(PropertyChanged(QString,QDBusVariant)),
                     this,SLOT(propertyChanged(QString,QDBusVariant)));
 

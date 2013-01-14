@@ -72,10 +72,10 @@ QOfonoCallSettings::~QOfonoCallSettings()
 void QOfonoCallSettings::setModemPath(const QString &path)
 {
     if (!d_ptr->callSettings) {
-        d_ptr->modemPath = path;
         d_ptr->callSettings = new OfonoCallSettings("org.ofono", path, QDBusConnection::systemBus(),this);
 
-        if (d_ptr->callSettings) {
+        if (d_ptr->callSettings->isValid()) {
+            d_ptr->modemPath = path;
             connect(d_ptr->callSettings,SIGNAL(PropertyChanged(QString,QDBusVariant)),
                     this,SLOT(propertyChanged(QString,QDBusVariant)));
             QDBusReply<QVariantMap> reply;

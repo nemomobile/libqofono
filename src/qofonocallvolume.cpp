@@ -72,10 +72,10 @@ QOfonoCallVolume::~QOfonoCallVolume()
 void QOfonoCallVolume::setModemPath(const QString &path)
 {
     if (!d_ptr->callVolume) {
-        d_ptr->modemPath = path;
         d_ptr->callVolume = new OfonoCallVolume("org.ofono", path, QDBusConnection::systemBus(),this);
 
-        if (d_ptr->callVolume) {
+        if (d_ptr->callVolume->isValid()) {
+            d_ptr->modemPath = path;
             connect(d_ptr->callVolume,SIGNAL(PropertyChanged(QString,QDBusVariant)),
                     this,SLOT(propertyChanged(QString,QDBusVariant)));
 

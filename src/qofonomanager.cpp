@@ -104,7 +104,6 @@ QOfonoManager::~QOfonoManager()
 
 QStringList QOfonoManager::modems()
 {
-    qDebug() << Q_FUNC_INFO <<  d_ptr->modems;
     return d_ptr->modems;
 }
 

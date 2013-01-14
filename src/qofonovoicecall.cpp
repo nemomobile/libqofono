@@ -72,10 +72,11 @@ QOfonoVoiceCall::~QOfonoVoiceCall()
 void QOfonoVoiceCall::setVoiceCallPath(const QString &path)
 {
     if (!d_ptr->voiceCall) {
-        d_ptr->voiceCallPath = path;
         d_ptr->voiceCall = new OfonoVoiceCall("org.ofono", path, QDBusConnection::systemBus(),this);
 
-        if (d_ptr->voiceCall) {
+        if (d_ptr->voiceCall->isValid()) {
+            d_ptr->voiceCallPath = path;
+
             connect(d_ptr->voiceCall,SIGNAL(PropertyChanged(QString,QDBusVariant)),
                     this,SLOT(propertyChanged(QString,QDBusVariant)));
 

@@ -71,10 +71,11 @@ QOfonoNetworkRegistration::~QOfonoNetworkRegistration()
 void QOfonoNetworkRegistration::setModemPath(const QString &path)
 {
     if (!d_ptr->networkRegistration) {
-        d_ptr->modemPath = path;
         d_ptr->networkRegistration = new OfonoNetworkRegistration("org.ofono", path, QDBusConnection::systemBus(),this);
 
-        if (d_ptr->networkRegistration) {
+        if (d_ptr->networkRegistration->isValid()) {
+            d_ptr->modemPath = path;
+
             connect(d_ptr->networkRegistration,SIGNAL(PropertyChanged(QString,QDBusVariant)),
                     this,SLOT(propertyChanged(QString,QDBusVariant)));
 
