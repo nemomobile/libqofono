@@ -44,8 +44,10 @@
 #include <QObject>
 #include <QDBusVariant>
 
+#include "qofono_global.h"
+
 class QOfonoCallBarringPrivate;
-class QOfonoCallBarring : public QObject
+class QOFONOSHARED_EXPORT QOfonoCallBarring : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(QString modemPath READ modemPath WRITE setModemPath)

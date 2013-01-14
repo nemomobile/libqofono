@@ -49,7 +49,6 @@ public:
     QString modemPath;
     OfonoCallForwarding *callForward;
     QVariantMap properties;
-
 };
 
 QOfonoCallForwardingPrivate::QOfonoCallForwardingPrivate() :

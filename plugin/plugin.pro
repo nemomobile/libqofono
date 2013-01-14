@@ -1,4 +1,4 @@
-TARGET=OfonoQtDeclarative
+TARGET=QOfonoQtDeclarative
 TEMPLATE = lib
 QT += declarative dbus
 CONFIG += plugin

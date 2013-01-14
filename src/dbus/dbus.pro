@@ -8,7 +8,6 @@
 #system(qdbusxml2cpp -c OfonoCallVolume -p ofonocallvolume -N ofono_callvolume.xml)
 #system(qdbusxml2cpp -c OfonoCellBroadcast -p ofonocellbroadcast -N ofono_cell_broadcast.xml)
 #system(qdbusxml2cpp -c OfonoConnectionContext -p ofonoconnectioncontext -N ofono_connection_context.xml)
-#system(qdbusxml2cpp -c OfonoManager -p ofonomanager -N ofono_manager.xml)
 #system(qdbusxml2cpp -c OfonoMessage -p ofonomessage -N ofono_message.xml)
 #system(qdbusxml2cpp -c OfonoMessageWaiting -p ofonomessagewaiting -N ofono_messagewaiting.xml)
 #system(qdbusxml2cpp -c OfonoModem -p ofonomodem -N ofono_modem.xml)
@@ -24,6 +23,7 @@
 #system(qdbusxml2cpp -c OfonoVoiceCall -p ofonovoicecall -N ofono_voice_call.xml)
 
 ## these have types that qt doesn't understand. to regenerate them, uncomment these, and then add #include "dbustypes.h"
+##system(qdbusxml2cpp -c OfonoManager -p ofonomanager -N ofono_manager.xml)
 ##system(qdbusxml2cpp -c OfonoConnectionManager -p ofonoconnectionmanager -N ofono_connection_manager.xml)
 ##system(qdbusxml2cpp -c OfonoMessageManager -p ofonomessagemanager -N ofono_message_manager.xml)
 ##system(qdbusxml2cpp -c OfonoNetworkRegistration -p ofononetworkregistration -N ofono_network_registration.xml)

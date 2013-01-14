@@ -45,9 +45,11 @@
 #include <QObject>
 #include "dbustypes.h"
 
+#include "qofono_global.h"
+
 class QOfonoNetworkRegistrationPrivate;
 
-class QOfonoNetworkRegistration : public QObject
+class QOFONOSHARED_EXPORT QOfonoNetworkRegistration : public QObject
 {
     Q_OBJECT
 

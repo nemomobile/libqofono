@@ -44,10 +44,11 @@
 
 #include <QObject>
 #include "dbustypes.h"
+#include "qofono_global.h"
 
 class QOfonoConnectionContextPrivate;
 
-class QOfonoConnectionContext : public QObject
+class QOFONOSHARED_EXPORT QOfonoConnectionContext : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(bool active READ active WRITE setActive NOTIFY activeChanged)

@@ -79,6 +79,7 @@ QOfonoManager::QOfonoManager(QObject *parent) :
     QObject(parent)
   , d_ptr(new QOfonoManagerPrivate)
 {
+    qDebug() << Q_FUNC_INFO << d_ptr->modems;
     d_ptr->ofonoManager = new OfonoManager("org.ofono","/",QDBusConnection::systemBus(),this);
     if (d_ptr->ofonoManager->isValid()) {
         QDBusReply<QArrayOfPathProperties> reply = d_ptr->ofonoManager->GetModems();
@@ -95,6 +96,7 @@ QOfonoManager::~QOfonoManager()
 
 QStringList QOfonoManager::modems()
 {
+    qDebug() << Q_FUNC_INFO << d_ptr->modems;
     return d_ptr->modems;
 }
 

@@ -127,4 +127,4 @@ void QOfonoDeclarativePlugin::initializeEngine(QDeclarativeEngine *engine, const
 }
 
 //Q_EXPORT_PLUGIN(QOfonoDeclarativePlugin)
-Q_EXPORT_PLUGIN2(ofonomodule, QT_PREPEND_NAMESPACE(QOfonoDeclarativePlugin));
+Q_EXPORT_PLUGIN2(ofonomodule, QT_PREPEND_NAMESPACE(QOfonoDeclarativePlugin))

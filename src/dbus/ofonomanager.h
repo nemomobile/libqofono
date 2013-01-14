@@ -8,8 +8,8 @@
  * Do not edit! All changes made to it will be lost.
  */
 
-#ifndef OFONOMANAGER_H_1357940298
-#define OFONOMANAGER_H_1357940298
+#ifndef OFONOMANAGER_H_1358159695
+#define OFONOMANAGER_H_1358159695
 
 #include <QtCore/QObject>
 #include <QtCore/QByteArray>
@@ -19,6 +19,7 @@
 #include <QtCore/QStringList>
 #include <QtCore/QVariant>
 #include <QtDBus/QtDBus>
+#include "dbustypes.h"
 
 /*
  * Proxy class for interface org.ofono.Manager
@@ -36,7 +37,7 @@ public:
     ~OfonoManager();
 
 public Q_SLOTS: // METHODS
-    inline QDBusPendingReply<QVariantMap> GetModems()
+    inline QDBusPendingReply<QArrayOfPathProperties> GetModems()
     {
         QList<QVariant> argumentList;
         return asyncCallWithArgumentList(QLatin1String("GetModems"), argumentList);

@@ -45,9 +45,10 @@
 #include <QObject>
 #include <QDBusVariant>
 #include <QStringList>
+#include "qofono_global.h"
 
 class QOfonoNetworkOperatorPrivate;
-class QOfonoNetworkOperator : public QObject
+class QOFONOSHARED_EXPORT QOfonoNetworkOperator : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(QString operatorPath READ operatorPath WRITE setOperatorPath)

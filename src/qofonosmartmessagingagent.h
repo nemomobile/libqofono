@@ -45,8 +45,10 @@
 #include <QDBusVariant>
 #include <QDBusAbstractAdaptor>
 
+#include "qofono_global.h"
+
 class QOfonoSmartMessagingAgentPrivate;
-class QOfonoSmartMessagingAgent : public QObject
+class QOFONOSHARED_EXPORT QOfonoSmartMessagingAgent : public QObject
 {
     Q_OBJECT
     Q_DISABLE_COPY(QOfonoSmartMessagingAgent)

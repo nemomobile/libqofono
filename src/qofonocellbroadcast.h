@@ -44,8 +44,10 @@
 #include <QObject>
 #include <QDBusVariant>
 
+#include "qofono_global.h"
+
 class QOfonoCellBroadcastPrivate;
-class QOfonoCellBroadcast : public QObject
+class QOFONOSHARED_EXPORT QOfonoCellBroadcast : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(QString modemPath READ modemPath WRITE setModemPath)

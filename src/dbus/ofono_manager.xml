@@ -3,8 +3,8 @@
 <node name="">
 	<interface name="org.ofono.Manager">
 		<method name="GetModems">
-			<arg type="a{sv}" direction="out"/>
-			<annotation name="org.qtproject.QtDBus.QtTypeName.Out0" value="QVariantMap"/>
+            <arg type="a(oa{sv})" direction="out"/>
+            <annotation name="org.qtproject.QtDBus.QtTypeName.Out0" value="QArrayOfPathProperties"/>
 		</method>
 		<signal name="ModemAdded">
 			<arg type="o"/>

@@ -122,7 +122,8 @@ PUBLIC_HEADERS += \
         qofono.h\
         qofono_global.h
 
-HEADERS += $$PUBLIC_HEADERS \
+HEADERS += $$DBUS_HEADERS \
+    $$PUBLIC_HEADERS \
     qofonomanager.h \
     dbustypes.h \
     qofonomodem.h \

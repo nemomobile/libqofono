@@ -45,7 +45,8 @@
 #include <QtDeclarative/qdeclarative.h>
 #include <QtDeclarative/QDeclarativeExtensionPlugin>
 
-class QOfonoDeclarativePlugin : public QDeclarativeExtensionPlugin
+#include "qofono_global.h"
+class QOFONOSHARED_EXPORT QOfonoDeclarativePlugin : public QDeclarativeExtensionPlugin
 {
     Q_OBJECT
 public:

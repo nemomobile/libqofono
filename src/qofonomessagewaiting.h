@@ -43,9 +43,9 @@
 
 #include <QObject>
 #include <QDBusVariant>
-
+#include "qofono_global.h"
 class QOfonoMessageWaitingPrivate;
-class QOfonoMessageWaiting : public QObject
+class QOFONOSHARED_EXPORT QOfonoMessageWaiting : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(QString modemPath READ modemPath WRITE setModemPath)

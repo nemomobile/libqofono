@@ -44,8 +44,9 @@
 #include <QObject>
 #include <QDBusVariant>
 
+#include "qofono_global.h"
 class QOfonoMessagePrivate;
-class QOfonoMessage : public QObject
+class QOFONOSHARED_EXPORT QOfonoMessage : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(QString messagePath READ messagePath WRITE setMessagePath)

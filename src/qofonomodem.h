@@ -46,9 +46,10 @@
 #include <QStringList>
 #include "dbustypes.h"
 
+#include "qofono_global.h"
 class QOfonoModemPrivate;
 
-class QOfonoModem : public QObject
+class QOFONOSHARED_EXPORT QOfonoModem : public QObject
 {
     Q_OBJECT
 
