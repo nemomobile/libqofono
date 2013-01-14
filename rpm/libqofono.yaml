@@ -18,6 +18,8 @@ Builder: qmake
 SetupOptions: "-q -n qofono-%{version}"
 Files:
     - "%{_libdir}/%{name}.so.*"
+    - "%{_libdir}/qt4/imports/MeeGo/QOfono/*"
+
 SubPackages:
     - Name: devel
       Summary: Development files for ofono Qt bindings
@@ -28,7 +30,6 @@ SubPackages:
       Files:
           - "%{_libdir}/%{name}.prl"
           - "%{_libdir}/%{name}.so"
-          - "%{_libdir}/qt4/imports/MeeGo/QOfono/*"
           - "%{_libdir}/pkgconfig/qofono.pc"
           - "%{_includedir}/qofono/*.h"
           - "%{_includedir}/qofono/dbus/ofono*.h"

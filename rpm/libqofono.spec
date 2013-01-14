@@ -78,6 +78,7 @@ rm -rf %{buildroot}
 %files
 %defattr(-,root,root,-)
 %{_libdir}/%{name}.so.*
+%{_libdir}/qt4/imports/MeeGo/QOfono/*
 # >> files
 # << files
 
@@ -85,7 +86,6 @@ rm -rf %{buildroot}
 %defattr(-,root,root,-)
 %{_libdir}/%{name}.prl
 %{_libdir}/%{name}.so
-%{_libdir}/qt4/imports/MeeGo/QOfono/*
 %{_libdir}/pkgconfig/qofono.pc
 %{_includedir}/qofono/*.h
 %{_includedir}/qofono/dbus/ofono*.h

@@ -21,7 +21,7 @@ isEmpty(PREFIX) {
   PREFIX=/usr
 }
 
-OTHER_FILES += \
+XML_FILES += \
     dbus/ofono_assisted_satellite_navigation.xml \
     dbus/ofono_audio_settings.xml \
     dbus/ofono_call_barring.xml \
@@ -48,7 +48,10 @@ OTHER_FILES += \
     dbus/ofono_supplementary_services.xml \
     dbus/ofono_text_telephony.xml \
     dbus/ofono_voice_call.xml \
-    dbus/ofono_voicecallmanager.xml \
+    dbus/ofono_voicecallmanager.xml
+
+
+OTHER_FILES += $$XML_FILES\
     version.pri \
     qofono.prf
 
@@ -115,7 +118,7 @@ SOURCES += $$DBUS_SOURCES\
     qofonosupplementaryservices.cpp \
     qofonotexttelephony.cpp
 
-PUBLIC_HEADERS += $$DBUS_HEADERS\
+PUBLIC_HEADERS += \
         qofono.h\
         qofono_global.h
 
@@ -147,8 +150,14 @@ HEADERS += $$PUBLIC_HEADERS \
     qofonotexttelephony.h
 
 target.path = $$INSTALL_ROOT$$PREFIX/lib
-headers.files = $$PUBLIC_HEADERS
+headers.files = $$HEADERS
 headers.path = $$INSTALL_ROOT$$PREFIX/include/qofono
+
+dbusheaders.files = $$DBUS_HEADERS
+dbusheaders.path = $$INSTALL_ROOT$$PREFIX/include/qofono/dbus
+
+xmlfiles.files = $$XML_FILES
+xmlfiles.path = $$INSTALL_ROOT$$PREFIX/include/qofono/dbus
 
 CONFIG += create_pc create_prl
 
@@ -158,6 +167,6 @@ QMAKE_PKGCONFIG_INCDIR = $$headers.path
 qtconfig.path = $$[QT_INSTALL_PREFIX]/share/qt4/mkspecs/features
 qtconfig.files = qofono.prf
 
-INSTALLS += target headers qtconfig
+INSTALLS += target headers qtconfig dbusheaders xmlfiles
 
 

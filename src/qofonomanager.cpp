@@ -73,21 +73,6 @@ QOfonoManagerPrivate::QOfonoManagerPrivate() :
 {
     qDBusRegisterMetaType<OfonoPathProperties>();
     qDBusRegisterMetaType<QArrayOfPathProperties>();
-
-    QDBusReply<QArrayOfPathProperties> reply;
-    QArrayOfPathProperties modemList;
-    QDBusMessage request;
-
-    request = QDBusMessage::createMethodCall("org.ofono",
-                                             "/", "org.ofono.Manager",
-                                             "GetModems");
-    reply = QDBusConnection::systemBus().call(request);
-    modemList = reply;
-
-    foreach(OfonoPathProperties modem, modemList) {
-        modems << modem.path.path();
-    }
-    qDebug() << modems;
 }
 
 QOfonoManager::QOfonoManager(QObject *parent) :
@@ -95,6 +80,12 @@ QOfonoManager::QOfonoManager(QObject *parent) :
   , d_ptr(new QOfonoManagerPrivate)
 {
     d_ptr->ofonoManager = new OfonoManager("org.ofono","/",QDBusConnection::systemBus(),this);
+    if (d_ptr->ofonoManager->isValid()) {
+        QDBusReply<QArrayOfPathProperties> reply = d_ptr->ofonoManager->GetModems();
+        foreach(OfonoPathProperties modem, reply.value()) {
+            d_ptr->modems << modem.path.path();
+        }
+    }
 }
 
 QOfonoManager::~QOfonoManager()
