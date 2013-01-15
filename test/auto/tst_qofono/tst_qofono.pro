@@ -18,3 +18,10 @@ INCLUDEPATH += ../../../src
 
 SOURCES += tst_qofonotest.cpp
 DEFINES += SRCDIR=\\\"$$PWD/\\\"
+isEmpty(PREFIX) {
+  PREFIX=/usr
+}
+
+target.path = $$INSTALL_ROOT$$PREFIX/lib/libqofono/tests
+INSTALLS += target
+

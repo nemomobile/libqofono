@@ -120,11 +120,11 @@ void QOfonoDeclarativePlugin::registerTypes(const char *uri)
 
 }
 
+#ifdef QT_VERSION_4
 void QOfonoDeclarativePlugin::initializeEngine(QDeclarativeEngine *engine, const char *uri)
 {
     Q_UNUSED(uri);
     Q_UNUSED(engine);
 }
-
-//Q_EXPORT_PLUGIN(QOfonoDeclarativePlugin)
 Q_EXPORT_PLUGIN2(ofonomodule, QT_PREPEND_NAMESPACE(QOfonoDeclarativePlugin))
+#endif

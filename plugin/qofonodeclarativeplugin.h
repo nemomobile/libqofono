@@ -42,16 +42,27 @@
 #ifndef QOFONODECLARATIVEPLUGIN_H
 #define QOFONODECLARATIVEPLUGIN_H
 
+#include "qofono_global.h"
+
+#ifdef QT_VERSION_4
 #include <QtDeclarative/qdeclarative.h>
 #include <QtDeclarative/QDeclarativeExtensionPlugin>
-
-#include "qofono_global.h"
 class QOFONOSHARED_EXPORT QOfonoDeclarativePlugin : public QDeclarativeExtensionPlugin
+#else
+#include <QtQml/qqmlextensionplugin.h>
+#include <QtQml/qqml.h>
+class QOFONOSHARED_EXPORT QOfonoDeclarativePlugin : public QQmlExtensionPlugin
+#endif
 {
     Q_OBJECT
+#ifndef QT_VERSION_4
+    Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QQmlExtensionInterface" FILE "plugin.json")
+#endif
 public:
     void registerTypes(const char *uri);
+#ifdef QT_VERSION_4
     void initializeEngine(QDeclarativeEngine *engine, const char *uri);
+#endif
 };
 
 #endif // QOFONODECLARATIVEPLUGIN_H

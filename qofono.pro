@@ -1,21 +1,12 @@
 TEMPLATE = subdirs
 CONFIG += ordered
-SUBDIRS += src plugin ofonotest \
+SUBDIRS += src \
+    plugin \
     test/auto/tst_qofono
 
-# tools tests
+QT_VERSION=$$[QT_VERSION]
+contains(QT_VERSION, "^4.*" ) {
+    SUBDIRS += ofonotest
+} else {
+}
 
-#tools.depends = src
-
-#QMAKE_CLEAN += \
-#    build-stamp \
-#    configure-stamp \
-#    artifacts/*.deb \
-#    *.log.xml \
-#    *.log
-
-#QMAKE_DISTCLEAN += \
-#    build-stamp \
-#    configure-stamp \
-#    *.log.xml \
-#    *.log

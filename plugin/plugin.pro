@@ -1,9 +1,17 @@
 TARGET=QOfonoQtDeclarative
 TEMPLATE = lib
-QT += declarative dbus
+QT += dbus
 CONFIG += plugin
-PLUGIN_TYPE = declarative
 
+QT_VERSION=$$[QT_VERSION]
+
+contains( QT_VERSION, "^4.*" ) {
+    DEFINES += QT_VERSION_4
+    QT += declarative
+    PLUGIN_TYPE = declarative
+} else {
+    QT += quick
+}
 SOURCES =  \ 
     qofonodeclarativeplugin.cpp 
 
@@ -12,6 +20,10 @@ HEADERS = \
 
 INCLUDEPATH += ../src
 LIBS += -L../src -lqofono
+
+OTHER_FILES += \
+    plugin.json qmldir
+#plugins.qmltypes
 
 target.path = $$[QT_INSTALL_IMPORTS]/MeeGo/QOfono
 qmldir.files += qmldir
