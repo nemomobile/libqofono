@@ -92,7 +92,6 @@ Q_SIGNALS:
       void mobileCountryCodeChanged(const QString &mcc);
       void mobileNetworkCodeChanged(const QString &mnc);
       void subscriberNumbersChanged(const QStringList &msisdns);
-      void setSubscriberNumbersFailed();
       void serviceNumbersChanged(const QVariantMap &sdns);
       void pinRequiredChanged(const QString &pintype);
       void lockedPinsChanged(const QStringList &pins);

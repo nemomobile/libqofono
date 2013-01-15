@@ -92,7 +92,6 @@ void QOfonoConnectionContext::setContextPath(const QString &idPath)
     }
 }
 
-
 void QOfonoConnectionContext::propertyChanged(const QString &property, const QDBusVariant &dbusvalue)
 {
     QVariant value = dbusvalue.variant();
@@ -205,7 +204,6 @@ QVariantMap QOfonoConnectionContext::settings() const
         d_ptr->properties["Settings"].value<QDBusArgument>()>>map;
 
     return map;
-
 }
 
 QVariantMap QOfonoConnectionContext::IPv6Settings() const
@@ -225,8 +223,10 @@ void QOfonoConnectionContext::setActive(const bool value)
 
 void QOfonoConnectionContext::setAccessPointName(const QString &value)
 {
-    if (d_ptr->context)
-        d_ptr->context->SetProperty(QLatin1String("AccessPointName"),QDBusVariant(value));
+    if (d_ptr->context) {
+        if (!active())
+            d_ptr->context->SetProperty(QLatin1String("AccessPointName"),QDBusVariant(value));
+    }
 }
 
 void QOfonoConnectionContext::setType(const QString &value)

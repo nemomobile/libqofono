@@ -1,6 +1,7 @@
 TEMPLATE = subdirs
 CONFIG += ordered
-SUBDIRS += src plugin ofonotest
+SUBDIRS += src plugin ofonotest \
+    test/auto/tst_qofono
 
 # tools tests
 

@@ -27,7 +27,6 @@ Rectangle {
     OfonoConnMan {
        id: ofono1
        Component.onCompleted: {
-//           active: true //set radio packet active
        //    console.log(manager.modems)
        }
        modemPath: manager.modems[0]
@@ -40,7 +39,7 @@ Rectangle {
 
     OfonoContextConnection {
         id: context1
-         contextPath : ofono1.contexts[0]
+        contextPath : ofono1.contexts[0]
         Component.onCompleted: {
             textLine.text = context1.active ? "online" : "offline"
       }
@@ -52,7 +51,7 @@ Rectangle {
         modemPath: manager.modems[0]
         id: netreg
         Component.onCompleted: {
-            textLine2.text = (modem1.powered ? registration.name : "not powered")
+            textLine2.text = (modem1.powered ? netreg.name : "not powered")
         }
     }
     OfonoNetworkOperator {

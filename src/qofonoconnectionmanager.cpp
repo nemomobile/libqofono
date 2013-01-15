@@ -81,6 +81,10 @@ void QOfonoConnectionManager::setModemPath(const QString &path)
 
             connect(d_ptr->connman,SIGNAL(PropertyChanged(QString,QDBusVariant)),
                     this,SLOT(propertyChanged(QString,QDBusVariant)));
+            connect(d_ptr->connman,SIGNAL(ContextAdded(QDBusObjectPath,QVariantMap)),
+                    this,SLOT(onContextAdded(QDBusObjectPath,QVariantMap)));
+            connect(d_ptr->connman,SIGNAL(ContextRemoved(QDBusObjectPath)),
+                    this,SLOT(onContextRemoved(QDBusObjectPath)));
 
             QDBusReply<QVariantMap> reply;
             reply = d_ptr->connman->GetProperties();
@@ -106,18 +110,24 @@ QString QOfonoConnectionManager::modemPath() const
 
 void QOfonoConnectionManager::deactivateAll()
 {
+    if (!d_ptr->connman)
+        return;
     d_ptr->connman->DeactivateAll();
 }
 
 void QOfonoConnectionManager::addContext(const QString &type)
 {
-    d_ptr->connman->AddContext(type);
-    if (!d_ptr->contexts.contains(type))
-        d_ptr->contexts.append(type);
+    if (!d_ptr->connman)
+        return;
+     QDBusPendingReply<QDBusObjectPath> reply = d_ptr->connman->AddContext(type);
+     if (reply.isError())
+         qDebug() << Q_FUNC_INFO <<reply.error();
 }
 
 void QOfonoConnectionManager::removeContext(const QString &path)
 {
+    if (!d_ptr->connman)
+        return;
     d_ptr->connman->RemoveContext(QDBusObjectPath(path));
     if (d_ptr->contexts.contains(path))
         d_ptr->contexts.removeOne(path);
@@ -125,7 +135,7 @@ void QOfonoConnectionManager::removeContext(const QString &path)
 
 bool QOfonoConnectionManager::attached() const
 {
-    if ( d_ptr->connman)
+    if (d_ptr->connman)
         return d_ptr->properties["Attached"].value<bool>();
     else
         return false;
@@ -133,7 +143,7 @@ bool QOfonoConnectionManager::attached() const
 
 QString QOfonoConnectionManager::bearer() const
 {
-    if ( d_ptr->connman)
+    if (d_ptr->connman)
         return d_ptr->properties["Bearer"].value<QString>();
     else
         return QString();
@@ -141,7 +151,7 @@ QString QOfonoConnectionManager::bearer() const
 
 bool QOfonoConnectionManager::suspended() const
 {
-    if ( d_ptr->connman)
+    if (d_ptr->connman)
         return d_ptr->properties["Suspended"].value<bool>();
     else
         return false;
@@ -150,7 +160,7 @@ bool QOfonoConnectionManager::suspended() const
 
 bool QOfonoConnectionManager::roamingAllowed() const
 {
-    if ( d_ptr->connman)
+    if (d_ptr->connman)
         return d_ptr->properties["RoamingAllowed"].value<bool>();
     else
         return false;
@@ -158,14 +168,14 @@ bool QOfonoConnectionManager::roamingAllowed() const
 
 void QOfonoConnectionManager::setRoamingAllowed(bool b)
 {
-    if ( d_ptr->connman)
+    if (d_ptr->connman)
         d_ptr->connman->SetProperty("RoamingAllowed",QDBusVariant(b));
 }
 
 
 bool QOfonoConnectionManager::powered() const
 {
-    if ( d_ptr->connman)
+    if (d_ptr->connman)
         return d_ptr->properties["Powered"].value<bool>();
     else
         return false;
@@ -173,7 +183,7 @@ bool QOfonoConnectionManager::powered() const
 
 void QOfonoConnectionManager::setPowered(bool b)
 {
-    if ( d_ptr->connman)
+    if (d_ptr->connman)
         d_ptr->connman->SetProperty("Powered",QDBusVariant(b));
 }
 
@@ -199,4 +209,19 @@ void QOfonoConnectionManager::propertyChanged(const QString& property, const QDB
 QStringList QOfonoConnectionManager::contexts()
 {
     return d_ptr->contexts;
+}
+
+void QOfonoConnectionManager::onContextAdded(const QDBusObjectPath &path, const QVariantMap &propertyMap)
+{
+    Q_UNUSED(propertyMap);
+    if (!d_ptr->contexts.contains(path.path()))
+        d_ptr->contexts.append(path.path());
+    Q_EMIT contextAdded(path.path());
+}
+
+void QOfonoConnectionManager::onContextRemoved(const QDBusObjectPath &path)
+{
+    if (!d_ptr->contexts.contains(path.path()))
+        d_ptr->contexts.removeOne(path.path());
+    Q_EMIT contextRemoved(path.path());
 }

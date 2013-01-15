@@ -192,7 +192,8 @@ QString QOfonoNetworkRegistration::baseStation() const
 }
 
 void QOfonoNetworkRegistration::propertyChanged(const QString &property, const QDBusVariant &dbusvalue)
-{    QVariant value = dbusvalue.variant();
+{
+    QVariant value = dbusvalue.variant();
      d_ptr->properties.insert(property, value);
 
     if (property == QLatin1String("Mode")) {

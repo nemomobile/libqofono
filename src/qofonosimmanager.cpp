@@ -139,143 +139,149 @@ bool QOfonoSimManager::present() const
         return false;
 }
 
-  QString QOfonoSimManager::subscriberIdentity() const
-  {
-      if (d_ptr->simManager)
-          return d_ptr->properties["SubscriberIdentity"].value<QString>();
-      else
-          return QString();
-  }
+QString QOfonoSimManager::subscriberIdentity() const
+{
+    if (d_ptr->simManager)
+        return d_ptr->properties["SubscriberIdentity"].value<QString>();
+    else
+        return QString();
+}
 
-  QString QOfonoSimManager::mobileCountryCode() const
-  {
-      if (d_ptr->simManager)
-          return d_ptr->properties["MobileCountryCode"].value<QString>();
-      else
-          return QString();
-  }
+QString QOfonoSimManager::mobileCountryCode() const
+{
+    if (d_ptr->simManager)
+        return d_ptr->properties["MobileCountryCode"].value<QString>();
+    else
+        return QString();
+}
 
-  QString QOfonoSimManager::mobileNetworkCode() const
-  {
-      if (d_ptr->simManager)
-          return d_ptr->properties["MobileNetworkCode"].value<QString>();
-      else
-          return QString();
-  }
+QString QOfonoSimManager::mobileNetworkCode() const
+{
+    if (d_ptr->simManager)
+        return d_ptr->properties["MobileNetworkCode"].value<QString>();
+    else
+        return QString();
+}
 
-  QStringList QOfonoSimManager::subscriberNumbers() const
-  {
-      if (d_ptr->simManager)
-          return d_ptr->properties["SubscriberNumbers"].value<QStringList>();
-      else
-          return QStringList();
-  }
+QStringList QOfonoSimManager::subscriberNumbers() const
+{
+    if (d_ptr->simManager)
+        return d_ptr->properties["SubscriberNumbers"].value<QStringList>();
+    else
+        return QStringList();
+}
 
-  QVariantMap QOfonoSimManager::serviceNumbers() const //
-  {
-      if (d_ptr->simManager)
-          return d_ptr->properties["ServiceNumbers"].value<QVariantMap>();
-      else
-          return QVariantMap();
-  }
+QVariantMap QOfonoSimManager::serviceNumbers() const //
+{
+    if (d_ptr->simManager)
+        return d_ptr->properties["ServiceNumbers"].value<QVariantMap>();
+    else
+        return QVariantMap();
+}
 
-  QString QOfonoSimManager::pinRequired() const
-  {
-      if (d_ptr->simManager)
-          return d_ptr->properties["PinRequired"].value<QString>();
-      else
-          return QString();
-  }
+QString QOfonoSimManager::pinRequired() const
+{
+    if (d_ptr->simManager)
+        return d_ptr->properties["PinRequired"].value<QString>();
+    else
+        return QString();
+}
 
-  QStringList QOfonoSimManager::lockedPins() const
-  {
-      if (d_ptr->simManager)
-          return d_ptr->properties["LockedPins"].value<QStringList>();
-      else
-          return QStringList();
-  }
+QStringList QOfonoSimManager::lockedPins() const
+{
+    if (d_ptr->simManager)
+        return d_ptr->properties["LockedPins"].value<QStringList>();
+    else
+        return QStringList();
+}
 
-  QString QOfonoSimManager::cardIdentifier() const
-  {
-      if (d_ptr->simManager)
-          return d_ptr->properties["CardIdentifier"].value<QString>();
-      else
-          return QString();
-  }
+QString QOfonoSimManager::cardIdentifier() const
+{
+    if (d_ptr->simManager)
+        return d_ptr->properties["CardIdentifier"].value<QString>();
+    else
+        return QString();
+}
 
-  QStringList QOfonoSimManager::preferredLanguages() const
-  {
-      if (d_ptr->simManager)
-          return d_ptr->properties["PreferredLanguages"].value<QStringList>();
-      else
-          return QStringList();
-  }
+QStringList QOfonoSimManager::preferredLanguages() const
+{
+    if (d_ptr->simManager)
+        return d_ptr->properties["PreferredLanguages"].value<QStringList>();
+    else
+        return QStringList();
+}
 
-  QVariantMap QOfonoSimManager::pinRetries() const //
-  {
-      if (d_ptr->simManager)
-          return d_ptr->properties["Retries"].value<QVariantMap>();
-      else
-          return QVariantMap();
-  }
+QVariantMap QOfonoSimManager::pinRetries() const //
+{
+    if (d_ptr->simManager)
+        return d_ptr->properties["Retries"].value<QVariantMap>();
+    else
+        return QVariantMap();
+}
 
-  bool QOfonoSimManager::fixedDialing() const
-  {
-      if (d_ptr->simManager)
-          return d_ptr->properties["FixedDialing"].value<bool>();
-      else
-          return false;
-  }
+bool QOfonoSimManager::fixedDialing() const
+{
+    if (d_ptr->simManager)
+        return d_ptr->properties["FixedDialing"].value<bool>();
+    else
+        return false;
+}
 
-  bool QOfonoSimManager::barredDialing() const
-  {
-      if (d_ptr->simManager)
-          return d_ptr->properties["BarredDialing"].value<bool>();
-      else
-          return false;
-  }
+bool QOfonoSimManager::barredDialing() const
+{
+    if (d_ptr->simManager)
+        return d_ptr->properties["BarredDialing"].value<bool>();
+    else
+        return false;
+}
 
 
-  void QOfonoSimManager::changePin(const QString &pintype, const QString &oldpin, const QString &newpin)
-  {
-      if (d_ptr->simManager)
-          d_ptr->simManager->ChangePin(pintype,oldpin,newpin);
+void QOfonoSimManager::changePin(const QString &pintype, const QString &oldpin, const QString &newpin)
+{
+    if (d_ptr->simManager)
+        d_ptr->simManager->ChangePin(pintype,oldpin,newpin);
 
-  }
+}
 
-  void QOfonoSimManager::enterPin(const QString &pintype, const QString &pin)
-  {
-      if (d_ptr->simManager)
-          d_ptr->simManager->EnterPin(pintype,pin);
-  }
+void QOfonoSimManager::enterPin(const QString &pintype, const QString &pin)
+{
+    if (d_ptr->simManager)
+        d_ptr->simManager->EnterPin(pintype,pin);
+}
 
-  void QOfonoSimManager::resetPin(const QString &pintype, const QString &puk, const QString &newpin)
-  {
-      if (d_ptr->simManager)
-          d_ptr->simManager->ResetPin(pintype,puk,newpin);
-  }
+void QOfonoSimManager::resetPin(const QString &pintype, const QString &puk, const QString &newpin)
+{
+    if (d_ptr->simManager)
+        d_ptr->simManager->ResetPin(pintype,puk,newpin);
+}
 
-  void QOfonoSimManager::lockPin(const QString &pintype, const QString &pin)
-  {
-      if (d_ptr->simManager)
-          d_ptr->simManager->LockPin(pintype,pin);
-  }
+void QOfonoSimManager::lockPin(const QString &pintype, const QString &pin)
+{
+    if (d_ptr->simManager)
+        d_ptr->simManager->LockPin(pintype,pin);
+}
 
-  void QOfonoSimManager::unlockPin(const QString &pintype, const QString &pin)
-  {
-      if (d_ptr->simManager)
-          d_ptr->simManager->UnlockPin(pintype,pin);
-  }
+void QOfonoSimManager::unlockPin(const QString &pintype, const QString &pin)
+{
+    if (d_ptr->simManager)
+        d_ptr->simManager->UnlockPin(pintype,pin);
+}
 
-  QByteArray QOfonoSimManager::getIcon(quint8 id)
-  {
-      QDBusMessage request = QDBusMessage::createMethodCall("org.ofono",
-                                                            "org.ofono.SimManager",
-                                                            d_ptr->simManager->path(),
-                                                            "GetIcon");
+QByteArray QOfonoSimManager::getIcon(quint8 id)
+{
+    QDBusMessage request = QDBusMessage::createMethodCall("org.ofono",
+                                                          "org.ofono.SimManager",
+                                                          d_ptr->simManager->path(),
+                                                          "GetIcon");
 
-      QDBusReply<QByteArray> reply2 = QDBusConnection::systemBus().call(request);
+    QDBusReply<QByteArray> reply2 = QDBusConnection::systemBus().call(request);
 
-      return reply2.value();
-  }
+    return reply2.value();
+}
 
+
+void QOfonoSimManager::setSubscriberNumbers(const QStringList &numbers)
+{
+    if (d_ptr->simManager)
+        d_ptr->simManager->SetProperty("SubscriberNumbers",QDBusVariant(numbers));
+}

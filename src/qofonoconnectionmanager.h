@@ -84,12 +84,12 @@ Q_SIGNALS:
     void suspendedChanged(bool suspnd);
     void roamingAllowedChanged(bool roaming);
     void poweredChanged(bool powered);
-    void contextAdded(const QString& path);
-    void contextRemoved(const QString& path);
+    void contextAdded(const QString &path);
+    void contextRemoved(const QString &path);
 
-    void deactivateAllComplete(bool success);
-    void addContextComplete(bool success, const QString& path);
-    void removeContextComplete(bool success);
+//    void deactivateAllComplete(bool success);
+//    void addContextComplete(bool success, const QString& path);
+//    void removeContextComplete(bool success);
 
 public slots:
     void deactivateAll();
@@ -98,6 +98,8 @@ public slots:
 
 private slots:
     void propertyChanged(const QString &property,const QDBusVariant &value);
+    void onContextAdded(const QDBusObjectPath &path, const QVariantMap &propertyMap);
+    void onContextRemoved(const QDBusObjectPath &path);
 
 private:
     QOfonoConnectionManagerPrivate *d_ptr;
