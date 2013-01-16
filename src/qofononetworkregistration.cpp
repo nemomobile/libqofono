@@ -42,6 +42,25 @@
 #include "qofononetworkregistration.h"
 #include "dbus/ofononetworkregistration.h"
 
+
+QDBusArgument &operator<<(QDBusArgument &argument, const OfonoPathProps &op)
+{
+    argument.beginStructure();
+    argument << op.path << op.properties;
+    argument.endStructure();
+    return argument;
+}
+
+const QDBusArgument &operator>>(const QDBusArgument &argument, OfonoPathProps &op)
+{
+    argument.beginStructure();
+    argument >> op.path >> op.properties;
+    argument.endStructure();
+    return argument;
+}
+
+
+
 class QOfonoNetworkRegistrationPrivate
 {
 public:
@@ -49,12 +68,17 @@ public:
     OfonoNetworkRegistration *networkRegistration;
     QString modemPath;
     QVariantMap properties;
+    QStringList networkOperators;
+    QArrayOfPathProps operatorArray;
 };
 
 QOfonoNetworkRegistrationPrivate::QOfonoNetworkRegistrationPrivate() :
     networkRegistration(0)
   , modemPath(QString())
+  ,  networkOperators(QStringList())
 {
+    qDBusRegisterMetaType<OfonoPathProps>();
+    qDBusRegisterMetaType<QArrayOfPathProps>();
 }
 
 QOfonoNetworkRegistration::QOfonoNetworkRegistration(QObject *parent) :
@@ -97,16 +121,29 @@ void QOfonoNetworkRegistration::registration()
         d_ptr->networkRegistration->Register();
 }
 
-void QOfonoNetworkRegistration::getOperators()
+QStringList QOfonoNetworkRegistration::networkOperators()
 {
-    if (d_ptr->networkRegistration)
-        QDBusPendingReply<QArrayOfPathProperties> pending = d_ptr->networkRegistration->GetOperators();
+    if (d_ptr->networkRegistration) {
+        QDBusPendingReply<QArrayOfPathProps> pending = d_ptr->networkRegistration->GetOperators();
+        if (!pending.isError()) {
+            scanFinish(pending.value());
+        } else {
+            qDebug() << Q_FUNC_INFO << pending.error().message();
+        }
+    }
+    return d_ptr->networkOperators;
 }
 
 void QOfonoNetworkRegistration::scan()
 {
-    if (d_ptr->networkRegistration)
-        d_ptr->networkRegistration->Scan();
+    if (d_ptr->networkRegistration) {
+        QList<QVariant> arguments;
+        d_ptr->networkRegistration->callWithCallback(QLatin1String("Scan"),
+                                                     arguments,
+                                                     this,
+                                                     SLOT(scanFinish(QArrayOfPathProps)),
+                                                     SLOT(scanError(const QDBusError&)));
+    }
 }
 
 QString QOfonoNetworkRegistration::mode() const
@@ -218,4 +255,39 @@ void QOfonoNetworkRegistration::propertyChanged(const QString &property, const Q
         Q_EMIT baseStationChanged(value.value<QString>());
     }
 
+}
+
+void QOfonoNetworkRegistration::scanFinish(const QArrayOfPathProps &list)
+{
+    bool changed = false;
+    d_ptr->operatorArray = list;
+    foreach(OfonoPathProps netop, list) {
+        if (netop.properties["Status"].toString() != QLatin1String("forbidden"))
+            if (!d_ptr->networkOperators.contains(netop.path.path())) {
+                d_ptr->networkOperators.append(netop.path.path());
+                changed = true;
+            }
+    }
+    if (changed) {
+        Q_EMIT networkOperatorsChanged(d_ptr->networkOperators);
+    }
+}
+
+void QOfonoNetworkRegistration::scanError(QDBusError error)
+{
+    Q_UNUSED(error)
+//    qDebug() << Q_FUNC_INFO << error.message();
+}
+
+QVariantMap QOfonoNetworkRegistration::currentOperator()
+{
+    QVariantMap map;
+    foreach(OfonoPathProps netop, d_ptr->operatorArray) {
+        if (netop.properties["Status"].toString() == QLatin1String("current")) {
+            map = netop.properties;
+            map.insert("Path",netop.path.path());
+            return map;
+        }
+    }
+    return map;
 }

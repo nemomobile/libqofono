@@ -119,6 +119,7 @@ void Tst_qofonoTest::testConnectionManager()
          connman.removeContext(path);
         }
     }
+// signals
     QVERIFY(connman.contexts().isEmpty());
     QSignalSpy spy(&connman, SIGNAL(contextAdded(QString)));
     connman.addContext("internet");
@@ -127,6 +128,53 @@ void Tst_qofonoTest::testConnectionManager()
     QCOMPARE(spy.count(),1);
     QList<QVariant> arguments ;
     arguments = spy.takeFirst();
+
+    // attached
+
+    // bearer
+    // suspended
+    // roamingAllowed
+    QSignalSpy spy_roaming(&connman, SIGNAL(roamingAllowedChanged(bool)));
+
+    connman.setRoamingAllowed(true);
+    QTest::qWait(1000);
+
+    QCOMPARE(spy_roaming.count(),1);
+    QList<QVariant> argumentsspy_roaming;
+    argumentsspy_roaming = spy_roaming.takeFirst();
+    QCOMPARE(argumentsspy_roaming[0].toBool(), true);
+
+    connman.setRoamingAllowed(false);
+    QTest::qWait(1000);
+
+    QCOMPARE(spy_roaming.count(),1);
+    QList<QVariant> argumentsspy_roaming2;
+    argumentsspy_roaming2 = spy_roaming.takeFirst();
+    if (manager.modems()[0].contains("phonesim"))
+            QEXPECT_FAIL("","seems to nt work on phonesim",Continue);
+    QCOMPARE(argumentsspy_roaming[0].toBool(), false);
+
+    // powered
+
+    QSignalSpy spy_powered(&connman, SIGNAL(poweredChanged(bool)));
+    connman.setPowered(true);
+
+    QTest::qWait(1000);
+//    if (manager.modems()[0].contains("phonesim"))
+//            QEXPECT_FAIL("","seems to nt work on phonesim",Continue);
+    QCOMPARE(spy_powered.count(),1);
+    QList<QVariant> argumentsspy_powered;
+    argumentsspy_powered = spy_powered.takeFirst();
+    QCOMPARE(argumentsspy_powered[0].toBool(), true);
+
+    connman.setPowered(false);
+    QTest::qWait(1000);
+    QCOMPARE(spy_powered.count(),1);
+    QList<QVariant> argumentsspy_powered2;
+    argumentsspy_powered2 = spy_powered.takeFirst();
+    QCOMPARE(argumentsspy_powered[0].toBool(), false);
+
+////
 
     QVERIFY(!connman.contexts().isEmpty());
     QSignalSpy spy2(&connman, SIGNAL(contextRemoved(QString)));

@@ -12,6 +12,7 @@ Rectangle {
     Text {
         id: textLine2
         anchors.top: textLine.bottom
+        text: manager.available ? netreg.name : "Ofono not available"
     }
     MouseArea {
         anchors.fill: parent
@@ -22,6 +23,14 @@ Rectangle {
 
     OfonoManager {
         id: manager
+        onAvailableChanged: {
+            console.log("Ofono is " + available)
+           textLine2.text = manager.available ? netreg.name :"Ofono not available"
+        }
+        onModemAdded: {
+            console.log("modem added "+modem)
+        }
+        onModemRemoved: console.log("modem removed")
     }
 
     OfonoConnMan {
@@ -35,6 +44,7 @@ Rectangle {
     OfonoModem {
         id: modem1
        modemPath: manager.modems[0]
+
     }
 
     OfonoContextConnection {
@@ -51,7 +61,11 @@ Rectangle {
         modemPath: manager.modems[0]
         id: netreg
         Component.onCompleted: {
-            textLine2.text = (modem1.powered ? netreg.name : "not powered")
+            netreg.scan()
+        }
+      onNetworkOperatorsChanged : {
+          console.log("operators :"+netreg.currentOperator["Name"].toString())
+
         }
     }
     OfonoNetworkOperator {

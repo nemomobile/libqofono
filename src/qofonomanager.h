@@ -53,21 +53,26 @@ class QOFONOSHARED_EXPORT QOfonoManager : public QObject
 {
     Q_OBJECT
 
-    Q_PROPERTY(QStringList modems READ modems CONSTANT)
-
+    Q_PROPERTY(QStringList modems READ modems NOTIFY modemsChanged)
+    Q_PROPERTY(bool available READ available NOTIFY availableChanged)
 public:
     explicit QOfonoManager(QObject *parent = 0);
     ~QOfonoManager();
 
     QStringList modems();
+    bool available() const;
     
 Q_SIGNALS: // SIGNALS
-    void modemAdded(const QString &modemPath);
-    void modemRemoved(const QString &modemPath);
+    void modemAdded(const QString &modem);
+    void modemRemoved(const QString &modem);
+    void availableChanged(bool available);
+    void modemsChanged(const QStringList &modems);
 
 private slots:
-    void onModemAdded(const QDBusObjectPath &path, const QVariantMap &map);
-    void onModemRemoved(const QDBusObjectPath &path);
+    void onModemAdd(const QDBusObjectPath &path, const QVariantMap &map);
+    void onModemRemove(const QDBusObjectPath &path);
+    void connectToOfono(const QString &);
+    void ofonoUnregistered(const QString &);
 private:
     QOfonoManagerPrivate *d_ptr;
 };

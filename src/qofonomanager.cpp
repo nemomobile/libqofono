@@ -42,6 +42,7 @@
 #include "qofonomanager.h"
 #include "dbus/ofonomanager.h"
 #include <QVariant>
+#include <QTimer>
 #include "dbustypes.h"
 
 QDBusArgument &operator<<(QDBusArgument &argument, const OfonoPathProperties &modem)
@@ -59,17 +60,22 @@ const QDBusArgument &operator>>(const QDBusArgument &argument, OfonoPathProperti
     argument.endStructure();
     return argument;
 }
+
 class QOfonoManagerPrivate
 {
 public:
     QOfonoManagerPrivate();
     OfonoManager *ofonoManager;
     QStringList modems;
+    bool available;
+    QDBusServiceWatcher *ofonoWatcher;
 };
 
 QOfonoManagerPrivate::QOfonoManagerPrivate() :
  ofonoManager(0)
 , modems(QStringList())
+, available(0)
+, ofonoWatcher(0)
 {
     qDBusRegisterMetaType<OfonoPathProperties>();
     qDBusRegisterMetaType<QArrayOfPathProperties>();
@@ -79,12 +85,19 @@ QOfonoManager::QOfonoManager(QObject *parent) :
     QObject(parent)
   , d_ptr(new QOfonoManagerPrivate)
 {
-    d_ptr->ofonoManager = new OfonoManager("org.ofono","/",QDBusConnection::systemBus(),this);
-    if (d_ptr->ofonoManager->isValid()) {
-        QDBusReply<QArrayOfPathProperties> reply = d_ptr->ofonoManager->GetModems();
-        foreach(OfonoPathProperties modem, reply.value()) {
-            d_ptr->modems << modem.path.path();
-        }
+
+    d_ptr->ofonoWatcher = new QDBusServiceWatcher("org.ofono",QDBusConnection::systemBus(),
+            QDBusServiceWatcher::WatchForRegistration |
+            QDBusServiceWatcher::WatchForUnregistration, this);
+
+    connect(d_ptr->ofonoWatcher, SIGNAL(serviceRegistered(QString)),
+            this, SLOT(connectToOfono(QString)));
+    connect(d_ptr->ofonoWatcher, SIGNAL(serviceUnregistered(QString)),
+            this, SLOT(ofonoUnregistered(QString)));
+
+    d_ptr->available = QDBusConnection::systemBus().interface()->isServiceRegistered("org.ofono");
+    if(d_ptr->available) {
+        connectToOfono(QString());
     }
 }
 
@@ -98,20 +111,54 @@ QStringList QOfonoManager::modems()
     return d_ptr->modems;
 }
 
-void QOfonoManager::onModemAdded(const QDBusObjectPath& path, const QVariantMap& /*map*/)
+void QOfonoManager::onModemAdd(const QDBusObjectPath& path, const QVariantMap& /*map*/)
 {
     QString pathStr = path.path();
     if (!d_ptr->modems.contains(pathStr)) {
         d_ptr->modems.append(pathStr);
         Q_EMIT modemAdded(pathStr);
+        Q_EMIT modemsChanged(d_ptr->modems);
     }
 }
 
-void QOfonoManager::onModemRemoved(const QDBusObjectPath& path)
+void QOfonoManager::onModemRemove(const QDBusObjectPath& path)
 {
     QString pathStr = path.path();
     if (!d_ptr->modems.contains(pathStr)) {
         d_ptr->modems.removeOne(pathStr);
         Q_EMIT modemRemoved(pathStr);
+        Q_EMIT modemsChanged(d_ptr->modems);
     }
+}
+
+bool QOfonoManager::available() const
+{
+    return d_ptr->available;
+}
+
+void QOfonoManager::connectToOfono(const QString &)
+{
+    d_ptr->ofonoManager = new OfonoManager("org.ofono","/",QDBusConnection::systemBus(),this);
+    if (d_ptr->ofonoManager->isValid()) {
+        QDBusReply<QArrayOfPathProperties> reply = d_ptr->ofonoManager->GetModems();
+        foreach(OfonoPathProperties modem, reply.value()) {
+            d_ptr->modems << modem.path.path();
+            Q_EMIT modemAdded(modem.path.path());
+        }
+        Q_EMIT modemsChanged(d_ptr->modems);
+
+    }
+    Q_EMIT availableChanged(true);
+}
+
+void QOfonoManager::ofonoUnregistered(const QString &)
+{
+    d_ptr->available = false;
+    delete d_ptr->ofonoManager;
+    Q_FOREACH(const QString &modem, d_ptr->modems) {
+        Q_EMIT modemRemoved(modem);
+    }
+    d_ptr->modems.clear();
+    Q_EMIT modemsChanged(d_ptr->modems);
+    Q_EMIT availableChanged(false);
 }

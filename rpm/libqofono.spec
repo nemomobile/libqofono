@@ -10,7 +10,7 @@ Name:       libqofono
 
 Summary:    A library of Qt bindings for ofono
 Version:    0.1
-Release:    1
+Release:    3
 Group:      System/Libraries
 License:    LGPLv2.1
 URL:        https://github.com/lpotter/qofono

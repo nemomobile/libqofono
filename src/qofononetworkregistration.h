@@ -49,6 +49,15 @@
 
 class QOfonoNetworkRegistrationPrivate;
 
+struct OfonoPathProps
+{
+    QDBusObjectPath path;
+    QVariantMap properties;
+};
+typedef QList<OfonoPathProps> QArrayOfPathProps;
+Q_DECLARE_METATYPE(OfonoPathProps)
+Q_DECLARE_METATYPE (QArrayOfPathProps)
+
 class QOFONOSHARED_EXPORT QOfonoNetworkRegistration : public QObject
 {
     Q_OBJECT
@@ -63,6 +72,9 @@ class QOFONOSHARED_EXPORT QOfonoNetworkRegistration : public QObject
     Q_PROPERTY(QString name READ name NOTIFY nameChanged)
     Q_PROPERTY(uint strength READ strength NOTIFY strengthChanged)
     Q_PROPERTY(QString baseStation READ baseStation NOTIFY baseStationChanged)
+
+    Q_PROPERTY(QStringList networkOperators READ networkOperators NOTIFY networkOperatorsChanged)
+    Q_PROPERTY(QVariantMap currentOperator READ currentOperator)
 
     Q_PROPERTY(QString modemPath READ modemPath WRITE setModemPath)
 
@@ -84,9 +96,12 @@ public:
     uint strength() const;
     QString baseStation() const;
 
+    QStringList networkOperators();
+
     Q_INVOKABLE void registration();
-    Q_INVOKABLE void getOperators();
     Q_INVOKABLE void scan();
+
+    QVariantMap currentOperator();
 
 Q_SIGNALS:
     void modeChanged(const QString &mode);
@@ -100,6 +115,9 @@ Q_SIGNALS:
     void strengthChanged(uint strength);
     void baseStationChanged(const QString &baseStation);
 
+    void networkOperatorsChanged(const QStringList &networkOperators);
+    //void scanFinished();
+
 public slots:
 
 private:
@@ -107,6 +125,8 @@ private:
 
 private slots:
     void propertyChanged(const QString &property,const QDBusVariant &value);
+    void scanError(QDBusError error);
+    void scanFinish(const QArrayOfPathProps &list);
 };
 
 #endif // QOFONONETWORKREGISTRATION_H
