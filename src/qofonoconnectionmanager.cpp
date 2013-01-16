@@ -82,9 +82,9 @@ void QOfonoConnectionManager::setModemPath(const QString &path)
             connect(d_ptr->connman,SIGNAL(PropertyChanged(QString,QDBusVariant)),
                     this,SLOT(propertyChanged(QString,QDBusVariant)));
             connect(d_ptr->connman,SIGNAL(ContextAdded(QDBusObjectPath,QVariantMap)),
-                    this,SLOT(onContextAdded(QDBusObjectPath,QVariantMap)));
+                    this,SLOT(onContextAdd(QDBusObjectPath,QVariantMap)));
             connect(d_ptr->connman,SIGNAL(ContextRemoved(QDBusObjectPath)),
-                    this,SLOT(onContextRemoved(QDBusObjectPath)));
+                    this,SLOT(onContextRemove(QDBusObjectPath)));
 
             QDBusReply<QVariantMap> reply;
             reply = d_ptr->connman->GetProperties();
@@ -211,7 +211,7 @@ QStringList QOfonoConnectionManager::contexts()
     return d_ptr->contexts;
 }
 
-void QOfonoConnectionManager::onContextAdded(const QDBusObjectPath &path, const QVariantMap &propertyMap)
+void QOfonoConnectionManager::onContextAdd(const QDBusObjectPath &path, const QVariantMap &propertyMap)
 {
     Q_UNUSED(propertyMap);
     if (!d_ptr->contexts.contains(path.path()))
@@ -219,7 +219,7 @@ void QOfonoConnectionManager::onContextAdded(const QDBusObjectPath &path, const 
     Q_EMIT contextAdded(path.path());
 }
 
-void QOfonoConnectionManager::onContextRemoved(const QDBusObjectPath &path)
+void QOfonoConnectionManager::onContextRemove(const QDBusObjectPath &path)
 {
     if (!d_ptr->contexts.contains(path.path()))
         d_ptr->contexts.removeOne(path.path());
