@@ -77,6 +77,10 @@ QString QOfonoConnectionContext::contextPath() const
 
 void QOfonoConnectionContext::setContextPath(const QString &idPath)
 {
+    if(d_ptr->context) {
+        delete d_ptr->context;
+        d_ptr->context = 0;
+    }
     if (!d_ptr->context) {
         d_ptr->context = new OfonoConnectionContext("org.ofono", idPath, QDBusConnection::systemBus(),this);
 
@@ -88,6 +92,7 @@ void QOfonoConnectionContext::setContextPath(const QString &idPath)
             QDBusReply<QVariantMap> reply;
             reply = d_ptr->context->GetProperties();
             d_ptr->properties = reply.value();
+            Q_EMIT contextPathChanged(idPath);
         }
     }
 }

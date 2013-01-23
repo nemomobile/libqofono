@@ -25,7 +25,7 @@ Rectangle {
         id: manager
         onAvailableChanged: {
             console.log("Ofono is " + available)
-           textLine2.text = manager.available ? netreg.name :"Ofono not available"
+           textLine2.text = manager.available ? netreg.currentOperator["Name"].toString() :"Ofono not available"
         }
         onModemAdded: {
             console.log("modem added "+modem)
@@ -63,9 +63,9 @@ Rectangle {
         Component.onCompleted: {
             netreg.scan()
         }
+
       onNetworkOperatorsChanged : {
           console.log("operators :"+netreg.currentOperator["Name"].toString())
-
         }
     }
     OfonoNetworkOperator {

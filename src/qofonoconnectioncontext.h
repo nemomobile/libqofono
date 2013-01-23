@@ -63,7 +63,7 @@ class QOFONOSHARED_EXPORT QOfonoConnectionContext : public QObject
     Q_PROPERTY(QVariantMap settings READ settings NOTIFY settingsChanged)
     Q_PROPERTY(QVariantMap IPv6Settings READ IPv6Settings NOTIFY IPv6SettingsChanged)
 
-    Q_PROPERTY(QString contextPath READ contextPath WRITE setContextPath)
+    Q_PROPERTY(QString contextPath READ contextPath WRITE setContextPath NOTIFY contextPathChanged)
 
 public:
     explicit QOfonoConnectionContext(QObject *parent = 0);
@@ -115,6 +115,8 @@ Q_SIGNALS:
     void messageCenterChanged(const QString &msc);
     void settingsChanged(const QVariantMap&);
     void IPv6SettingsChanged(const QVariantMap&);
+
+    void contextPathChanged(const QString &);
 
 public slots:
 

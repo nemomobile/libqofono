@@ -92,7 +92,6 @@ private:
 private slots:
     void propertyChanged(const QString &property, const QDBusVariant &value);
 
-
 };
 
 #endif // QOFONONETWORKOPERATOR_H

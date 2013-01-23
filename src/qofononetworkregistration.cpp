@@ -94,6 +94,11 @@ QOfonoNetworkRegistration::~QOfonoNetworkRegistration()
 
 void QOfonoNetworkRegistration::setModemPath(const QString &path)
 {
+    if(d_ptr->networkRegistration) {
+        delete d_ptr->networkRegistration;
+        d_ptr->networkRegistration = 0;
+    }
+
     if (!d_ptr->networkRegistration) {
         d_ptr->networkRegistration = new OfonoNetworkRegistration("org.ofono", path, QDBusConnection::systemBus(),this);
 
@@ -261,33 +266,37 @@ void QOfonoNetworkRegistration::scanFinish(const QArrayOfPathProps &list)
 {
     bool changed = false;
     d_ptr->operatorArray = list;
+    QString current;
     foreach(OfonoPathProps netop, list) {
+        // don't add forbidden operators
         if (netop.properties["Status"].toString() != QLatin1String("forbidden"))
             if (!d_ptr->networkOperators.contains(netop.path.path())) {
+                qDebug() << Q_FUNC_INFO << netop.path.path();
                 d_ptr->networkOperators.append(netop.path.path());
+                 if (netop.properties["Status"].toString() == QLatin1String("current")) {
+                 current == netop.path.path();
+                 }
                 changed = true;
             }
     }
     if (changed) {
         Q_EMIT networkOperatorsChanged(d_ptr->networkOperators);
+        Q_EMIT currentOperatorPathChanged(current);
     }
+    Q_EMIT scanFinished();
 }
 
 void QOfonoNetworkRegistration::scanError(QDBusError error)
 {
-    Q_UNUSED(error)
-//    qDebug() << Q_FUNC_INFO << error.message();
+    Q_EMIT scanError(error.message());
 }
 
-QVariantMap QOfonoNetworkRegistration::currentOperator()
+QString QOfonoNetworkRegistration::currentOperatorPath()
 {
-    QVariantMap map;
     foreach(OfonoPathProps netop, d_ptr->operatorArray) {
         if (netop.properties["Status"].toString() == QLatin1String("current")) {
-            map = netop.properties;
-            map.insert("Path",netop.path.path());
-            return map;
+            return netop.path.path();
         }
     }
-    return map;
+    return QString();
 }

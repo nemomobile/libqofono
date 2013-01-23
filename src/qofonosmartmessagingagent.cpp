@@ -113,13 +113,11 @@ QOfonoSmartMessagingAgentAdaptor::~QOfonoSmartMessagingAgentAdaptor()
 
 void QOfonoSmartMessagingAgentAdaptor::ReceiveAppointment(const QByteArray &appointment, const QVariantMap &info)
 {
-    qDebug() << Q_FUNC_INFO << appointment << info;
     smartAgent->ReceiveAppointment(appointment, info);
 }
 
 void QOfonoSmartMessagingAgentAdaptor::ReceiveBusinessCard(const QByteArray &card, const QVariantMap &info)
 {
-    qDebug() << Q_FUNC_INFO << card << info;
     smartAgent->receiveAppointment(card, info);
 }
 

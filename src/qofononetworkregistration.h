@@ -74,7 +74,7 @@ class QOFONOSHARED_EXPORT QOfonoNetworkRegistration : public QObject
     Q_PROPERTY(QString baseStation READ baseStation NOTIFY baseStationChanged)
 
     Q_PROPERTY(QStringList networkOperators READ networkOperators NOTIFY networkOperatorsChanged)
-    Q_PROPERTY(QVariantMap currentOperator READ currentOperator)
+    Q_PROPERTY(QString currentOperatorPath READ currentOperatorPath NOTIFY currentOperatorPathChanged)
 
     Q_PROPERTY(QString modemPath READ modemPath WRITE setModemPath)
 
@@ -101,7 +101,7 @@ public:
     Q_INVOKABLE void registration();
     Q_INVOKABLE void scan();
 
-    QVariantMap currentOperator();
+    QString currentOperatorPath();
 
 Q_SIGNALS:
     void modeChanged(const QString &mode);
@@ -116,7 +116,9 @@ Q_SIGNALS:
     void baseStationChanged(const QString &baseStation);
 
     void networkOperatorsChanged(const QStringList &networkOperators);
-    //void scanFinished();
+    void currentOperatorPathChanged(const QString &);
+    void scanFinished();
+    void scanError(const QString &message);
 
 public slots:
 

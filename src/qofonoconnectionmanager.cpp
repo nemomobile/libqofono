@@ -89,7 +89,6 @@ void QOfonoConnectionManager::setModemPath(const QString &path)
             QDBusReply<QVariantMap> reply;
             reply = d_ptr->connman->GetProperties();
             d_ptr->properties = reply.value();
-
             QArrayOfPathProperties contexts;
             QStringList contextList;
 
@@ -119,18 +118,20 @@ void QOfonoConnectionManager::addContext(const QString &type)
 {
     if (!d_ptr->connman)
         return;
-     QDBusPendingReply<QDBusObjectPath> reply = d_ptr->connman->AddContext(type);
-     if (reply.isError())
-         qDebug() << Q_FUNC_INFO <<reply.error();
+    QDBusPendingReply<QDBusObjectPath> reply = d_ptr->connman->AddContext(type);
+    if (reply.isError()) {
+        qDebug() << Q_FUNC_INFO <<reply.error();
+    }
 }
 
 void QOfonoConnectionManager::removeContext(const QString &path)
 {
     if (!d_ptr->connman)
         return;
-    d_ptr->connman->RemoveContext(QDBusObjectPath(path));
-    if (d_ptr->contexts.contains(path))
-        d_ptr->contexts.removeOne(path);
+    QDBusPendingReply<QDBusObjectPath> reply = d_ptr->connman->RemoveContext(QDBusObjectPath(path));
+    if (reply.isError()) {
+        qDebug() << Q_FUNC_INFO <<reply.error();
+    }
 }
 
 bool QOfonoConnectionManager::attached() const
@@ -183,8 +184,14 @@ bool QOfonoConnectionManager::powered() const
 
 void QOfonoConnectionManager::setPowered(bool b)
 {
-    if (d_ptr->connman)
-        d_ptr->connman->SetProperty("Powered",QDBusVariant(b));
+    if (d_ptr->connman) {
+
+        QDBusPendingReply<void> reply =
+                d_ptr->connman->SetProperty("Powered",QDBusVariant(b));
+        if(reply.isError()) {
+         qDebug() << reply.error().message();
+        }
+    }
 }
 
 
@@ -217,6 +224,7 @@ void QOfonoConnectionManager::onContextAdd(const QDBusObjectPath &path, const QV
     if (!d_ptr->contexts.contains(path.path()))
         d_ptr->contexts.append(path.path());
     Q_EMIT contextAdded(path.path());
+    Q_EMIT contextsChanged(d_ptr->contexts);
 }
 
 void QOfonoConnectionManager::onContextRemove(const QDBusObjectPath &path)
@@ -224,4 +232,5 @@ void QOfonoConnectionManager::onContextRemove(const QDBusObjectPath &path)
     if (!d_ptr->contexts.contains(path.path()))
         d_ptr->contexts.removeOne(path.path());
     Q_EMIT contextRemoved(path.path());
+    Q_EMIT contextsChanged(d_ptr->contexts);
 }

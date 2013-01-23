@@ -70,6 +70,10 @@ QOfonoNetworkOperator::~QOfonoNetworkOperator()
 
 void QOfonoNetworkOperator::setOperatorPath(const QString &path)
 {
+    if (d_ptr->networkOperator) {
+        delete d_ptr->networkOperator;
+        d_ptr->networkOperator = 0;
+    }
     if (!d_ptr->networkOperator) {
         d_ptr->networkOperator = new OfonoNetworkOperator("org.ofono", path, QDBusConnection::systemBus(),this);
         if (d_ptr->networkOperator->isValid()) {
@@ -92,7 +96,10 @@ QString QOfonoNetworkOperator::operatorPath() const
 
 void QOfonoNetworkOperator::registerOperator()
 {
-     d_ptr->networkOperator->Register();
+    QDBusPendingReply<void> reply = d_ptr->networkOperator->Register();
+    if (reply.isError()) {
+        qDebug() << reply.error().message();
+    }
 }
 
 QString QOfonoNetworkOperator::name() const
