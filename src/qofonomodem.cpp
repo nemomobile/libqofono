@@ -71,6 +71,9 @@ QOfonoModem::~QOfonoModem()
 
 void QOfonoModem::setModemPath(const QString &path)
 {
+    if (path.isEmpty())
+        return;
+
     if (!d_ptr->modem) {
         d_ptr->modem = new OfonoModem("org.ofono", path, QDBusConnection::systemBus(),this);
 

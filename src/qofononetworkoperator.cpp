@@ -70,6 +70,9 @@ QOfonoNetworkOperator::~QOfonoNetworkOperator()
 
 void QOfonoNetworkOperator::setOperatorPath(const QString &path)
 {
+    if (path.isEmpty())
+        return;
+
     if (d_ptr->networkOperator) {
         delete d_ptr->networkOperator;
         d_ptr->networkOperator = 0;

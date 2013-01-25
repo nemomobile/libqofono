@@ -51,6 +51,8 @@ public:
     OfonoConnectionManager *connman;
     QVariantMap properties;
     QStringList contexts;
+
+    QStringList getContexts();
 };
 
 QOfonoConnectionManagerPrivate::QOfonoConnectionManagerPrivate() :
@@ -59,6 +61,18 @@ QOfonoConnectionManagerPrivate::QOfonoConnectionManagerPrivate() :
   ,contexts(QStringList())
 {
 }
+
+QStringList QOfonoConnectionManagerPrivate::getContexts()
+{
+    QStringList contextList;
+    QDBusReply<QArrayOfPathProperties> reply2 = connman->GetContexts();
+    foreach(OfonoPathProperties context, reply2.value()) {
+        contextList.append(context.path.path());
+    }
+    contexts = contextList;
+    return contexts;
+}
+
 
 QOfonoConnectionManager::QOfonoConnectionManager(QObject *parent) :
     QObject(parent),
@@ -73,6 +87,9 @@ QOfonoConnectionManager::~QOfonoConnectionManager()
 
 void QOfonoConnectionManager::setModemPath(const QString &path)
 {
+    if (path.isEmpty())
+        return;
+
     if (!d_ptr->connman) {
         d_ptr->connman = new OfonoConnectionManager("org.ofono", path, QDBusConnection::systemBus(),this);
 
@@ -89,15 +106,7 @@ void QOfonoConnectionManager::setModemPath(const QString &path)
             QDBusReply<QVariantMap> reply;
             reply = d_ptr->connman->GetProperties();
             d_ptr->properties = reply.value();
-            QArrayOfPathProperties contexts;
-            QStringList contextList;
-
-            QDBusReply<QArrayOfPathProperties> reply2 = d_ptr->connman->GetContexts();
-            contexts = reply2;
-            foreach(OfonoPathProperties context, reply2.value()) {
-                contextList.append(context.path.path());
-            }
-            d_ptr->contexts = contextList;
+            d_ptr->getContexts();
         }
     }
 }
@@ -199,8 +208,16 @@ void QOfonoConnectionManager::propertyChanged(const QString& property, const QDB
 {
     QVariant value = dbusvalue.variant();
     d_ptr->properties.insert(property,value);
-
     if (property == QLatin1String("Attached")) {
+        if (value.value<bool>()) {
+            if (d_ptr->contexts.isEmpty()) {
+                d_ptr->getContexts();
+                Q_EMIT contextsChanged(d_ptr->contexts);
+            }
+        } else {
+            d_ptr->contexts.clear();
+            Q_EMIT contextsChanged(d_ptr->contexts);
+        }
         Q_EMIT attachedChanged(value.value<bool>());
     } else if (property == QLatin1String("Bearer")) {
         Q_EMIT bearerChanged(value.value<QString>());

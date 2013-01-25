@@ -85,6 +85,7 @@ QOfonoNetworkRegistration::QOfonoNetworkRegistration(QObject *parent) :
     QObject(parent),
     d_ptr(new QOfonoNetworkRegistrationPrivate)
 {
+    qDebug() << Q_FUNC_INFO;
 }
 
 QOfonoNetworkRegistration::~QOfonoNetworkRegistration()
@@ -94,6 +95,9 @@ QOfonoNetworkRegistration::~QOfonoNetworkRegistration()
 
 void QOfonoNetworkRegistration::setModemPath(const QString &path)
 {
+    if (path.isEmpty())
+        return;
+
     if(d_ptr->networkRegistration) {
         delete d_ptr->networkRegistration;
         d_ptr->networkRegistration = 0;
@@ -143,11 +147,14 @@ void QOfonoNetworkRegistration::scan()
 {
     if (d_ptr->networkRegistration) {
         QList<QVariant> arguments;
-        d_ptr->networkRegistration->callWithCallback(QLatin1String("Scan"),
-                                                     arguments,
-                                                     this,
-                                                     SLOT(scanFinish(QArrayOfPathProps)),
-                                                     SLOT(scanError(const QDBusError&)));
+        if (!d_ptr->networkRegistration->callWithCallback(QLatin1String("Scan"),
+                                                          arguments,
+                                                          this,
+                                                          SLOT(scanFinish(QArrayOfPathProps)),
+                                                          SLOT(scanError(const QDBusError&)))) {
+            qDebug() << "Failed to queue scan call";
+
+        }
     }
 }
 
@@ -269,7 +276,7 @@ void QOfonoNetworkRegistration::scanFinish(const QArrayOfPathProps &list)
     QString current;
     foreach(OfonoPathProps netop, list) {
         // don't add forbidden operators
-        if (netop.properties["Status"].toString() != QLatin1String("forbidden"))
+      //  if (netop.properties["Status"].toString() != QLatin1String("forbidden"))
             if (!d_ptr->networkOperators.contains(netop.path.path())) {
                 qDebug() << Q_FUNC_INFO << netop.path.path();
                 d_ptr->networkOperators.append(netop.path.path());

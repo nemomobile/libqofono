@@ -77,6 +77,8 @@ QString QOfonoConnectionContext::contextPath() const
 
 void QOfonoConnectionContext::setContextPath(const QString &idPath)
 {
+    if (idPath.isEmpty())
+        return;
     if(d_ptr->context) {
         delete d_ptr->context;
         d_ptr->context = 0;
