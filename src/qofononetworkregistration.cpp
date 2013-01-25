@@ -85,7 +85,6 @@ QOfonoNetworkRegistration::QOfonoNetworkRegistration(QObject *parent) :
     QObject(parent),
     d_ptr(new QOfonoNetworkRegistrationPrivate)
 {
-    qDebug() << Q_FUNC_INFO;
 }
 
 QOfonoNetworkRegistration::~QOfonoNetworkRegistration()
@@ -278,7 +277,6 @@ void QOfonoNetworkRegistration::scanFinish(const QArrayOfPathProps &list)
         // don't add forbidden operators
       //  if (netop.properties["Status"].toString() != QLatin1String("forbidden"))
             if (!d_ptr->networkOperators.contains(netop.path.path())) {
-                qDebug() << Q_FUNC_INFO << netop.path.path();
                 d_ptr->networkOperators.append(netop.path.path());
                  if (netop.properties["Status"].toString() == QLatin1String("current")) {
                  current == netop.path.path();
