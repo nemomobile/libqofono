@@ -107,7 +107,7 @@ void QOfonoNetworkOperator::registerOperator()
 
 QString QOfonoNetworkOperator::name() const
 {
-    if ( d_ptr->networkOperator)
+    if (d_ptr->networkOperator)
         return d_ptr->properties["Name"].value<QString>();
     else
         return QString();
@@ -115,7 +115,7 @@ QString QOfonoNetworkOperator::name() const
 
 QString QOfonoNetworkOperator::status() const
 {
-    if ( d_ptr->networkOperator)
+    if (d_ptr->networkOperator)
         return d_ptr->properties["Status"].value<QString>();
     else
         return QString();
@@ -123,7 +123,7 @@ QString QOfonoNetworkOperator::status() const
 
 QString QOfonoNetworkOperator::mcc() const
 {
-    if ( d_ptr->networkOperator)
+    if (d_ptr->networkOperator)
         return d_ptr->properties["MobileCountryCode"].value<QString>();
     else
         return QString();
@@ -131,23 +131,24 @@ QString QOfonoNetworkOperator::mcc() const
 
 QString QOfonoNetworkOperator::mnc() const
 {
-    if ( d_ptr->networkOperator)
-        return d_ptr->properties["MobileNetworkCOde"].value<QString>();
+    if (d_ptr->networkOperator)
+        return d_ptr->properties["MobileNetworkCode"].value<QString>();
     else
         return QString();
 }
 
 QStringList QOfonoNetworkOperator::technologies() const
 {
-    if ( d_ptr->networkOperator)
-        return d_ptr->properties["Techologies"].value<QStringList>();
-    else
+    if (d_ptr->networkOperator) {
+        return d_ptr->properties["Technologies"].value<QStringList>();
+    } else {
         return QStringList();
+    }
 }
 
 QString QOfonoNetworkOperator::additionalInfo() const
 {
-    if ( d_ptr->networkOperator)
+    if (d_ptr->networkOperator)
         return d_ptr->properties["AdditionalInformation"].value<QString>();
     else
         return QString();
