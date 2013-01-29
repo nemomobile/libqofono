@@ -26,6 +26,15 @@ This package contains Qt bindings for ofono cellular service
 interfaces.
 
 
+%package declarative
+Summary:    Declarative plugin for libqofono
+Group:      Development/Tools
+Requires:   %{name} = %{version}-%{release}
+Requires:   %{name} = %{version}
+
+%description declarative
+This package contains declarative plugin for libofono.
+
 %package devel
 Summary:    Development files for ofono Qt bindings
 Group:      Development/Libraries
@@ -78,9 +87,14 @@ rm -rf %{buildroot}
 %files
 %defattr(-,root,root,-)
 %{_libdir}/%{name}.so.*
-%{_libdir}/qt4/imports/MeeGo/QOfono/*
 # >> files
 # << files
+
+%files declarative
+%defattr(-,root,root,-)
+%{_libdir}/qt4/imports/MeeGo/QOfono/*
+# >> files declarative
+# << files declarative
 
 %files devel
 %defattr(-,root,root,-)

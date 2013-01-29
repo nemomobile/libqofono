@@ -18,9 +18,17 @@ Builder: qmake
 SetupOptions: "-q -n qofono-%{version}"
 Files:
     - "%{_libdir}/%{name}.so.*"
-    - "%{_libdir}/qt4/imports/MeeGo/QOfono/*"
 
 SubPackages:
+    - Name: declarative
+      Summary: Declarative plugin for libqofono
+      Group: Development/Tools
+      Description: This package contains declarative plugin for libofono.
+      Requires:
+          - "%{name} = %{version}"
+      Files:
+          - "%{_libdir}/qt4/imports/MeeGo/QOfono/*"
+
     - Name: devel
       Summary: Development files for ofono Qt bindings
       Group: Development/Libraries
