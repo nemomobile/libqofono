@@ -89,16 +89,16 @@ void QOfonoMessageManager::setModemPath(const QString &path)
             reply = d_ptr->messageManager->GetProperties();
             d_ptr->properties = reply.value();
 
-            QArrayOfPathProperties messages;
+            ObjectPathPropertiesList messages;
 
             QDBusMessage request = QDBusMessage::createMethodCall("org.ofono",
                                                                   "org.ofono.MessageManager",
                                                                   path,
                                                                   "GetMessages");
-              QDBusReply<QArrayOfPathProperties> reply2 = QDBusConnection::systemBus().call(request);
+              QDBusReply<ObjectPathPropertiesList> reply2 = QDBusConnection::systemBus().call(request);
 
             messages = reply2.value();
-            foreach(OfonoPathProperties message, messages) {
+            foreach(ObjectPathProperties message, messages) {
                 d_ptr->messageList << message.path.path();
             }
         }

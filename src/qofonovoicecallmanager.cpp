@@ -116,8 +116,8 @@ QStringList QOfonoVoiceCallManager::getCalls() const
 {
     if(d_ptr->voiceCallManager) {
         d_ptr->callList.clear();
-        QDBusReply<QArrayOfPathProperties> reply = d_ptr->voiceCallManager->GetCalls();
-        foreach(OfonoPathProperties calls, reply.value()) {
+        QDBusReply<ObjectPathPropertiesList> reply = d_ptr->voiceCallManager->GetCalls();
+        foreach(ObjectPathProperties calls, reply.value()) {
             d_ptr->callList << calls.path.path();
         }
     }

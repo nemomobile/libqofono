@@ -45,7 +45,7 @@
 #include <QTimer>
 #include "dbustypes.h"
 
-QDBusArgument &operator<<(QDBusArgument &argument, const OfonoPathProperties &modem)
+QDBusArgument &operator<<(QDBusArgument &argument, const ObjectPathProperties &modem)
 {
     argument.beginStructure();
     argument << modem.path << modem.properties;
@@ -53,7 +53,7 @@ QDBusArgument &operator<<(QDBusArgument &argument, const OfonoPathProperties &mo
     return argument;
 }
 
-const QDBusArgument &operator>>(const QDBusArgument &argument, OfonoPathProperties &modem)
+const QDBusArgument &operator>>(const QDBusArgument &argument, ObjectPathProperties &modem)
 {
     argument.beginStructure();
     argument >> modem.path >> modem.properties;
@@ -77,8 +77,8 @@ QOfonoManagerPrivate::QOfonoManagerPrivate() :
 , available(0)
 , ofonoWatcher(0)
 {
-    qDBusRegisterMetaType<OfonoPathProperties>();
-    qDBusRegisterMetaType<QArrayOfPathProperties>();
+    qDBusRegisterMetaType<ObjectPathProperties>();
+    qDBusRegisterMetaType<ObjectPathPropertiesList>();
 }
 
 QOfonoManager::QOfonoManager(QObject *parent) :
@@ -140,8 +140,8 @@ void QOfonoManager::connectToOfono(const QString &)
 {
     d_ptr->ofonoManager = new OfonoManager("org.ofono","/",QDBusConnection::systemBus(),this);
     if (d_ptr->ofonoManager->isValid()) {
-        QDBusReply<QArrayOfPathProperties> reply = d_ptr->ofonoManager->GetModems();
-        foreach(OfonoPathProperties modem, reply.value()) {
+        QDBusReply<ObjectPathPropertiesList> reply = d_ptr->ofonoManager->GetModems();
+        foreach(ObjectPathProperties modem, reply.value()) {
             d_ptr->modems << modem.path.path();
             Q_EMIT modemAdded(modem.path.path());
         }

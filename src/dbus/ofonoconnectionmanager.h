@@ -51,7 +51,7 @@ public Q_SLOTS: // METHODS
         return asyncCallWithArgumentList(QLatin1String("DeactivateAll"), argumentList);
     }
 
-    inline QDBusPendingReply<QArrayOfPathProperties> GetContexts()
+    inline QDBusPendingReply<ObjectPathPropertiesList> GetContexts()
     {
         QList<QVariant> argumentList;
         return asyncCallWithArgumentList(QLatin1String("GetContexts"), argumentList);

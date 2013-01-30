@@ -37,7 +37,7 @@ public:
     ~OfonoManager();
 
 public Q_SLOTS: // METHODS
-    inline QDBusPendingReply<QArrayOfPathProperties> GetModems()
+    inline QDBusPendingReply<ObjectPathPropertiesList> GetModems()
     {
         QList<QVariant> argumentList;
         return asyncCallWithArgumentList(QLatin1String("GetModems"), argumentList);

@@ -43,7 +43,7 @@ public Q_SLOTS: // METHODS
         return asyncCallWithArgumentList(QLatin1String("Deregister"), argumentList);
     }
 
-    inline QDBusPendingReply<QArrayOfPathProperties> GetOperators()
+    inline QDBusPendingReply<ObjectPathPropertiesList> GetOperators()
     {
         QList<QVariant> argumentList;
         return asyncCallWithArgumentList(QLatin1String("GetOperators"), argumentList);
@@ -61,7 +61,7 @@ public Q_SLOTS: // METHODS
         return asyncCallWithArgumentList(QLatin1String("Register"), argumentList);
     }
 
-    inline QDBusPendingReply<QArrayOfPathProperties> Scan()
+    inline QDBusPendingReply<ObjectPathPropertiesList> Scan()
     {
         QList<QVariant> argumentList;
         return asyncCallWithArgumentList(QLatin1String("Scan"), argumentList);

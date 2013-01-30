@@ -38,7 +38,7 @@ public:
     ~OfonoMessageManager();
 
 public Q_SLOTS: // METHODS
-    inline QDBusPendingReply<QArrayOfPathProperties> GetMessages()
+    inline QDBusPendingReply<ObjectPathPropertiesList> GetMessages()
     {
         QList<QVariant> argumentList;
         return asyncCallWithArgumentList(QLatin1String("GetMessages"), argumentList);

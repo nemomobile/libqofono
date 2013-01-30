@@ -65,8 +65,8 @@ QOfonoConnectionManagerPrivate::QOfonoConnectionManagerPrivate() :
 QStringList QOfonoConnectionManagerPrivate::getContexts()
 {
     QStringList contextList;
-    QDBusReply<QArrayOfPathProperties> reply2 = connman->GetContexts();
-    foreach(OfonoPathProperties context, reply2.value()) {
+    QDBusReply<ObjectPathPropertiesList> reply2 = connman->GetContexts();
+    foreach(ObjectPathProperties context, reply2.value()) {
         contextList.append(context.path.path());
     }
     contexts = contextList;

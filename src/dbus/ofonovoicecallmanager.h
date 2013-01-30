@@ -51,7 +51,7 @@ public Q_SLOTS: // METHODS
         return asyncCallWithArgumentList(QLatin1String("Dial"), argumentList);
     }
 
-    inline QDBusPendingReply<QArrayOfPathProperties> GetCalls()
+    inline QDBusPendingReply<ObjectPathPropertiesList> GetCalls()
     {
         QList<QVariant> argumentList;
         return asyncCallWithArgumentList(QLatin1String("GetCalls"), argumentList);

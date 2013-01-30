@@ -44,13 +44,13 @@
 #include <QtDBus>
 #include <QVariant>
 
-struct OfonoPathProperties
+struct ObjectPathProperties
 {
     QDBusObjectPath path;
     QVariantMap properties;
 };
-typedef QList<OfonoPathProperties> QArrayOfPathProperties;
-Q_DECLARE_METATYPE(OfonoPathProperties)
-Q_DECLARE_METATYPE (QArrayOfPathProperties)
+typedef QList<ObjectPathProperties> ObjectPathPropertiesList;
+Q_DECLARE_METATYPE(ObjectPathProperties)
+Q_DECLARE_METATYPE (ObjectPathPropertiesList)
 
 #endif // DBUSTYPES_H
