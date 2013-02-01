@@ -46,6 +46,11 @@
 #include <QStringList>
 
 #include "qofono_global.h"
+//! This class is used to access ofono SIM API
+/*!
+ * The API is documented in
+ * http://git.kernel.org/?p=network/ofono/ofono.git;a=blob_plain;f=doc/sim-api.txt
+ */
 
 class QOfonoSimManagerPrivate;
 class QOFONOSHARED_EXPORT QOfonoSimManager : public QObject

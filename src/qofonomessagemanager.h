@@ -45,6 +45,12 @@
 #include <QDBusVariant>
 #include <QStringList>
 #include "qofono_global.h"
+//! This class is used to access ofono message manager API
+/*!
+ * oFono message manager API is documented in
+ * http://git.kernel.org/?p=network/ofono/ofono.git;a=blob_plain;f=doc/messagemanager-api.txt
+ */
+
 class QOfonoMessageManagerPrivate;
 class QOFONOSHARED_EXPORT QOfonoMessageManager : public QObject
 {

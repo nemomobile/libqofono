@@ -45,6 +45,11 @@
 #include <QDBusVariant>
 
 #include "qofono_global.h"
+//! This class is used to access ofono radio settings API
+/*!
+ * The API is documented in
+ * http://git.kernel.org/?p=network/ofono/ofono.git;a=blob_plain;f=doc/radio-settings-api.txt
+ */
 
 class QOfonoRadioSettingsPrivate;
 class QOFONOSHARED_EXPORT QOfonoRadioSettings : public QObject

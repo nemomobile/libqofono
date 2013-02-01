@@ -46,6 +46,11 @@
 #include "dbustypes.h"
 
 #include "qofono_global.h"
+//! This class is used to access ofono network operator API
+/*!
+ * The API is documented in
+ * http://git.kernel.org/?p=network/ofono/ofono.git;a=blob_plain;f=doc/network-api.txt
+ */
 
 class QOfonoNetworkRegistrationPrivate;
 

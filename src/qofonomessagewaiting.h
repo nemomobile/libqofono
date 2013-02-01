@@ -44,6 +44,12 @@
 #include <QObject>
 #include <QDBusVariant>
 #include "qofono_global.h"
+//! This class is used to access ofono message waiting API
+/*!
+ * oFono message manager API is documented in
+ * http://git.kernel.org/?p=network/ofono/ofono.git;a=blob_plain;f=doc/message-waiting-api.txt
+ */
+
 class QOfonoMessageWaitingPrivate;
 class QOFONOSHARED_EXPORT QOfonoMessageWaiting : public QObject
 {

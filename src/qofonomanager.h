@@ -47,6 +47,11 @@
 #include "dbustypes.h"
 
 #include "qofono_global.h"
+//! This class is used to access ofono connman context API
+/*!
+ * The API is documented in
+ * http://git.kernel.org/?p=network/ofono/ofono.git;a=blob;f=doc/manager-api.txt
+ */
 
 class QOfonoManagerPrivate;
 class QOFONOSHARED_EXPORT QOfonoManager : public QObject

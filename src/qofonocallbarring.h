@@ -45,6 +45,11 @@
 #include <QDBusVariant>
 
 #include "qofono_global.h"
+//! This class is used to access ofono call barring API
+/*!
+ * The API is documented in
+ * http://git.kernel.org/?p=network/ofono/ofono.git;a=blob_plain;f=doc/call-barring-api.txt
+ */
 
 class QOfonoCallBarringPrivate;
 class QOFONOSHARED_EXPORT QOfonoCallBarring : public QObject

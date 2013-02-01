@@ -45,6 +45,12 @@
 #include <QDBusVariant>
 
 #include "qofono_global.h"
+//! This class is used to access ofono cell broadcast API
+/*!
+ * The API is documented in
+ * http://git.kernel.org/?p=network/ofono/ofono.git;a=blob_plain;f=doc/smartmessaging-api.txt
+ */
+
 class QOfonoSmartMessagingPrivate;
 class QOFONOSHARED_EXPORT QOfonoSmartMessaging : public QObject
 {

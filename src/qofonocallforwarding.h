@@ -45,6 +45,11 @@
 #include <QDBusVariant>
 
 #include "qofono_global.h"
+//! This class is used to access ofono call forwarding API
+/*!
+ * The API is documented in
+ * http://git.kernel.org/?p=network/ofono/ofono.git;a=blob_plain;f=doc/call-forwarding-api.txt
+ */
 
 class QOfonoCallForwardingPrivate;
 class QOFONOSHARED_EXPORT QOfonoCallForwarding : public QObject

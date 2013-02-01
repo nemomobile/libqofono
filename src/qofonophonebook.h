@@ -44,6 +44,11 @@
 #include <QObject>
 #include <QDBusVariant>
 #include "qofono_global.h"
+//! This class is used to access ofono phonebook API
+/*!
+ * oFono phonebook API is documented in
+ * http://git.kernel.org/?p=network/ofono/ofono.git;a=blob_plain;f=doc/phonebook-api.txt
+ */
 
 class QOfonoPhonebookPrivate;
 class QOFONOSHARED_EXPORT QOfonoPhonebook : public QObject

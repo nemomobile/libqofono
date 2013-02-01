@@ -44,6 +44,12 @@
 #include <QObject>
 #include <QDBusVariant>
 #include "qofono_global.h"
+//! This class is used to access ofono voice call API
+/*!
+ * The API is documented in
+ * http://git.kernel.org/?p=network/ofono/ofono.git;a=blob;f=doc/voicecall-api.txt
+ */
+
 class QOfonoVoiceCallPrivate;
 class QOFONOSHARED_EXPORT QOfonoVoiceCall : public QObject
 {

@@ -44,6 +44,12 @@
 #include <QObject>
 #include <QDBusVariant>
 #include "qofono_global.h"
+//! This class is used to access ofono call volume API
+/*!
+ * The API is documented in
+ * http://git.kernel.org/?p=network/ofono/ofono.git;a=blob_plain;f=doc/call-volume-api.txt
+ */
+
 class QOfonoCallVolumePrivate;
 class QOFONOSHARED_EXPORT QOfonoCallVolume : public QObject
 {

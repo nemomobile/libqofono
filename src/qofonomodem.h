@@ -47,6 +47,12 @@
 #include "dbustypes.h"
 
 #include "qofono_global.h"
+//! This class is used to access an oFono modem object and its properties
+/*!
+ * oFono modem properties are documented in
+ * http://git.kernel.org/?p=network/ofono/ofono.git;a=blob_plain;f=doc/modem-api.txt
+ */
+
 class QOfonoModemPrivate;
 
 class QOFONOSHARED_EXPORT QOfonoModem : public QObject
