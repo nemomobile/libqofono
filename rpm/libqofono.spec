@@ -13,8 +13,8 @@ Version:    0.1
 Release:    3
 Group:      System/Libraries
 License:    LGPLv2.1
-URL:        https://github.com/lpotter/qofono
-Source0:    qofono-%{version}.tar.bz2
+URL:        https://github.com/nemomobile/libqofono
+Source0:    libqofono-%{version}.tar.bz2
 Source100:  libqofono.yaml
 Requires(post): /sbin/ldconfig
 Requires(postun): /sbin/ldconfig
@@ -54,7 +54,7 @@ This package contains qml test for ofono Qt bindings.
 
 
 %prep
-%setup -q -n qofono-%{version}
+%setup -q -n libqofono-%{version}
 
 # >> setup
 # << setup

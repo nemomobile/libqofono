@@ -4,9 +4,9 @@ Version: 0.1
 Release: 3
 Group: System/Libraries
 License: LGPLv2.1
-URL: https://github.com/lpotter/qofono
+URL: https://github.com/nemomobile/libqofono
 Sources:
-    - "qofono-%{version}.tar.bz2"
+    - "libqofono-%{version}.tar.bz2"
 Description: |
     This package contains Qt bindings for ofono cellular service
     interfaces.
@@ -15,7 +15,7 @@ PkgConfigBR:
     - QtDBus
 Configure: none
 Builder: qmake
-SetupOptions: "-q -n qofono-%{version}"
+SetupOptions: "-q -n libqofono-%{version}"
 Files:
     - "%{_libdir}/%{name}.so.*"
 
