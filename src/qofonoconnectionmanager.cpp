@@ -246,7 +246,7 @@ void QOfonoConnectionManager::onContextAdd(const QDBusObjectPath &path, const QV
 
 void QOfonoConnectionManager::onContextRemove(const QDBusObjectPath &path)
 {
-    if (!d_ptr->contexts.contains(path.path()))
+    if (d_ptr->contexts.contains(path.path()))
         d_ptr->contexts.removeOne(path.path());
     Q_EMIT contextRemoved(path.path());
     Q_EMIT contextsChanged(d_ptr->contexts);
