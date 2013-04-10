@@ -1,7 +1,7 @@
 Name: libqofono
 Summary: A library of Qt bindings for ofono
-Version: 0.1
-Release: 3
+Version: 0.2
+Release: 1
 Group: System/Libraries
 License: LGPLv2.1
 URL: https://github.com/nemomobile/libqofono
