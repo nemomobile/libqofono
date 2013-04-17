@@ -1,0 +1,7 @@
+prefix=/usr
+exec_prefix=$${prefix}
+
+DEPENDPATH += $${prefix}/include/qofono-qt5
+INCLUDEPATH += $${prefix}/include/qofono-qt5
+LIBS += -L $${exec_prefix}/lib -lqofono-qt5
+

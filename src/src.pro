@@ -9,8 +9,9 @@ QT       += dbus
 include(version.pri)
 
 QT       -= gui
+equals(QT_MAJOR_VERSION, 4): TARGET = $$qtLibraryTarget(qofono)
+equals(QT_MAJOR_VERSION, 5): TARGET = $$qtLibraryTarget(qofono-qt5)
 
-TARGET = qofono
 TEMPLATE = lib
 
 DEFINES += QOFONO_LIBRARY
@@ -150,9 +151,20 @@ HEADERS += $$DBUS_HEADERS \
     qofonosupplementaryservices.h \
     qofonotexttelephony.h
 
+equals(QT_MAJOR_VERSION, 4): {
+    headers.path = $$INSTALL_ROOT$$PREFIX/include/qofono
+    qtconfig.path = $$[QT_INSTALL_PREFIX]/share/qt4/mkspecs/features
+    qtconfig.files = qofono.prf
+}
+
+equals(QT_MAJOR_VERSION, 5): {
+    headers.path = $$INSTALL_ROOT$$PREFIX/include/qofono-qt5
+    qtconfig.path = $$[QT_INSTALL_PREFIX]/share/qt5/mkspecs/features
+    qtconfig.files = qofono-qt5.prf
+}
+
 target.path = $$INSTALL_ROOT$$PREFIX/lib
 headers.files = $$HEADERS
-headers.path = $$INSTALL_ROOT$$PREFIX/include/qofono
 
 dbusheaders.files = $$DBUS_HEADERS
 dbusheaders.path = $$INSTALL_ROOT$$PREFIX/include/qofono/dbus
@@ -165,8 +177,6 @@ CONFIG += create_pc create_prl
 QMAKE_PKGCONFIG_DESTDIR = pkgconfig
 QMAKE_PKGCONFIG_INCDIR = $$headers.path
 
-qtconfig.path = $$[QT_INSTALL_PREFIX]/share/qt4/mkspecs/features
-qtconfig.files = qofono.prf
 
 INSTALLS += target headers qtconfig dbusheaders xmlfiles
 

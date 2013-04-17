@@ -1,0 +1,8 @@
+* Wed Apr 17 2013 Lorn Potter <lorn.potter@jollamboile.com> - 0.3
+- change lib name and declarative install dir for qt5
+
+* Wed Apr 10 2013 Lorn Potter <lorn.potter@jollamobile.com> - 0.2
+- fixed removeContext function
+
+* Sat Feb 2 2013 Lorn Potter <lorn.potter@jollamobile.com> - 0.1
+- initial obs commit
