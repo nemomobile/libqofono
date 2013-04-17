@@ -5,13 +5,18 @@ CONFIG += plugin
 
 QT_VERSION=$$[QT_VERSION]
 
-contains( QT_VERSION, "^4.*" ) {
+equals(QT_MAJOR_VERSION, 4):{
     DEFINES += QT_VERSION_4
     QT += declarative
     PLUGIN_TYPE = declarative
-} else {
-    QT += quick
+    LIBS += -L../src -lqofono
 }
+
+equals(QT_MAJOR_VERSION, 5): {
+    QT += qml dbus
+    LIBS += -L../src -lqofono-qt5
+}
+
 SOURCES =  \ 
     qofonodeclarativeplugin.cpp 
 
@@ -19,14 +24,23 @@ HEADERS = \
     qofonodeclarativeplugin.h 
 
 INCLUDEPATH += ../src
-LIBS += -L../src -lqofono
 
 OTHER_FILES += \
     plugin.json qmldir
 #plugins.qmltypes
 
-target.path = $$[QT_INSTALL_IMPORTS]/MeeGo/QOfono
+equals(QT_MAJOR_VERSION, 4):{
+    qmldir.path = $$[QT_INSTALL_IMPORTS]/MeeGo/QOfono
+    target.path = $$[QT_INSTALL_IMPORTS]/MeeGo/QOfono
+}
+
+equals(QT_MAJOR_VERSION, 5): {
+    qmldir.path = $$[QT_INSTALL_QML]/MeeGo/QOfono
+    target.path = $$[QT_INSTALL_QML]/MeeGo/QOfono
+
+}
+
 qmldir.files += qmldir
-qmldir.path = $$[QT_INSTALL_IMPORTS]/MeeGo/QOfono
+
 
 INSTALLS += target qmldir
