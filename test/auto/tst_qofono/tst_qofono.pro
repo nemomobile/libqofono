@@ -6,14 +6,23 @@
 
 QT       += testlib dbus
 
-QT       -= gui
+equals(QT_MAJOR_VERSION, 4): {
+    QT -= gui
+    LIBS +=  -lqofono
+    TARGET = tst_qofonotest
+    target.path = $$INSTALL_ROOT$$PREFIX/lib/libqofono/tests
+}
+equals(QT_MAJOR_VERSION, 5): {
+    LIBS +=  -lqofono-qt5
+    TARGET = tst_qofonotest-qt5
+    target.path = $$INSTALL_ROOT$$PREFIX/lib/libqofono-qt5/tests
+}
 
-TARGET = tst_qofonotest
 CONFIG   += console
 CONFIG   -= app_bundle
 
 TEMPLATE = app
-LIBS += -L ../../../src -lqofono
+LIBS += -L ../../../src
 INCLUDEPATH += ../../../src
 
 SOURCES += tst_qofonotest.cpp
@@ -22,6 +31,5 @@ isEmpty(PREFIX) {
   PREFIX=/usr
 }
 
-target.path = $$INSTALL_ROOT$$PREFIX/lib/libqofono/tests
 INSTALLS += target
 

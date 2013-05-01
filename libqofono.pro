@@ -4,9 +4,7 @@ SUBDIRS += src \
     plugin \
     test/auto/tst_qofono
 
-QT_VERSION=$$[QT_VERSION]
-contains(QT_VERSION, "^4.*" ) {
+equals(QT_MAJOR_VERSION, 4):{
     SUBDIRS += ofonotest
-} else {
 }
 
