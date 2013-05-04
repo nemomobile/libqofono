@@ -13,7 +13,7 @@ equals(QT_MAJOR_VERSION, 4):{
 }
 
 equals(QT_MAJOR_VERSION, 5): {
-    QT += qml dbus
+    QT += quick
     LIBS += -L../src -lqofono-qt5
 }
 

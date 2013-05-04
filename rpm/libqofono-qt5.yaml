@@ -1,6 +1,6 @@
 Name: libqofono-qt5
 Summary: A library of Qt 5 bindings for ofono
-Version: 0.3
+Version: 0.5
 Release: 1
 Group: System/Libraries
 License: LGPLv2.1
@@ -19,10 +19,12 @@ Description: |
 PkgConfigBR:
     - Qt5Core
     - Qt5DBus
+    - Qt5Quick
+    - Qt5Test
 
 Configure: none
-Builder: qmake
-SetupOptions: "-q -n libqofono-%{version}"
+Builder: qmake5
+SetupOptions: "-q -n %{name}-%{version}"
 Files:
     - "%{_libdir}/%{name}.so.*"
 
@@ -49,7 +51,7 @@ SubPackages:
           - "%{_includedir}/qofono-qt5/*.h"
           - "%{_includedir}/qofono-qt5/dbus/ofono*.h"
           - "%{_includedir}/qofono-qt5/dbus/ofono*.xml"
-          - "%{_datadir}/qt4/mkspecs/features/qofono-qt5.prf"
+          - "%{_datadir}/qt5/mkspecs/features/qofono-qt5.prf"
 
     - Name: tests
       Summary: qml test app for the ofono Qt bindings

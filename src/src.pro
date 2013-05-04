@@ -150,8 +150,8 @@ HEADERS += $$DBUS_HEADERS \
     qofonosupplementaryservices.h \
     qofonotexttelephony.h
 
-equals(QT_MAJOR_VERSION, 4): {
     QT -= gui
+equals(QT_MAJOR_VERSION, 4): {
     headers.path = $$INSTALL_ROOT$$PREFIX/include/qofono
     qtconfig.path = $$[QT_INSTALL_PREFIX]/share/qt4/mkspecs/features
     qtconfig.files = qofono.prf

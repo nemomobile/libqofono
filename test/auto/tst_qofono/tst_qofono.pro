@@ -5,9 +5,9 @@
 #-------------------------------------------------
 
 QT       += testlib dbus
+QT -= gui
 
 equals(QT_MAJOR_VERSION, 4): {
-    QT -= gui
     LIBS +=  -lqofono
     TARGET = tst_qofonotest
     target.path = $$INSTALL_ROOT$$PREFIX/lib/libqofono/tests
