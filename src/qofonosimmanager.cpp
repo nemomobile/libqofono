@@ -235,36 +235,69 @@ bool QOfonoSimManager::barredDialing() const
         return false;
 }
 
-
 void QOfonoSimManager::changePin(const QString &pintype, const QString &oldpin, const QString &newpin)
 {
-    if (d_ptr->simManager)
-        d_ptr->simManager->ChangePin(pintype,oldpin,newpin);
-
+    if (d_ptr->simManager) {
+        QDBusPendingReply<> reply =d_ptr->simManager->ChangePin(pintype,oldpin,newpin);
+        if (reply.isError()) {
+            Q_EMIT changePinComplete(false);
+            qWarning() << reply.error().name() << reply.error().message();
+        } else {
+            Q_EMIT changePinComplete(true);
+        }
+    }
 }
 
 void QOfonoSimManager::enterPin(const QString &pintype, const QString &pin)
 {
-    if (d_ptr->simManager)
-        d_ptr->simManager->EnterPin(pintype,pin);
+    if (d_ptr->simManager) {
+        QDBusPendingReply<> reply =d_ptr->simManager->EnterPin(pintype,pin);
+        if (reply.isError()) {
+            Q_EMIT enterPinComplete(false);
+            qWarning() << reply.error().name() << reply.error().message();
+        } else {
+            Q_EMIT enterPinComplete(true);
+        }
+    }
 }
 
 void QOfonoSimManager::resetPin(const QString &pintype, const QString &puk, const QString &newpin)
 {
-    if (d_ptr->simManager)
-        d_ptr->simManager->ResetPin(pintype,puk,newpin);
+    if (d_ptr->simManager) {
+        QDBusPendingReply<> reply =d_ptr->simManager->ResetPin(pintype,puk,newpin);
+        if (reply.isError()) {
+            Q_EMIT resetPinComplete(false);
+            qWarning() << reply.error().name() << reply.error().message();
+        } else {
+            Q_EMIT resetPinComplete(true);
+        }
+    }
 }
 
 void QOfonoSimManager::lockPin(const QString &pintype, const QString &pin)
 {
-    if (d_ptr->simManager)
-        d_ptr->simManager->LockPin(pintype,pin);
+    if (d_ptr->simManager) {
+        QDBusPendingReply<> reply =d_ptr->simManager->LockPin(pintype,pin);
+        if (reply.isError()) {
+            Q_EMIT unlockPinComplete(false);
+            qWarning() << reply.error().name() << reply.error().message();
+        } else {
+            Q_EMIT unlockPinComplete(true);
+        }
+    }
 }
 
 void QOfonoSimManager::unlockPin(const QString &pintype, const QString &pin)
 {
-    if (d_ptr->simManager)
-        d_ptr->simManager->UnlockPin(pintype,pin);
+    if (d_ptr->simManager) {
+        QDBusPendingReply<> reply =d_ptr->simManager->UnlockPin(pintype,pin);
+        if (reply.isError()) {
+            Q_EMIT unlockPinComplete(false);
+            qWarning() << reply.error().name() << reply.error().message();
+        } else {
+            Q_EMIT unlockPinComplete(true);
+        }
+    }
 }
 
 QByteArray QOfonoSimManager::getIcon(quint8 id)

@@ -106,6 +106,12 @@ Q_SIGNALS:
       void fixedDialingChanged(bool fixedDialing);
       void barredDialingChanged(bool barredDialing);
 
+      void enterPinComplete(bool success);
+      void resetPinComplete(bool success);
+      void changePinComplete(bool success);
+      void lockPinComplete(bool success);
+      void unlockPinComplete(bool success);
+
 public slots:
       void changePin(const QString &pintype, const QString &oldpin, const QString &newpin);
       void enterPin(const QString &pintype, const QString &pin);

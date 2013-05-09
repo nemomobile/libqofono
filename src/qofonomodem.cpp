@@ -241,3 +241,8 @@ void QOfonoModem::propertyChanged(const QString& property, const QDBusVariant& d
         Q_EMIT interfacesChanged(value.value<QStringList>());
 
 }
+
+bool QOfonoModem::isValid() const
+{
+    return d_ptr->modem->isValid();
+}

@@ -104,6 +104,8 @@ public:
     QStringList features() const;
     QStringList interfaces() const;
 
+    bool isValid() const;
+
 Q_SIGNALS:
     void poweredChanged(bool powered);
     void onlineChanged(bool online);
