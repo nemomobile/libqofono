@@ -8,8 +8,15 @@ QT       += dbus
 
 include(version.pri)
 
-equals(QT_MAJOR_VERSION, 4): TARGET = $$qtLibraryTarget(qofono)
-equals(QT_MAJOR_VERSION, 5): TARGET = $$qtLibraryTarget(qofono-qt5)
+equals(QT_MAJOR_VERSION, 4): {
+    TARGET = $$qtLibraryTarget(qofono)
+    pkgconfig.path = $$INSTALL_ROOT$$PREFIX/lib/pkgconfig
+}
+
+equals(QT_MAJOR_VERSION, 5): {
+    TARGET = $$qtLibraryTarget(qofono-qt5)
+    pkgconfig.path = $$INSTALL_ROOT$$PREFIX/lib/pkgconfig-qt5
+}
 
 TEMPLATE = lib
 
@@ -181,7 +188,6 @@ CONFIG += create_pc create_prl
 QMAKE_PKGCONFIG_DESTDIR = pkgconfig
 QMAKE_PKGCONFIG_INCDIR = $$headers.path
 
-pkgconfig.path = $$INSTALL_ROOT$$PREFIX/lib/pkgconfig
 
 INSTALLS += target headers qtconfig dbusheaders xmlfiles pkgconfig
 
