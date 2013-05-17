@@ -3,16 +3,6 @@
 ** Copyright (C) 2013 Jolla Ltd
 ** Contact: lorn.potter@gmail.com
 **
-**
-** $QT_BEGIN_LICENSE:LGPL$
-** Commercial License Usage
-** Licensees holding valid commercial Qt licenses may use this file in
-** accordance with the commercial license agreement provided with the
-** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and Digia.  For licensing terms and
-** conditions see http://qt.digia.com/licensing.  For further information
-** use the contact form at http://qt.digia.com/contact-us.
-**
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
 ** General Public License version 2.1 as published by the Free Software
@@ -20,21 +10,6 @@
 ** packaging of this file.  Please review the following information to
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
-**
-** In addition, as a special exception, Digia gives you certain additional
-** rights.  These rights are described in the Digia Qt LGPL Exception
-** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
-**
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
-**
-**
-** $QT_END_LICENSE$
 **
 ****************************************************************************/
 
@@ -73,7 +48,7 @@ void Tst_qofonoTest::testManager()
     QOfonoManager manager;
     QStringList modems = manager.modems();
     QVERIFY(!modems.isEmpty());
-//TODO modemAdded, modemRemoved signals ?
+    //TODO modemAdded, modemRemoved signals ?
 
 }
 
@@ -116,10 +91,10 @@ void Tst_qofonoTest::testConnectionManager()
 
     if (!connman.contexts().isEmpty()) {
         Q_FOREACH(const QString &path, connman.contexts()) {
-         connman.removeContext(path);
+            connman.removeContext(path);
         }
     }
-// signals
+    // signals
     QVERIFY(connman.contexts().isEmpty());
     QSignalSpy spy(&connman, SIGNAL(contextAdded(QString)));
     connman.addContext("internet");
@@ -151,7 +126,7 @@ void Tst_qofonoTest::testConnectionManager()
     QList<QVariant> argumentsspy_roaming2;
     argumentsspy_roaming2 = spy_roaming.takeFirst();
     if (manager.modems()[0].contains("phonesim"))
-            QEXPECT_FAIL("","seems to nt work on phonesim",Continue);
+        QEXPECT_FAIL("","seems to nt work on phonesim",Continue);
     QCOMPARE(argumentsspy_roaming[0].toBool(), false);
 
     // powered
@@ -160,8 +135,8 @@ void Tst_qofonoTest::testConnectionManager()
     connman.setPowered(true);
 
     QTest::qWait(1000);
-//    if (manager.modems()[0].contains("phonesim"))
-//            QEXPECT_FAIL("","seems to nt work on phonesim",Continue);
+    //    if (manager.modems()[0].contains("phonesim"))
+    //            QEXPECT_FAIL("","seems to nt work on phonesim",Continue);
     QCOMPARE(spy_powered.count(),1);
     QList<QVariant> argumentsspy_powered;
     argumentsspy_powered = spy_powered.takeFirst();
@@ -174,7 +149,7 @@ void Tst_qofonoTest::testConnectionManager()
     argumentsspy_powered2 = spy_powered.takeFirst();
     QCOMPARE(argumentsspy_powered[0].toBool(), false);
 
-////
+    ////
 
     QVERIFY(!connman.contexts().isEmpty());
     QSignalSpy spy2(&connman, SIGNAL(contextRemoved(QString)));
@@ -187,55 +162,55 @@ void Tst_qofonoTest::testConnectionManager()
 
     QVERIFY(connman.contexts().isEmpty());
 
-//TODO other signals
+    //TODO other signals
 }
 
 void Tst_qofonoTest::testContextConnection()
 {
-        QOfonoManager manager;
-        QStringList modems = manager.modems();
+    QOfonoManager manager;
+    QStringList modems = manager.modems();
 
-        QOfonoConnectionManager connman;
-        connman.setModemPath(modems[0]);
+    QOfonoConnectionManager connman;
+    connman.setModemPath(modems[0]);
 
-        QOfonoConnectionContext connContext;
-        QStringList contextList = connman.contexts();
-        QVERIFY(contextList.isEmpty());
+    QOfonoConnectionContext connContext;
+    QStringList contextList = connman.contexts();
+    QVERIFY(contextList.isEmpty());
 
-        connman.addContext("internet");
-        QTest::qWait(1000);
+    connman.addContext("internet");
+    QTest::qWait(1000);
 
-        contextList = connman.contexts();
+    contextList = connman.contexts();
 
-        QVERIFY(!contextList.isEmpty());
+    QVERIFY(!contextList.isEmpty());
 
-        connContext.setContextPath(contextList[0]);
+    connContext.setContextPath(contextList[0]);
 
-        QVERIFY(!connContext.contextPath().isEmpty());
+    QVERIFY(!connContext.contextPath().isEmpty());
 
-        QVERIFY(connContext.accessPointName().isEmpty());
-        QSignalSpy spy1(&connContext, SIGNAL(accessPointNameChanged(QString)));
-        connContext.setAccessPointName("Jolla");
-        QTest::qWait(1000);
-        QCOMPARE(spy1.count(),1);
-        QList<QVariant> arguments1;
-        arguments1 = spy1.takeFirst();
-        QCOMPARE(arguments1[0].toString(),QString("Jolla"));
+    QVERIFY(connContext.accessPointName().isEmpty());
+    QSignalSpy spy1(&connContext, SIGNAL(accessPointNameChanged(QString)));
+    connContext.setAccessPointName("Jolla");
+    QTest::qWait(1000);
+    QCOMPARE(spy1.count(),1);
+    QList<QVariant> arguments1;
+    arguments1 = spy1.takeFirst();
+    QCOMPARE(arguments1[0].toString(),QString("Jolla"));
 
-        if (!connman.contexts().isEmpty()) {
-            Q_FOREACH(const QString &path, connman.contexts()) {
-             connman.removeContext(path);
-            }
+    if (!connman.contexts().isEmpty()) {
+        Q_FOREACH(const QString &path, connman.contexts()) {
+            connman.removeContext(path);
         }
+    }
 
-//        QVERIFY(!connContext.active());
-//        QSignalSpy spy2(&connContext, SIGNAL(activeChanged(bool)));
-//        connContext.setActive(true);
-//        QTest::qWait(1000);
-//        QCOMPARE(spy2.count(),1);
+    //        QVERIFY(!connContext.active());
+    //        QSignalSpy spy2(&connContext, SIGNAL(activeChanged(bool)));
+    //        connContext.setActive(true);
+    //        QTest::qWait(1000);
+    //        QCOMPARE(spy2.count(),1);
 
-//        QList<QVariant> arguments2 = spy2.takeFirst();
-//        QCOMPARE(arguments2[0].toBool(),true);
+    //        QList<QVariant> arguments2 = spy2.takeFirst();
+    //        QCOMPARE(arguments2[0].toBool(),true);
 
 }
 
@@ -259,9 +234,9 @@ void Tst_qofonoTest::testNetworkRegistration()
     QVERIFY(!netreg.mcc().isEmpty());
     QVERIFY(!netreg.mnc().isEmpty());
 
-//    QVERIFY(!netreg.cellId() != 0);
-//    QVERIFY(!netreg.strength() != 0);
-//    QVERIFY(!netreg.baseStation().isEmpty());
+    //    QVERIFY(!netreg.cellId() != 0);
+    //    QVERIFY(!netreg.strength() != 0);
+    //    QVERIFY(!netreg.baseStation().isEmpty());
 }
 
 QTEST_MAIN(Tst_qofonoTest)
