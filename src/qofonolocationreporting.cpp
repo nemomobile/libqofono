@@ -1,0 +1,100 @@
+/****************************************************************************
+**
+** Copyright (C) 2013 Jolla Ltd.
+** Contact: lorn.potter@jollamobile.com
+**
+** GNU Lesser General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU Lesser
+** General Public License version 2.1 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU Lesser General Public License version 2.1 requirements
+** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+**
+****************************************************************************/
+
+#include "qofonolocationreporting.h"
+#include "dbus/ofonolocationreporting.h"
+#include <unistd.h>
+
+class QOfonoLocationReportingPrivate
+{
+public:
+    QOfonoLocationReportingPrivate();
+    QString modemPath;
+    OfonoLocationReporting *ofonoLocationReporting;
+    QVariantMap properties;
+
+};
+
+QOfonoLocationReportingPrivate::QOfonoLocationReportingPrivate() :
+    modemPath(QString())
+  , ofonoLocationReporting(0)
+{
+}
+
+QOfonoLocationReporting::QOfonoLocationReporting(QObject *parent) :
+    QObject(parent)
+  , d_ptr(new QOfonoLocationReportingPrivate)
+{
+}
+
+QOfonoLocationReporting::~QOfonoLocationReporting()
+{
+    delete d_ptr;
+}
+
+void QOfonoLocationReporting::setModemPath(const QString &path)
+{
+    if (!d_ptr->ofonoLocationReporting) {
+        d_ptr->modemPath = path;
+        d_ptr->ofonoLocationReporting = new OfonoLocationReporting("org.ofono", path, QDBusConnection::systemBus(),this);
+
+        if (d_ptr->ofonoLocationReporting) {
+
+            QDBusReply<QVariantMap> reply;
+            reply = d_ptr->ofonoLocationReporting->GetProperties();
+            d_ptr->properties = reply.value();
+        }
+    }
+}
+
+QString QOfonoLocationReporting::modemPath() const
+{
+    return d_ptr->modemPath;
+}
+
+QString QOfonoLocationReporting::type() const
+{
+    if (d_ptr->ofonoLocationReporting) {
+        return d_ptr->properties["Type"].value<QString>();
+    }
+    return QString();
+}
+
+bool QOfonoLocationReporting::enabled() const
+{
+    if (d_ptr->ofonoLocationReporting) {
+        return d_ptr->properties["Enabled"].value<bool>();
+    }
+    return false;
+}
+
+void QOfonoLocationReporting::release()
+{
+    if (d_ptr->ofonoLocationReporting)
+        d_ptr->ofonoLocationReporting->Release();
+}
+
+int QOfonoLocationReporting::request()
+{
+    if (d_ptr->ofonoLocationReporting) {
+        QDBusPendingReply<QDBusUnixFileDescriptor> reply = d_ptr->ofonoLocationReporting->Request();
+        if (!reply.isError() && reply.value().isValid()) {
+            return dup(reply.value().fileDescriptor()); //pass on fd
+        } else {
+            qDebug() << Q_FUNC_INFO << reply.error().message();
+        }
+    }
+    return 0;
+}

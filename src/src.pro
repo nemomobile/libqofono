@@ -39,6 +39,10 @@ XML_FILES += \
     dbus/ofono_cell_broadcast.xml \
     dbus/ofono_connection_context.xml \
     dbus/ofono_connection_manager.xml \
+    dbus/ofono_handsfree.xml \
+    dbus/ofono_handsfree_audio_agent.xml \
+    dbus/ofono_handsfree_audio_card.xml \
+    dbus/ofono_handsfree_audio_manager.xml \
     dbus/ofono_manager.xml \
     dbus/ofono_message.xml \
     dbus/ofono_message_manager.xml \
@@ -60,7 +64,8 @@ XML_FILES += \
 
 OTHER_FILES += $$XML_FILES\
     version.pri \
-    qofono.prf
+    qofono.prf \
+    qofono-qt5.prf
 
 INSTALLS += target
 
@@ -75,6 +80,10 @@ DBUS_FILES +=\
     dbus/ofonocellbroadcast\
     dbus/ofonoconnectioncontext\
     dbus/ofonoconnectionmanager\
+    dbus/ofonohandsfree\
+    dbus/ofonohandsfreeaudioagent\
+    dbus/ofonohandsfreeaudiocard\
+    dbus/ofonohandsfreeaudiomanager\
     dbus/ofonomanager\
     dbus/ofonomessage \
     dbus/ofonomessagemanager\
@@ -112,6 +121,10 @@ SOURCES += $$DBUS_SOURCES\
     qofonocallmeter.cpp \
     qofonocallsettings.cpp \
     qofonocallvolume.cpp \
+    qofonohandsfree.cpp \
+    qofonohandsfreeaudioagent.cpp \
+    qofonohandsfreeaudiocard.cpp \
+    qofonohandsfreeaudiomanager.cpp\
     qofonomessage.cpp \
     qofonomessagemanager.cpp \
     qofonomessagewaiting.cpp \
@@ -144,6 +157,10 @@ HEADERS += $$DBUS_HEADERS \
     qofonocallmeter.h \
     qofonocallsettings.h \
     qofonocallvolume.h \
+    qofonohandsfree.h \
+    qofonohandsfreeaudioagent.h \
+    qofonohandsfreeaudiocard.h \
+    qofonohandsfreeaudiomanager.h\
     qofonomessage.h \
     qofonomessagemanager.h \
     qofonomessagewaiting.h \

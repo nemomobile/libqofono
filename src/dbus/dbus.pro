@@ -22,9 +22,13 @@
 #system(qdbusxml2cpp -c OfonoTextTelephony -p ofonotexttelephony -N ofono_text_telephony.xml)
 #system(qdbusxml2cpp -c OfonoVoiceCall -p ofonovoicecall -N ofono_voice_call.xml)
 
-## these have types that qt doesn't understand. to regenerate them, uncomment these, and then add #include "dbustypes.h"
-##system(qdbusxml2cpp -c OfonoManager -p ofonomanager -N ofono_manager.xml)
-##system(qdbusxml2cpp -c OfonoConnectionManager -p ofonoconnectionmanager -N ofono_connection_manager.xml)
-##system(qdbusxml2cpp -c OfonoMessageManager -p ofonomessagemanager -N ofono_message_manager.xml)
-##system(qdbusxml2cpp -c OfonoNetworkRegistration -p ofononetworkregistration -N ofono_network_registration.xml)
-##system(qdbusxml2cpp -c OfonoVoiceCallManager -p ofonovoicecallmanager -N ofono_voicecallmanager.xml)
+##system(qdbusxml2cpp -c OfonoManager -p ofonomanager -N -i dbustypes.h ofono_manager.xml)
+##system(qdbusxml2cpp -c OfonoConnectionManager -p ofonoconnectionmanager -N -i dbustypes.h ofono_connection_manager.xml)
+##system(qdbusxml2cpp -c OfonoMessageManager -p ofonomessagemanager -N -i dbustypes.h ofono_message_manager.xml)
+##system(qdbusxml2cpp -c OfonoNetworkRegistration -p ofononetworkregistration -N -i dbustypes.h ofono_network_registration.xml)
+##system(qdbusxml2cpp -c OfonoVoiceCallManager -p ofonovoicecallmanager -N -i dbustypes.h ofono_voicecallmanager.xml)
+
+system(qdbusxml2cpp -c OfonoHandsfree -p ofonohandsfree -N ofono_handsfree.xml)
+system(qdbusxml2cpp -c OfonoHandsfreeAudioAgent -p ofonohandsfreeaudioagent -N ofono_handsfree_audio_agent.xml)
+system(qdbusxml2cpp -c OfonoHandsfreeAudioCard -p ofonohandsfreeaudiocard -N ofono_handsfree_audio_card.xml)
+system(qdbusxml2cpp -c OfonoHandsfreeAudioManager -p ofonohandsfreeaudiomanager -N -i dbustypes.h ofono_handsfree_audio_manager.xml)

@@ -16,5 +16,7 @@ equals(QT_MAJOR_VERSION, 4):  {
 
 equals(QT_MAJOR_VERSION, 5):  {
     OTHER_FILES += rpm/libqofono-qt5.spec \
-                   rpm/libqofono-qt5.yaml
+                   rpm/libqofono-qt5.yaml \
+                    TODO \
+                    README
 }

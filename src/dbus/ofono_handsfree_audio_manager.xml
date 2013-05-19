@@ -1,0 +1,29 @@
+<!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN"
+"http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
+<node name="">
+	<interface name="org.ofono.HandsfreeAudioManager">
+		<method name="GetProperties">
+			<arg type="a{sv}" direction="out"/>
+			<annotation name="org.qtproject.QtDBus.QtTypeName.Out0" value="QVariantMap"/>
+		</method>
+            <method name="GetCards">
+            <arg type="a(oa{sv})" direction="out"/>
+            <annotation name="org.qtproject.QtDBus.QtTypeName.Out0" value="ObjectPathProperties"/>
+        </method>
+		<method name="Register">
+			<arg type="o" direction="in"/>
+            <arg type="ay" direction="in"/>
+		</method>
+		<method name="Unregister">
+			<arg type="o" direction="in"/>
+		</method>
+		<signal name="CardAdded">
+			<arg type="o"/>
+			<arg type="a{sv}"/>
+			<annotation name="org.qtproject.QtDBus.QtTypeName.In1" value="QVariantMap"/>
+		</signal>
+        <signal name="CardRemoved">
+			<arg type="o"/>
+		</signal>
+	</interface>
+</node>
