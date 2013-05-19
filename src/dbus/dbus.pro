@@ -1,5 +1,4 @@
 
-#system(qdbusxml2cpp -c OfonoAssistedSatelliteNavigation -p ofonoassistedsatellitenavigation -N ofono_assisted_satellite_navigation.xml)
 #system(qdbusxml2cpp -c OfonoAudioSettings -p ofonoaudiosettings -N ofono_audio_settings.xml)
 #system(qdbusxml2cpp -c OfonoCallBarring -p ofonocallbarring -N ofono_call_barring.xml)
 #system(qdbusxml2cpp -c OfonoCallForwarding -p ofonocallforwarding -N ofono_call_forwarding.xml)
@@ -28,7 +27,13 @@
 ##system(qdbusxml2cpp -c OfonoNetworkRegistration -p ofononetworkregistration -N -i dbustypes.h ofono_network_registration.xml)
 ##system(qdbusxml2cpp -c OfonoVoiceCallManager -p ofonovoicecallmanager -N -i dbustypes.h ofono_voicecallmanager.xml)
 
-system(qdbusxml2cpp -c OfonoHandsfree -p ofonohandsfree -N ofono_handsfree.xml)
-system(qdbusxml2cpp -c OfonoHandsfreeAudioAgent -p ofonohandsfreeaudioagent -N ofono_handsfree_audio_agent.xml)
-system(qdbusxml2cpp -c OfonoHandsfreeAudioCard -p ofonohandsfreeaudiocard -N ofono_handsfree_audio_card.xml)
-system(qdbusxml2cpp -c OfonoHandsfreeAudioManager -p ofonohandsfreeaudiomanager -N -i dbustypes.h ofono_handsfree_audio_manager.xml)
+#system(qdbusxml2cpp -c OfonoHandsfree -p ofonohandsfree -N ofono_handsfree.xml)
+#system(qdbusxml2cpp -c OfonoHandsfreeAudioAgent -p ofonohandsfreeaudioagent -N ofono_handsfree_audio_agent.xml)
+#system(qdbusxml2cpp -c OfonoHandsfreeAudioCard -p ofonohandsfreeaudiocard -N ofono_handsfree_audio_card.xml)
+#system(qdbusxml2cpp -c OfonoHandsfreeAudioManager -p ofonohandsfreeaudiomanager -N -i dbustypes.h ofono_handsfree_audio_manager.xml)
+
+#system(qdbusxml2cpp -c OfonoAssistedSatelliteNavigation -p ofonoassistedsatellitenavigation -N ofono_assisted_satellite_navigation.xml)
+#system(qdbusxml2cpp -c OfonoPositioningRequestAgent -p ofonopositioningrequestagent ofono_positioning_request_agent.xml )
+#system(qdbusxml2cpp -c OfonoLocationReporting -p ofonolocationreporting ofono_location_reporting.xml )
+
+

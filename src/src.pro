@@ -84,6 +84,7 @@ DBUS_FILES +=\
     dbus/ofonohandsfreeaudioagent\
     dbus/ofonohandsfreeaudiocard\
     dbus/ofonohandsfreeaudiomanager\
+    dbus/ofonolocationreporting\
     dbus/ofonomanager\
     dbus/ofonomessage \
     dbus/ofonomessagemanager\
@@ -92,6 +93,7 @@ DBUS_FILES +=\
     dbus/ofononetworkoperator\
     dbus/ofononetworkregistration\
     dbus/ofonophonebook\
+    dbus/ofonopositioningrequestagent\
     dbus/ofonopushnotification\
     dbus/ofonoradiosettings\
     dbus/ofonosimmanager\
@@ -111,6 +113,7 @@ SOURCES += $$DBUS_SOURCES\
         qofono.cpp \
     qofonomanager.cpp \
     qofonomodem.cpp \
+    qofonoassistedsatellitenavigation.cpp \
     qofonoconnectionmanager.cpp \
     qofonoconnectioncontext.cpp \
     qofononetworkregistration.cpp \
@@ -125,11 +128,13 @@ SOURCES += $$DBUS_SOURCES\
     qofonohandsfreeaudioagent.cpp \
     qofonohandsfreeaudiocard.cpp \
     qofonohandsfreeaudiomanager.cpp\
+    qofonolocationreporting.cpp \
     qofonomessage.cpp \
     qofonomessagemanager.cpp \
     qofonomessagewaiting.cpp \
     qofonosimmanager.cpp \
     qofonophonebook.cpp \
+    qofonopositioningrequestagent.cpp \
     qofonosmartmessaging.cpp \
     qofonosmartmessagingagent.cpp \
     qofonovoicecall.cpp \
@@ -147,6 +152,7 @@ HEADERS += $$DBUS_HEADERS \
     qofonomanager.h \
     dbustypes.h \
     qofonomodem.h \
+    qofonoassistedsatellitenavigation.h \
     qofonoconnectionmanager.h \
     qofonoconnectioncontext.h \
     qofononetworkregistration.h \
@@ -154,6 +160,7 @@ HEADERS += $$DBUS_HEADERS \
     qofonocellbroadcast.h \
     qofonocallbarring.h \
     qofonocallforwarding.h \
+    qofonolocationreporting.h \
     qofonocallmeter.h \
     qofonocallsettings.h \
     qofonocallvolume.h \
@@ -166,6 +173,7 @@ HEADERS += $$DBUS_HEADERS \
     qofonomessagewaiting.h \
     qofonosimmanager.h \
     qofonophonebook.h \
+    qofonopositioningrequestagent.h \
     qofonosmartmessaging.h \
     qofonosmartmessagingagent.h \
     qofonovoicecall.h \

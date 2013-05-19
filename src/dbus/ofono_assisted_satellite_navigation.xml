@@ -2,7 +2,7 @@
 "http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
 <node name="">
 	<interface name="org.ofono.AssistedSatelliteNavigation">
-		<method name="SendPositioning">
+        <method name="SendPositioningElement">
 			<arg type="s" direction="in"/>
 		</method>
 		<method name="RegisterPositioningRequestAgent">

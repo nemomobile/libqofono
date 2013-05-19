@@ -1,0 +1,91 @@
+<!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN"
+"http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
+<node name="">
+        <interface name="org.ofono.SimToolkitAgent">
+                <method name="RequestSelection">
+                    <annotation name="org.qtproject.QtDBus.QtTypeName.In2" value="OfonoMenuEntriesList"/>
+                    <arg type="s" direction="in" name="title" />
+                    <arg type="y" direction="in" name="icon" />
+                    <arg type="a(sy)" direction="in" name="items" />
+                    <arg type="n" direction="in" name="defaultValue" />
+                    <arg type="y" direction="out"/>
+                </method>
+                <method name="DisplayText">
+                    <arg type="s" direction="in" name="title" />
+                    <arg type="y" direction="in" name="icon" />
+                    <arg type="b" direction="in" name="urgent" />
+                </method>
+                <method name="RequestInput">
+                    <arg type="s" direction="in" name="title" />
+                    <arg type="y" direction="in" name="icon" />
+                    <arg type="s" direction="in" name="defaultValue" />
+                    <arg type="y" direction="in" name="minChars" />
+                    <arg type="y" direction="in" name="maxChars" />
+                    <arg type="b" direction="in" name="hideTyping" />
+                    <arg type="s" direction="out"/>
+                </method>
+                <method name="RequestDigits">
+                    <arg type="s" direction="in" name="title" />
+                    <arg type="y" direction="in" name="icon" />
+                    <arg type="s" direction="in" name="defaultValue" />
+                    <arg type="y" direction="in" name="minChars" />
+                    <arg type="y" direction="in" name="maxChars" />
+                    <arg type="b" direction="in" name="hideTyping" />
+                    <arg type="s" direction="out"/>
+                </method>
+                <method name="RequestKey">
+                    <arg type="s" direction="in" name="title" />
+                    <arg type="y" direction="in" name="icon" />
+                    <arg type="s" direction="out"/>
+                </method>
+                <method name="RequestDigit">
+                    <arg type="s" direction="in" name="title" />
+                    <arg type="y" direction="in" name="icon" />
+                    <arg type="s" direction="out"/>
+                </method>
+                <method name="RequestConfirmation">
+                    <arg type="s" direction="in" name="title" />
+                    <arg type="y" direction="in" name="icon" />
+                    <arg type="b" direction="out"/>
+                </method>
+                <method name="ConfirmCallSetup">
+                    <arg type="s" direction="in" name="info" />
+                    <arg type="y" direction="in" name="icon" />
+                    <arg type="b" direction="out"/>
+                </method>
+                <method name="PlayTone">
+                    <arg type="s" direction="in" name="tone" />
+                    <arg type="s" direction="in" name="text" />
+                    <arg type="y" direction="in" name="icon" />
+                </method>
+                <method name="LoopTone">
+                    <arg type="s" direction="in" name="tone" />
+                    <arg type="s" direction="in" name="text" />
+                    <arg type="y" direction="in" name="icon" />
+                </method>
+                <method name="DisplayActionInformation">
+                    <arg type="s" direction="in" name="text" />
+                    <arg type="y" direction="in" name="icon" />
+                </method>
+                <method name="DisplayAction">
+                    <arg type="s" direction="in" name="text" />
+                    <arg type="y" direction="in" name="icon" />
+                </method>
+                <method name="ConfirmLaunchBrowser">
+                    <arg type="s" direction="in" name="info" />
+                    <arg type="y" direction="in" name="icon" />
+                    <arg type="s" direction="in" name="url" />
+                    <arg type="b" direction="out"/>
+                </method>
+                <method name="ConfirmOpenChannel">
+                    <arg type="s" direction="in" name="info" />
+                    <arg type="y" direction="in" name="icon" />
+                    <arg type="b" direction="out"/>
+                </method>
+                <method name="Cancel">
+                </method>
+                <method name="Release">
+                </method>
+        </interface>
+</node>
+

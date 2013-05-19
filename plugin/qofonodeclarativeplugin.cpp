@@ -56,6 +56,10 @@
 #include "qofonohandsfreeaudiocard.h"
 #include "qofonohandsfreeaudiomanager.h"
 
+#include "qofonoassistedsatellitenavigation.h"
+#include "qofonopositioningrequestagent.h"
+#include "qofonolocationreporting.h"
+
 
 void QOfonoDeclarativePlugin::registerTypes(const char *uri)
 {
@@ -100,6 +104,10 @@ void QOfonoDeclarativePlugin::registerTypes(const char *uri)
     qmlRegisterType<QOfonoHandsfreeAudioAgent>(uri,0,2,"OfonoHandsfreeAudioAgent");
     qmlRegisterType<QOfonoHandsfreeAudioCard>(uri,0,2,"OfonoHandsfreeAudioCard");
     qmlRegisterType<QOfonoHandsfreeAudioManager>(uri,0,2,"OfonoHandsfreeAudioManager");
+
+    qmlRegisterType<QOfonoAssistedSatelliteNavigation>(uri,0,2,"OfonoAssistedSatelliteNavigation");
+    qmlRegisterType<QOfonoPositioningRequestAgent>(uri,0,2,"OfonoPositioningRequestAgent");
+    qmlRegisterType<QOfonoLocationReporting>(uri,0,2,"OfonoLocationReporting");
 
 }
 

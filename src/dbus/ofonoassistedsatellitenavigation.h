@@ -8,8 +8,8 @@
  * Do not edit! All changes made to it will be lost.
  */
 
-#ifndef OFONOASSISTEDSATELLITENAVIGATION_H_1357940298
-#define OFONOASSISTEDSATELLITENAVIGATION_H_1357940298
+#ifndef OFONOASSISTEDSATELLITENAVIGATION_H_1368991021
+#define OFONOASSISTEDSATELLITENAVIGATION_H_1368991021
 
 #include <QtCore/QObject>
 #include <QtCore/QByteArray>
@@ -43,11 +43,11 @@ public Q_SLOTS: // METHODS
         return asyncCallWithArgumentList(QLatin1String("RegisterPositioningRequestAgent"), argumentList);
     }
 
-    inline QDBusPendingReply<> SendPositioning(const QString &in0)
+    inline QDBusPendingReply<> SendPositioningElement(const QString &in0)
     {
         QList<QVariant> argumentList;
         argumentList << QVariant::fromValue(in0);
-        return asyncCallWithArgumentList(QLatin1String("SendPositioning"), argumentList);
+        return asyncCallWithArgumentList(QLatin1String("SendPositioningElement"), argumentList);
     }
 
     inline QDBusPendingReply<> UnregisterPositioningRequestAgent(const QDBusObjectPath &in0)
