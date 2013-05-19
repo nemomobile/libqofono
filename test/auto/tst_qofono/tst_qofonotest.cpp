@@ -20,6 +20,11 @@
 #include "qofonoconnectioncontext.h"
 #include "qofonomodem.h"
 #include "qofononetworkregistration.h"
+#include "qofonohandsfree.h"
+#include "qofonohandsfreeaudiocard.h"
+
+#include "qofononetworkoperator.h"
+#include "qofononetworkregistration.h"
 
 // These auto tests require
 // phonesim or real modem
@@ -36,11 +41,14 @@ private Q_SLOTS:
     void testConnectionManager();
     void testContextConnection();
     void testNetworkRegistration();
+
+    void testHandsfree();
+    void testHandsfreeAudioCard();
+    void testNetworkOperator();
 };
 
 Tst_qofonoTest::Tst_qofonoTest()
 {
-
 }
 
 void Tst_qofonoTest::testManager()
@@ -85,17 +93,9 @@ void Tst_qofonoTest::testConnectionManager()
     QOfonoManager manager;
     QOfonoConnectionManager connman;
 
-    QVERIFY(connman.modemPath().isEmpty());
     connman.setModemPath(manager.modems()[0]);
     QVERIFY(!connman.modemPath().isEmpty());
 
-    if (!connman.contexts().isEmpty()) {
-        Q_FOREACH(const QString &path, connman.contexts()) {
-            connman.removeContext(path);
-        }
-    }
-    // signals
-    QVERIFY(connman.contexts().isEmpty());
     QSignalSpy spy(&connman, SIGNAL(contextAdded(QString)));
     connman.addContext("internet");
     QTest::qWait(1000);
@@ -132,36 +132,30 @@ void Tst_qofonoTest::testConnectionManager()
     // powered
 
     QSignalSpy spy_powered(&connman, SIGNAL(poweredChanged(bool)));
-    connman.setPowered(true);
 
-    QTest::qWait(1000);
-    //    if (manager.modems()[0].contains("phonesim"))
-    //            QEXPECT_FAIL("","seems to nt work on phonesim",Continue);
-    QCOMPARE(spy_powered.count(),1);
     QList<QVariant> argumentsspy_powered;
-    argumentsspy_powered = spy_powered.takeFirst();
-    QCOMPARE(argumentsspy_powered[0].toBool(), true);
+    qDebug() << connman.powered();
 
+    if (!connman.powered()) {
+        connman.setPowered(true);
+        QTest::qWait(1000);
+        QCOMPARE(spy_powered.count(),1);
+        argumentsspy_powered = spy_powered.takeFirst();
+        QCOMPARE(spy_powered.count(),0);
+        QCOMPARE(argumentsspy_powered[0].toBool(), true);
+    }
+    QCOMPARE(spy_powered.count(),0);
     connman.setPowered(false);
     QTest::qWait(1000);
+    if (!manager.modems()[0].contains("phonesim")) {
     QCOMPARE(spy_powered.count(),1);
+
     QList<QVariant> argumentsspy_powered2;
     argumentsspy_powered2 = spy_powered.takeFirst();
     QCOMPARE(argumentsspy_powered[0].toBool(), false);
 
-    ////
-
-    QVERIFY(!connman.contexts().isEmpty());
-    QSignalSpy spy2(&connman, SIGNAL(contextRemoved(QString)));
-    connman.removeContext(arguments[0].toString());
-    QTest::qWait(1000);
-
-    QCOMPARE(spy2.count(),1);
-    QList<QVariant> arguments2 ;
-    arguments2 = spy2.takeFirst();
-
-    QVERIFY(connman.contexts().isEmpty());
-
+}
+      connman.setPowered(true);
     //TODO other signals
 }
 
@@ -175,33 +169,33 @@ void Tst_qofonoTest::testContextConnection()
 
     QOfonoConnectionContext connContext;
     QStringList contextList = connman.contexts();
-    QVERIFY(contextList.isEmpty());
+//    QVERIFY(contextList.isEmpty());
 
-    connman.addContext("internet");
+    connman.addContext("test");
     QTest::qWait(1000);
-
     contextList = connman.contexts();
-
     QVERIFY(!contextList.isEmpty());
 
-    connContext.setContextPath(contextList[0]);
+    Q_FOREACH(const QString &path, connman.contexts()) {
 
-    QVERIFY(!connContext.contextPath().isEmpty());
+        connContext.setContextPath(path);
+        QVERIFY(!connContext.contextPath().isEmpty());
 
-    QVERIFY(connContext.accessPointName().isEmpty());
-    QSignalSpy spy1(&connContext, SIGNAL(accessPointNameChanged(QString)));
-    connContext.setAccessPointName("Jolla");
-    QTest::qWait(1000);
-    QCOMPARE(spy1.count(),1);
-    QList<QVariant> arguments1;
-    arguments1 = spy1.takeFirst();
-    QCOMPARE(arguments1[0].toString(),QString("Jolla"));
+        if (connContext.name() == "test") {
+            QVERIFY(connContext.accessPointName().isEmpty());
+            QSignalSpy spy1(&connContext, SIGNAL(accessPointNameChanged(QString)));
+            connContext.setAccessPointName("Jolla");
+            QTest::qWait(1000);
+            QCOMPARE(spy1.count(),1);
 
-    if (!connman.contexts().isEmpty()) {
-        Q_FOREACH(const QString &path, connman.contexts()) {
+            QList<QVariant> arguments1;
+            arguments1 = spy1.takeFirst();
+            QCOMPARE(arguments1[0].toString(),QString("Jolla"));
+
             connman.removeContext(path);
         }
     }
+
 
     //        QVERIFY(!connContext.active());
     //        QSignalSpy spy2(&connContext, SIGNAL(activeChanged(bool)));
@@ -216,7 +210,6 @@ void Tst_qofonoTest::testContextConnection()
 
 void Tst_qofonoTest::testNetworkRegistration()
 {
-
     QOfonoManager manager;
     QStringList modems = manager.modems();
 
@@ -234,9 +227,54 @@ void Tst_qofonoTest::testNetworkRegistration()
     QVERIFY(!netreg.mcc().isEmpty());
     QVERIFY(!netreg.mnc().isEmpty());
 
-    //    QVERIFY(!netreg.cellId() != 0);
-    //    QVERIFY(!netreg.strength() != 0);
-    //    QVERIFY(!netreg.baseStation().isEmpty());
+    QVERIFY(netreg.baseStation().isEmpty());
+    QVERIFY(netreg.cellId() == 0);
+    QVERIFY(!netreg.currentOperatorPath().isEmpty());
+    QVERIFY(netreg.status() == "registered");
+    QVERIFY(netreg.locationAreaCode() == 0);
+    QVERIFY(netreg.mcc() == "234");
+    QVERIFY(netreg.mnc() == "01");
+    QVERIFY(netreg.technology().isEmpty());
+    QVERIFY(!netreg.networkOperators().isEmpty());
+
+
+
+
+}
+
+void Tst_qofonoTest::testHandsfree()
+{
+    QOfonoHandsfree handsfree;
+    handsfree.setModemPath("/phonesim");
+
+    QVERIFY(handsfree.features().isEmpty());
+    QVERIFY(!handsfree.inbandRinging());
+    QVERIFY(!handsfree.voiceRecognition());
+    QVERIFY(!handsfree.echoCancelingNoiseReduction());
+    QVERIFY(handsfree.batteryChargeLevel() == 0);
+
+}
+
+void Tst_qofonoTest::testHandsfreeAudioCard()
+{
+    QOfonoHandsfreeAudioCard handsfreeAudioCard;
+    handsfreeAudioCard.setModemPath("/phonesim");
+    QVERIFY(handsfreeAudioCard.remoteAddress().isEmpty());
+    QVERIFY(handsfreeAudioCard.localAddress().isEmpty());
+}
+
+
+void Tst_qofonoTest::testNetworkOperator()
+{
+//    QOfonoNetworkOperator netOp;
+//    netOp.setModemPath("/phonesim");
+//    qDebug() << netOp.name()
+//                netOp.status()
+//                netOp.mcc()
+//                netOp..mnc()
+//                netOp.technologies()
+//                netOp.additionalInfo();
+
 }
 
 QTEST_MAIN(Tst_qofonoTest)

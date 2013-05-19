@@ -51,6 +51,10 @@
 #include "qofonophonebook.h"
 
 #include "qofonotexttelephony.h"
+#include "qofonohandsfree.h"
+#include "qofonohandsfreeaudioagent.h"
+#include "qofonohandsfreeaudiocard.h"
+#include "qofonohandsfreeaudiomanager.h"
 
 
 void QOfonoDeclarativePlugin::registerTypes(const char *uri)
@@ -91,6 +95,11 @@ void QOfonoDeclarativePlugin::registerTypes(const char *uri)
 
     qmlRegisterType<QOfonoPhonebook>(uri,0,2,"OfonoPhonebook");
     qmlRegisterType<QOfonoTextTelephony>(uri,0,2,"OfonoTextTelephony");
+
+    qmlRegisterType<QOfonoHandsfree>(uri,0,2,"OfonoHandsfree");
+    qmlRegisterType<QOfonoHandsfreeAudioAgent>(uri,0,2,"OfonoHandsfreeAudioAgent");
+    qmlRegisterType<QOfonoHandsfreeAudioCard>(uri,0,2,"OfonoHandsfreeAudioCard");
+    qmlRegisterType<QOfonoHandsfreeAudioManager>(uri,0,2,"OfonoHandsfreeAudioManager");
 
 }
 

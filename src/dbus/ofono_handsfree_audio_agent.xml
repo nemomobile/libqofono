@@ -1,0 +1,13 @@
+<!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN"
+"http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
+<node name="">
+	<interface name="org.ofono.HandsfreeAudioAgent">
+		<method name="NewConnection">
+			<arg type="o" direction="in"/>
+            <arg type="h" direction="in"/>
+			<arg type="y" direction="in"/>
+		</method>
+		<method name="Release">
+		</method>
+	</interface>
+</node>
