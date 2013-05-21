@@ -57,8 +57,11 @@ QString QOfonoAssistedSatelliteNavigation::modemPath() const
 
 void QOfonoAssistedSatelliteNavigation::registerPositioningRequestAgent(const QString &path)
 {
-    if (d_ptr->ofonoAssistedSatelliteNav)
-        d_ptr->ofonoAssistedSatelliteNav->RegisterPositioningRequestAgent(QDBusObjectPath(path));
+    if (d_ptr->ofonoAssistedSatelliteNav) {
+        QDBusPendingReply <> reply = d_ptr->ofonoAssistedSatelliteNav->RegisterPositioningRequestAgent(QDBusObjectPath(path));
+        if (reply.isError())
+          qDebug() << reply.error().message();
+    }
 }
 
 void QOfonoAssistedSatelliteNavigation::sendPositioningElement(const QString &xmlElement)

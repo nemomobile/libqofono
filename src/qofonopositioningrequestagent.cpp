@@ -16,16 +16,20 @@
 #include "qofonopositioningrequestagent.h"
 #include "dbus/ofonopositioningrequestagent.h"
 
+#include "qofonoassistedsatellitenavigation.h"
+
 class QOfonoPositioningRequestAgentPrivate
 {
 public:
     QOfonoPositioningRequestAgentPrivate();
     QString positioningAgentPath;
     OfonoPositioningRequestAgent *ofonoPositioningRequestAgent;
+    QOfonoAssistedSatelliteNavigation * satNav;
 
 };
 
 QOfonoPositioningRequestAgentPrivate::QOfonoPositioningRequestAgentPrivate() :
+    positioningAgentPath(QString()),
     ofonoPositioningRequestAgent(0)
 {
 }
@@ -43,11 +47,20 @@ QOfonoPositioningRequestAgent::~QOfonoPositioningRequestAgent()
 
 void QOfonoPositioningRequestAgent::setAgentPath(const QString &path)
 {
-    if (!d_ptr->ofonoPositioningRequestAgent) {
-        d_ptr->positioningAgentPath = path;
-        d_ptr->ofonoPositioningRequestAgent = new OfonoPositioningRequestAgent("org.ofono", path, QDBusConnection::systemBus(),this);
+//    if (!d_ptr->ofonoPositioningRequestAgent) {
 
-    }
+//        d_ptr->positioningAgentPath = path;
+
+//        d_ptr->ofonoPositioningRequestAgent = new OfonoPositioningRequestAgent("org.ofono", path, QDBusConnection::systemBus(),this);
+
+        new QOfonoPositioningRequestAgentAdaptor(this);
+        d_ptr->positioningAgentPath = path;
+//        QDBusConnection::systemBus().registerObject(agentPath, this);
+
+//        if (m_manager->isAvailable()) {
+//            m_manager->registerAgent(QString(agentPath));
+//        }
+   // }
 }
 
 QString QOfonoPositioningRequestAgent::agentPath() const
