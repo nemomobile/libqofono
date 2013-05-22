@@ -9,12 +9,12 @@ QT       += dbus
 include(version.pri)
 
 equals(QT_MAJOR_VERSION, 4): {
-    TARGET = $$qtLibraryTarget(qofono)
+    TARGET = qofono
     pkgconfig.path = $$INSTALL_ROOT$$PREFIX/lib/pkgconfig
 }
 
 equals(QT_MAJOR_VERSION, 5): {
-    TARGET = $$qtLibraryTarget(qofono-qt5)
+    TARGET = qofono-qt5
     pkgconfig.path = $$INSTALL_ROOT$$PREFIX/lib/pkgconfig-qt5
 }
 

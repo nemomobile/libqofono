@@ -22,7 +22,7 @@ CONFIG   += console
 CONFIG   -= app_bundle
 
 TEMPLATE = app
-LIBS += -L ../../../src
+LIBS += -L../../../src
 INCLUDEPATH += ../../../src
 
 SOURCES += tst_qofonotest.cpp
