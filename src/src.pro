@@ -208,7 +208,9 @@ dbusheaders.files = $$DBUS_HEADERS
 
 xmlfiles.files = $$XML_FILES
 
-CONFIG += create_pc create_prl
+CONFIG += create_pc create_prl link_pkgconfig
+
+PKGCONFIG += mlite 
 
 QMAKE_PKGCONFIG_DESTDIR = pkgconfig
 QMAKE_PKGCONFIG_INCDIR = $$headers.path
