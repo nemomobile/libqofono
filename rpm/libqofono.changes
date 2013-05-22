@@ -1,8 +1,10 @@
-* Mon May 20 2013 Lorn Potter <lorn.potter@jollamobile.com> - 0.9
- - add assisted satellite navigation, location reporting and
- - positioning request agent API's
+* Wed May 22 2013 Lorn Potter <lorn.potter@jollamobile.com> - 0.10
+- fix pkgconfig version.
 
-* Thu May 9 2013 Lorn Potter <olorn.potter@jollamobile.com> - 0.6
+* Mon May 20 2013 Lorn Potter <lorn.potter@jollamobile.com> - 0.9
+- add assisted satellite navigation, location reporting 
+
+* Thu May 9 2013 Lorn Potter <lorn.potter@jollamobile.com> - 0.6
 - [libqofono] add some compatible signals to modem and simmanager
 
 * Wed Apr 17 2013 Lorn Potter <lorn.potter@jollamboile.com> - 0.3
