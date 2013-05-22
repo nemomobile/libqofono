@@ -407,6 +407,45 @@ QOfonoSimManager::Error QOfonoSimManager::errorNameToEnum(const QString &errorNa
         return UnknownError;
 }
 
+int QOfonoSimManager::minimumPinLength(PinType pinType)
+{
+    if (isPukType(pinType))
+        return 8;
+
+    switch (pinType) {
+    case SimPin:
+    case SimPin2:
+    case PhoneToSimPin:
+    case PhoneToFirstSimPin:
+    case NetworkPersonalizationPin:
+    case NetworkSubsetPersonalizationPin:
+    case CorporatePersonalizationPin:
+        return 4;
+    default:
+        return -1;
+    }
+}
+
+int QOfonoSimManager::maximumPinLength(PinType pinType)
+{
+    if (isPukType(pinType))
+        return 8;
+
+    switch (pinType) {
+    case SimPin:
+    case SimPin2:
+        return 8;
+    case PhoneToSimPin:
+    case PhoneToFirstSimPin:
+    case NetworkPersonalizationPin:
+    case NetworkSubsetPersonalizationPin:
+    case CorporatePersonalizationPin:
+        return 16;
+    default:
+        return -1;
+    }
+}
+
 QString QOfonoSimManager::pinTypeToString(PinType pinType)
 {
     return QOfonoSimManagerPrivate::allPinTypes.value(pinType);
@@ -417,3 +456,37 @@ int QOfonoSimManager::pinTypeFromString(const QString &s)
     return (int)QOfonoSimManagerPrivate::allPinTypes.key(s);
 }
 
+bool QOfonoSimManager::isPukType(PinType pinType)
+{
+    switch (pinType) {
+    case SimPuk:
+    case SimPuk2:
+    case PhoneToFirstSimPuk:
+    case NetworkPersonalizationPuk:
+    case NetworkSubsetPersonalizationPuk:
+    case CorporatePersonalizationPuk:
+        return true;
+    default:
+        return false;
+    }
+}
+
+int QOfonoSimManager::pukToPin(PinType puk)
+{
+    switch (puk) {
+    case QOfonoSimManager::SimPuk:
+        return (int)QOfonoSimManager::SimPin;
+    case QOfonoSimManager::PhoneToFirstSimPuk:
+        return (int)QOfonoSimManager::PhoneToFirstSimPin;
+    case QOfonoSimManager::SimPuk2:
+        return (int)QOfonoSimManager::SimPin2;
+    case QOfonoSimManager::NetworkPersonalizationPuk:
+        return (int)QOfonoSimManager::NetworkPersonalizationPin;
+    case QOfonoSimManager::NetworkSubsetPersonalizationPuk:
+        return (int)QOfonoSimManager::NetworkSubsetPersonalizationPin;
+    case QOfonoSimManager::CorporatePersonalizationPuk:
+        return (int)QOfonoSimManager::CorporatePersonalizationPin;
+    default:
+        return (int)QOfonoSimManager::NoPin;
+    }
+}

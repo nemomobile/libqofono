@@ -130,8 +130,12 @@ public slots:
 
       void setSubscriberNumbers(const QStringList &numbers);
 
+      static int minimumPinLength(PinType pinType);
+      static int maximumPinLength(PinType pinType);
       static QString pinTypeToString(PinType pinType);
       static int pinTypeFromString(const QString &s);
+      static bool isPukType(PinType pinType);
+      static int pukToPin(PinType puk);
 
 private:
       Error errorNameToEnum(const QString &errorName);
