@@ -71,6 +71,9 @@ QOfonoSimManager::~QOfonoSimManager()
 
 void QOfonoSimManager::setModemPath(const QString &path)
 {
+    if (path == d_ptr->modemPath)
+        return;
+
     if (!d_ptr->simManager) {
         d_ptr->simManager = new OfonoSimManager("org.ofono", path, QDBusConnection::systemBus(),this);
 
@@ -83,6 +86,8 @@ void QOfonoSimManager::setModemPath(const QString &path)
             QDBusReply<QVariantMap> reply;
             reply = d_ptr->simManager->GetProperties();
             d_ptr->properties = reply.value();
+
+            Q_EMIT modemPathChanged(path);
         }
     }
 }

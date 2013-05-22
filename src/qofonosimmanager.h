@@ -35,7 +35,7 @@ class QOFONOSHARED_EXPORT QOfonoSimManager : public QObject
     Q_OBJECT
     Q_ENUMS(Error)
     Q_ENUMS(PinType)
-    Q_PROPERTY(QString modemPath READ modemPath WRITE setModemPath)
+    Q_PROPERTY(QString modemPath READ modemPath WRITE setModemPath NOTIFY modemPathChanged)
     Q_PROPERTY(bool present READ present NOTIFY presenceChanged)
     Q_PROPERTY(QString subscriberIdentity READ subscriberIdentity NOTIFY subscriberIdentityChanged)
     Q_PROPERTY(QString mobileCountryCode READ mobileCountryCode NOTIFY mobileCountryCodeChanged)
@@ -99,6 +99,7 @@ public:
       bool barredDialing() const;
 
 Q_SIGNALS:
+      void modemPathChanged(const QString &modemPath);
       void presenceChanged(bool ispresent);
       void subscriberIdentityChanged(const QString &imsi);
       void mobileCountryCodeChanged(const QString &mcc);
