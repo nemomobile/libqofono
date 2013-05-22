@@ -23,7 +23,7 @@ BuildRequires:  pkgconfig(Qt5Core)
 BuildRequires:  pkgconfig(Qt5DBus)
 BuildRequires:  pkgconfig(Qt5Quick)
 BuildRequires:  pkgconfig(Qt5Test)
-BuildRequires:  pkgconfig(mlite-qt5)
+BuildRequires:  pkgconfig(mlite5)
 
 %description
 This package contains Qt bindings for ofono cellular service

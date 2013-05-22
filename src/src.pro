@@ -11,11 +11,13 @@ include(version.pri)
 equals(QT_MAJOR_VERSION, 4): {
     TARGET = qofono
     pkgconfig.path = $$INSTALL_ROOT$$PREFIX/lib/pkgconfig
+    PKGCONFIG += mlite
 }
 
 equals(QT_MAJOR_VERSION, 5): {
     TARGET = qofono-qt5
     pkgconfig.path = $$INSTALL_ROOT$$PREFIX/lib/pkgconfig-qt5
+    PKGCONFIG += mlite5
 }
 
 TEMPLATE = lib
@@ -210,7 +212,6 @@ xmlfiles.files = $$XML_FILES
 
 CONFIG += create_pc create_prl link_pkgconfig
 
-PKGCONFIG += mlite 
 
 QMAKE_PKGCONFIG_DESTDIR = pkgconfig
 QMAKE_PKGCONFIG_INCDIR = $$headers.path

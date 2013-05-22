@@ -21,7 +21,7 @@ PkgConfigBR:
     - Qt5DBus
     - Qt5Quick
     - Qt5Test
-    - mlite-qt5
+    - mlite5
 
 Configure: none
 Builder: qmake5
