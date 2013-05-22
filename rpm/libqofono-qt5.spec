@@ -23,6 +23,7 @@ BuildRequires:  pkgconfig(Qt5Core)
 BuildRequires:  pkgconfig(Qt5DBus)
 BuildRequires:  pkgconfig(Qt5Quick)
 BuildRequires:  pkgconfig(Qt5Test)
+BuildRequires:  pkgconfig(mlite-qt5)
 
 %description
 This package contains Qt bindings for ofono cellular service
@@ -63,9 +64,9 @@ This package contains qml test for ofono Qt bindings.
 
 %build
 # >> build pre
+export QT_SELECT=5
 # << build pre
 
-export QT_SELECT=5
 %qmake5 
 
 make %{?jobs:-j%jobs}
@@ -76,8 +77,8 @@ make %{?jobs:-j%jobs}
 %install
 rm -rf %{buildroot}
 # >> install pre
-# << install pre
 export QT_SELECT=5
+# << install pre
 %qmake5_install
 
 # >> install post

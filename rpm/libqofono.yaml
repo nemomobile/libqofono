@@ -13,6 +13,7 @@ Description: |
 PkgConfigBR:
     - QtCore
     - QtDBus
+    - mlite
 Configure: none
 Builder: qmake
 SetupOptions: "-q -n libqofono-%{version}"
