@@ -9,7 +9,7 @@ Name:       libqofono-qt5
 # << macros
 
 Summary:    A library of Qt 5 bindings for ofono
-Version:    0.10
+Version:    0.11
 Release:    1
 Group:      System/Libraries
 License:    LGPLv2.1
@@ -78,7 +78,7 @@ rm -rf %{buildroot}
 # >> install pre
 # << install pre
 export QT_SELECT=5
-%qmake_install
+%qmake5_install
 
 # >> install post
 # << install post
