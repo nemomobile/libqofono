@@ -28,9 +28,13 @@
  */
 
 class QOfonoSimManagerPrivate;
+class QDBusPendingCallWatcher;
+
 class QOFONOSHARED_EXPORT QOfonoSimManager : public QObject
 {
     Q_OBJECT
+    Q_ENUMS(Error)
+    Q_ENUMS(PinType)
     Q_PROPERTY(QString modemPath READ modemPath WRITE setModemPath)
     Q_PROPERTY(bool present READ present NOTIFY presenceChanged)
     Q_PROPERTY(QString subscriberIdentity READ subscriberIdentity NOTIFY subscriberIdentityChanged)
@@ -46,6 +50,34 @@ class QOFONOSHARED_EXPORT QOfonoSimManager : public QObject
     Q_PROPERTY(bool barredDialing READ barredDialing NOTIFY barredDialingChanged)
 
 public:
+    enum Error {
+        NoError,
+        NotImplementedError,
+        InProgressError,
+        InvalidArgumentsError,
+        InvalidFormatError,
+        FailedError,
+        UnknownError
+    };
+
+    enum PinType {
+        NoPin,
+        SimPin,
+        SimPin2,
+        PhoneToSimPin,
+        PhoneToFirstSimPin,
+        NetworkPersonalizationPin,
+        NetworkSubsetPersonalizationPin,
+        ServiceProviderPersonalizationPin,
+        CorporatePersonalizationPin,
+        SimPuk,
+        SimPuk2,
+        PhoneToFirstSimPuk,
+        NetworkPersonalizationPuk,
+        NetworkSubsetPersonalizationPuk,
+        CorporatePersonalizationPuk
+    };
+
     explicit QOfonoSimManager(QObject *parent = 0);
     ~QOfonoSimManager();
 
@@ -81,25 +113,37 @@ Q_SIGNALS:
       void fixedDialingChanged(bool fixedDialing);
       void barredDialingChanged(bool barredDialing);
 
-      void enterPinComplete(bool success);
-      void resetPinComplete(bool success);
-      void changePinComplete(bool success);
-      void lockPinComplete(bool success);
-      void unlockPinComplete(bool success);
+      void enterPinComplete(Error error, const QString &errorString);
+      void resetPinComplete(Error error, const QString &errorString);
+      void changePinComplete(Error error, const QString &errorString);
+      void lockPinComplete(Error error, const QString &errorString);
+      void unlockPinComplete(Error error, const QString &errorString);
 
 public slots:
-      void changePin(const QString &pintype, const QString &oldpin, const QString &newpin);
-      void enterPin(const QString &pintype, const QString &pin);
-      void resetPin(const QString &pintype, const QString &puk, const QString &newpin);
-      void lockPin(const QString &pintype, const QString &pin);
-      void unlockPin(const QString &pintype, const QString &pin);
+      void changePin(PinType pinType, const QString &oldpin, const QString &newpin);
+      void enterPin(PinType pinType, const QString &pin);
+      void resetPin(PinType pinType, const QString &puk, const QString &newpin);
+      void lockPin(PinType pinType, const QString &pin);
+      void unlockPin(PinType pinType, const QString &pin);
       QByteArray getIcon(quint8 id);
 
       void setSubscriberNumbers(const QStringList &numbers);
+
+      static QString pinTypeToString(PinType pinType);
+      static int pinTypeFromString(const QString &s);
+
 private:
+      Error errorNameToEnum(const QString &errorName);
+
     QOfonoSimManagerPrivate *d_ptr;
+
 private slots:
     void propertyChanged(const QString &property,const QDBusVariant &value);
+    void changePinCallFinished(QDBusPendingCallWatcher *call);
+    void enterPinCallFinished(QDBusPendingCallWatcher *call);
+    void resetPinCallFinished(QDBusPendingCallWatcher *call);
+    void lockPinCallFinished(QDBusPendingCallWatcher *call);
+    void unlockPinCallFinished(QDBusPendingCallWatcher *call);
 };
 
 #endif // QOFONOSimManager_H

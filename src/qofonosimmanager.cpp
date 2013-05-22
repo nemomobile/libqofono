@@ -13,8 +13,31 @@
 **
 ****************************************************************************/
 
+#include <QDBusPendingCallWatcher>
+
 #include "qofonosimmanager.h"
 #include "dbus/ofonosimmanager.h"
+
+static QHash<QOfonoSimManager::PinType, QString> qofonosimmanager_pinTypes()
+{
+    QHash<QOfonoSimManager::PinType, QString> types;
+    types[QOfonoSimManager::NoPin] = "none";
+    types[QOfonoSimManager::SimPin] = "pin";
+    types[QOfonoSimManager::SimPin2] = "pin2";
+    types[QOfonoSimManager::PhoneToSimPin] = "phone";
+    types[QOfonoSimManager::PhoneToFirstSimPin] = "firstphone";
+    types[QOfonoSimManager::NetworkPersonalizationPin] = "network";
+    types[QOfonoSimManager::NetworkSubsetPersonalizationPin] = "netsub";
+    types[QOfonoSimManager::ServiceProviderPersonalizationPin] = "service";
+    types[QOfonoSimManager::CorporatePersonalizationPin] = "corp";
+    types[QOfonoSimManager::SimPuk] = "puk";
+    types[QOfonoSimManager::SimPuk2] = "puk2";
+    types[QOfonoSimManager::PhoneToFirstSimPuk] = "firstphonepuk";
+    types[QOfonoSimManager::NetworkPersonalizationPuk] = "networkpuk";
+    types[QOfonoSimManager::NetworkSubsetPersonalizationPuk] = "netsubpuk";
+    types[QOfonoSimManager::CorporatePersonalizationPuk] = "corppuk";
+    return types;
+}
 
 class QOfonoSimManagerPrivate
 {
@@ -24,7 +47,10 @@ public:
     OfonoSimManager *simManager;
     QVariantMap properties;
 
+    static QHash<QOfonoSimManager::PinType, QString> allPinTypes;
 };
+
+QHash<QOfonoSimManager::PinType, QString> QOfonoSimManagerPrivate::allPinTypes = qofonosimmanager_pinTypes();
 
 QOfonoSimManagerPrivate::QOfonoSimManagerPrivate() :
     modemPath(QString())
@@ -209,68 +235,53 @@ bool QOfonoSimManager::barredDialing() const
         return false;
 }
 
-void QOfonoSimManager::changePin(const QString &pintype, const QString &oldpin, const QString &newpin)
+void QOfonoSimManager::changePin(PinType pinType, const QString &oldpin, const QString &newpin)
 {
     if (d_ptr->simManager) {
-        QDBusPendingReply<> reply =d_ptr->simManager->ChangePin(pintype,oldpin,newpin);
-        if (reply.isError()) {
-            Q_EMIT changePinComplete(false);
-            qWarning() << reply.error().name() << reply.error().message();
-        } else {
-            Q_EMIT changePinComplete(true);
-        }
+        QDBusPendingReply<> result = d_ptr->simManager->ChangePin(pinTypeToString(pinType), oldpin, newpin);
+        QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(result, this);
+        connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
+                SLOT(changePinCallFinished(QDBusPendingCallWatcher*)));
     }
 }
 
-void QOfonoSimManager::enterPin(const QString &pintype, const QString &pin)
+void QOfonoSimManager::enterPin(PinType pinType, const QString &pin)
 {
     if (d_ptr->simManager) {
-        QDBusPendingReply<> reply =d_ptr->simManager->EnterPin(pintype,pin);
-        if (reply.isError()) {
-            Q_EMIT enterPinComplete(false);
-            qWarning() << reply.error().name() << reply.error().message();
-        } else {
-            Q_EMIT enterPinComplete(true);
-        }
+        QDBusPendingReply<> result = d_ptr->simManager->EnterPin(pinTypeToString(pinType), pin);
+        QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(result, this);
+        connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
+                SLOT(enterPinCallFinished(QDBusPendingCallWatcher*)));
     }
 }
 
-void QOfonoSimManager::resetPin(const QString &pintype, const QString &puk, const QString &newpin)
+void QOfonoSimManager::resetPin(PinType pinType, const QString &puk, const QString &newpin)
 {
     if (d_ptr->simManager) {
-        QDBusPendingReply<> reply =d_ptr->simManager->ResetPin(pintype,puk,newpin);
-        if (reply.isError()) {
-            Q_EMIT resetPinComplete(false);
-            qWarning() << reply.error().name() << reply.error().message();
-        } else {
-            Q_EMIT resetPinComplete(true);
-        }
+        QDBusPendingReply<> result = d_ptr->simManager->ResetPin(pinTypeToString(pinType), puk, newpin);
+        QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(result, this);
+        connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
+                SLOT(resetPinCallFinished(QDBusPendingCallWatcher*)));
     }
 }
 
-void QOfonoSimManager::lockPin(const QString &pintype, const QString &pin)
+void QOfonoSimManager::lockPin(PinType pinType, const QString &pin)
 {
     if (d_ptr->simManager) {
-        QDBusPendingReply<> reply =d_ptr->simManager->LockPin(pintype,pin);
-        if (reply.isError()) {
-            Q_EMIT unlockPinComplete(false);
-            qWarning() << reply.error().name() << reply.error().message();
-        } else {
-            Q_EMIT unlockPinComplete(true);
-        }
+        QDBusPendingReply<> result = d_ptr->simManager->LockPin(pinTypeToString(pinType), pin);
+        QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(result, this);
+        connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
+                SLOT(lockPinCallFinished(QDBusPendingCallWatcher*)));
     }
 }
 
-void QOfonoSimManager::unlockPin(const QString &pintype, const QString &pin)
+void QOfonoSimManager::unlockPin(PinType pinType, const QString &pin)
 {
     if (d_ptr->simManager) {
-        QDBusPendingReply<> reply =d_ptr->simManager->UnlockPin(pintype,pin);
-        if (reply.isError()) {
-            Q_EMIT unlockPinComplete(false);
-            qWarning() << reply.error().name() << reply.error().message();
-        } else {
-            Q_EMIT unlockPinComplete(true);
-        }
+        QDBusPendingReply<> result = d_ptr->simManager->UnlockPin(pinTypeToString(pinType), pin);
+        QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(result, this);
+        connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
+                SLOT(unlockPinCallFinished(QDBusPendingCallWatcher*)));
     }
 }
 
@@ -292,3 +303,112 @@ void QOfonoSimManager::setSubscriberNumbers(const QStringList &numbers)
     if (d_ptr->simManager)
         d_ptr->simManager->SetProperty("SubscriberNumbers",QDBusVariant(numbers));
 }
+
+void QOfonoSimManager::changePinCallFinished(QDBusPendingCallWatcher *call)
+{
+    QDBusPendingReply<> reply = *call;
+    QOfonoSimManager::Error error = NoError;
+    QString errorString;
+
+    if (reply.isError()) {
+         qWarning() << "QOfonoSimManager::changePin() failed:" << reply.error();
+         error = errorNameToEnum(reply.error().name());
+         errorString = reply.error().name() + " " + reply.error().message();
+    }
+
+    emit changePinComplete(error, errorString);
+    call->deleteLater();
+}
+
+void QOfonoSimManager::enterPinCallFinished(QDBusPendingCallWatcher *call)
+{
+    QDBusPendingReply<> reply = *call;
+    QOfonoSimManager::Error error = NoError;
+    QString errorString;
+
+    if (reply.isError()) {
+         qWarning() << "QOfonoSimManager::enterPin() failed:" << reply.error();
+         error = errorNameToEnum(reply.error().name());
+         errorString = reply.error().name() + " " + reply.error().message();
+    }
+
+    emit enterPinComplete(error, errorString);
+    call->deleteLater();
+}
+
+void QOfonoSimManager::resetPinCallFinished(QDBusPendingCallWatcher *call)
+{
+    QDBusPendingReply<> reply = *call;
+    QOfonoSimManager::Error error = NoError;
+    QString errorString;
+
+    if (reply.isError()) {
+         qWarning() << "QOfonoSimManager::resetPin() failed:" << reply.error();
+         error = errorNameToEnum(reply.error().name());
+         errorString = reply.error().name() + " " + reply.error().message();
+    }
+
+    emit resetPinComplete(error, errorString);
+    call->deleteLater();
+}
+
+void QOfonoSimManager::lockPinCallFinished(QDBusPendingCallWatcher *call)
+{
+    QDBusPendingReply<> reply = *call;
+    QOfonoSimManager::Error error = NoError;
+    QString errorString;
+
+    if (reply.isError()) {
+         qWarning() << "QOfonoSimManager::lockPin() failed:" << reply.error();
+         error = errorNameToEnum(reply.error().name());
+         errorString = reply.error().name() + " " + reply.error().message();
+    }
+
+    emit lockPinComplete(error, errorString);
+    call->deleteLater();
+}
+
+void QOfonoSimManager::unlockPinCallFinished(QDBusPendingCallWatcher *call)
+{
+    QDBusPendingReply<> reply = *call;
+    QOfonoSimManager::Error error = NoError;
+    QString errorString;
+
+    if (reply.isError()) {
+         qWarning() << "QOfonoSimManager::unlockPin() failed:" << reply.error();
+         error = errorNameToEnum(reply.error().name());
+         errorString = reply.error().name() + " " + reply.error().message();
+    }
+
+    emit unlockPinComplete(error, errorString);
+    call->deleteLater();
+}
+
+QOfonoSimManager::Error QOfonoSimManager::errorNameToEnum(const QString &errorName)
+{
+    if (errorName == "")
+        return NoError;
+    else if (errorName == "org.ofono.Error.NotImplemented")
+        return NotImplementedError;
+    else if (errorName == "org.ofono.Error.InProgress")
+        return InProgressError;
+    else if (errorName == "org.ofono.Error.InvalidArguments")
+        return InvalidArgumentsError;
+    else if (errorName == "org.ofono.Error.InvalidFormat")
+        return InvalidFormatError;
+    else if (errorName == "org.ofono.Error.Failed")
+        return FailedError;
+    else
+        return UnknownError;
+}
+
+QString QOfonoSimManager::pinTypeToString(PinType pinType)
+{
+    return QOfonoSimManagerPrivate::allPinTypes.value(pinType);
+}
+
+int QOfonoSimManager::pinTypeFromString(const QString &s)
+{
+    return (int)QOfonoSimManagerPrivate::allPinTypes.key(s);
+}
+
