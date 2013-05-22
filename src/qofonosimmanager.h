@@ -41,8 +41,8 @@ class QOFONOSHARED_EXPORT QOfonoSimManager : public QObject
     Q_PROPERTY(QString mobileCountryCode READ mobileCountryCode NOTIFY mobileCountryCodeChanged)
     Q_PROPERTY(QString mobileNetworkCode READ mobileNetworkCode NOTIFY mobileNetworkCodeChanged)
     Q_PROPERTY(QStringList subscriberNumbers READ subscriberNumbers WRITE setSubscriberNumbers NOTIFY subscriberNumbersChanged)
-    Q_PROPERTY(QString pinRequired READ pinRequired NOTIFY pinRequiredChanged)
-    Q_PROPERTY(QStringList lockedPins READ lockedPins NOTIFY lockedPinsChanged)
+    Q_PROPERTY(PinType pinRequired READ pinRequired NOTIFY pinRequiredChanged)
+    Q_PROPERTY(QVariantList lockedPins READ lockedPins NOTIFY lockedPinsChanged)
     Q_PROPERTY(QString cardIdentifier READ cardIdentifier NOTIFY cardIdentifierChanged)
     Q_PROPERTY(QStringList preferredLanguages READ preferredLanguages NOTIFY preferredLanguagesChanged)
     Q_PROPERTY(QVariantMap pinRetries READ pinRetries NOTIFY pinRetriesChanged)
@@ -90,8 +90,8 @@ public:
       QString mobileNetworkCode() const;
       QStringList subscriberNumbers() const;
       QVariantMap serviceNumbers() const; //
-      QString pinRequired() const;
-      QStringList lockedPins() const;
+      PinType pinRequired() const;
+      QVariantList lockedPins() const;
       QString cardIdentifier() const;
       QStringList preferredLanguages() const;
       QVariantMap pinRetries() const; //
@@ -106,8 +106,8 @@ Q_SIGNALS:
       void mobileNetworkCodeChanged(const QString &mnc);
       void subscriberNumbersChanged(const QStringList &msisdns);
       void serviceNumbersChanged(const QVariantMap &sdns);
-      void pinRequiredChanged(const QString &pintype);
-      void lockedPinsChanged(const QStringList &pins);
+      void pinRequiredChanged(int pinType);
+      void lockedPinsChanged(const QVariantList &pins);
       void cardIdentifierChanged(const QString &iccid);
       void preferredLanguagesChanged(const QStringList &languages);
       void pinRetriesChanged(const QVariantMap &pinRetries);
@@ -138,6 +138,10 @@ public slots:
       static int pukToPin(PinType puk);
 
 private:
+      void updateProperty(const QString& property, const QVariant& value);
+      QString pinRetryConfPath(PinType pinType) const;
+      void updateSavedPinRetryCount(PinType pinType, bool hadWrongAttempt);
+      void processPinOperationReply(Error error, int opType);
       Error errorNameToEnum(const QString &errorName);
 
     QOfonoSimManagerPrivate *d_ptr;

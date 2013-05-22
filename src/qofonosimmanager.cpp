@@ -13,10 +13,14 @@
 **
 ****************************************************************************/
 
+#include <mgconfitem.h>
 #include <QDBusPendingCallWatcher>
 
 #include "qofonosimmanager.h"
 #include "dbus/ofonosimmanager.h"
+
+static const int qofonosimmanager_pinRetries = 3;
+static const int qofonosimmanager_pukRetries = 10;
 
 static QHash<QOfonoSimManager::PinType, QString> qofonosimmanager_pinTypes()
 {
@@ -42,10 +46,19 @@ static QHash<QOfonoSimManager::PinType, QString> qofonosimmanager_pinTypes()
 class QOfonoSimManagerPrivate
 {
 public:
+    enum PinOperation {
+        ChangePin,
+        EnterPin,
+        ResetPin,
+        LockPin,
+        UnlockPin
+    };
+
     QOfonoSimManagerPrivate();
     QString modemPath;
     OfonoSimManager *simManager;
     QVariantMap properties;
+    QHash<PinOperation, QOfonoSimManager::PinType> pendingOpPinType;
 
     static QHash<QOfonoSimManager::PinType, QString> allPinTypes;
 };
@@ -74,6 +87,9 @@ void QOfonoSimManager::setModemPath(const QString &path)
     if (path == d_ptr->modemPath)
         return;
 
+    d_ptr->properties.clear();
+    d_ptr->pendingOpPinType.clear();
+
     if (!d_ptr->simManager) {
         d_ptr->simManager = new OfonoSimManager("org.ofono", path, QDBusConnection::systemBus(),this);
 
@@ -85,7 +101,27 @@ void QOfonoSimManager::setModemPath(const QString &path)
 
             QDBusReply<QVariantMap> reply;
             reply = d_ptr->simManager->GetProperties();
-            d_ptr->properties = reply.value();
+
+            QVariantMap properties = reply.value();
+            Q_FOREACH(QString property, properties.keys())
+                updateProperty(property, properties[property]);
+
+            if (properties.value("Retries").toMap().isEmpty()
+                    && !d_ptr->properties.value("CardIdentifier").toString().isEmpty()) {
+                QVariantMap retries;
+                Q_FOREACH(PinType type, QOfonoSimManagerPrivate::allPinTypes.keys()) {
+                    MGConfItem retryCountConf(pinRetryConfPath(type));
+                    if (!retryCountConf.key().isEmpty()) {
+                        QVariant value = retryCountConf.value();
+                        if (!value.isNull())
+                            retries[QString::number(type)] = value;
+                    }
+                }
+                if (!retries.isEmpty()) {
+                    d_ptr->properties["Retries"] = retries;
+                    Q_EMIT pinRetriesChanged(retries);
+                }
+            }
 
             Q_EMIT modemPathChanged(path);
         }
@@ -97,10 +133,16 @@ QString QOfonoSimManager::modemPath() const
     return d_ptr->modemPath;
 }
 
-
 void QOfonoSimManager::propertyChanged(const QString& property, const QDBusVariant& dbusvalue)
 {
-    QVariant value = dbusvalue.variant();
+    updateProperty(property, dbusvalue.variant());
+}
+
+void QOfonoSimManager::updateProperty(const QString& property, const QVariant& value)
+{
+    if (d_ptr->properties.value(property) == value)
+        return;
+
     d_ptr->properties.insert(property,value);
 
     if (property == QLatin1String("Present")) {
@@ -118,9 +160,17 @@ void QOfonoSimManager::propertyChanged(const QString& property, const QDBusVaria
         value.value<QDBusArgument>() >> map;
         Q_EMIT serviceNumbersChanged(map);
     } else if (property == QLatin1String("PinRequired")) {
-        Q_EMIT pinRequiredChanged(value.value<QString>());
+        PinType pinType = (PinType)pinTypeFromString(value.value<QString>());
+        updateSavedPinRetryCount(pinType, false);
+        Q_EMIT pinRequiredChanged(pinType);
     } else if (property == QLatin1String("LockedPins")) {
-        Q_EMIT lockedPinsChanged(value.value<QStringList>());
+        QStringList pins = value.value<QStringList>();
+        QVariantList convertedPins;
+        Q_FOREACH(QString type, pins) {
+            convertedPins << (PinType)pinTypeFromString(type);
+        }
+        d_ptr->properties["LockedPins"] = convertedPins;
+        Q_EMIT lockedPinsChanged(convertedPins);
     } else if (property == QLatin1String("CardIdentifier")) {
         Q_EMIT cardIdentifierChanged(value.value<QString>());
     } else if (property == QLatin1String("PreferredLanguages")) {
@@ -128,7 +178,12 @@ void QOfonoSimManager::propertyChanged(const QString& property, const QDBusVaria
     } else if (property == QLatin1String("Retries")) {
         QVariantMap retries;
         value.value<QDBusArgument>() >> retries;
-        Q_EMIT pinRetriesChanged(retries);
+        QVariantMap convertedRetries;
+        Q_FOREACH(QString type, retries.keys()) {
+            convertedRetries[QString::number((PinType)pinTypeFromString(type))] = retries[type];
+        }
+        d_ptr->properties["Retries"] = convertedRetries;
+        Q_EMIT pinRetriesChanged(convertedRetries);
     } else if (property == QLatin1String("FixedDialing")) {
         Q_EMIT fixedDialingChanged(value.value<bool>());
     } else if (property == QLatin1String("BarredDialing")) {
@@ -184,20 +239,20 @@ QVariantMap QOfonoSimManager::serviceNumbers() const //
         return QVariantMap();
 }
 
-QString QOfonoSimManager::pinRequired() const
+QOfonoSimManager::PinType QOfonoSimManager::pinRequired() const
 {
     if (d_ptr->simManager)
-        return d_ptr->properties["PinRequired"].value<QString>();
+        return (PinType)pinTypeFromString(d_ptr->properties["PinRequired"].value<QString>());
     else
-        return QString();
+        return QOfonoSimManager::NoPin;
 }
 
-QStringList QOfonoSimManager::lockedPins() const
+QVariantList QOfonoSimManager::lockedPins() const
 {
     if (d_ptr->simManager)
-        return d_ptr->properties["LockedPins"].value<QStringList>();
+        return d_ptr->properties["LockedPins"].value<QVariantList>();
     else
-        return QStringList();
+        return QVariantList();
 }
 
 QString QOfonoSimManager::cardIdentifier() const
@@ -216,7 +271,7 @@ QStringList QOfonoSimManager::preferredLanguages() const
         return QStringList();
 }
 
-QVariantMap QOfonoSimManager::pinRetries() const //
+QVariantMap QOfonoSimManager::pinRetries() const
 {
     if (d_ptr->simManager)
         return d_ptr->properties["Retries"].value<QVariantMap>();
@@ -243,6 +298,7 @@ bool QOfonoSimManager::barredDialing() const
 void QOfonoSimManager::changePin(PinType pinType, const QString &oldpin, const QString &newpin)
 {
     if (d_ptr->simManager) {
+        d_ptr->pendingOpPinType[QOfonoSimManagerPrivate::ChangePin] = pinType;
         QDBusPendingReply<> result = d_ptr->simManager->ChangePin(pinTypeToString(pinType), oldpin, newpin);
         QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(result, this);
         connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
@@ -253,6 +309,7 @@ void QOfonoSimManager::changePin(PinType pinType, const QString &oldpin, const Q
 void QOfonoSimManager::enterPin(PinType pinType, const QString &pin)
 {
     if (d_ptr->simManager) {
+        d_ptr->pendingOpPinType[QOfonoSimManagerPrivate::EnterPin] = pinType;
         QDBusPendingReply<> result = d_ptr->simManager->EnterPin(pinTypeToString(pinType), pin);
         QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(result, this);
         connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
@@ -263,6 +320,7 @@ void QOfonoSimManager::enterPin(PinType pinType, const QString &pin)
 void QOfonoSimManager::resetPin(PinType pinType, const QString &puk, const QString &newpin)
 {
     if (d_ptr->simManager) {
+        d_ptr->pendingOpPinType[QOfonoSimManagerPrivate::ResetPin] = pinType;
         QDBusPendingReply<> result = d_ptr->simManager->ResetPin(pinTypeToString(pinType), puk, newpin);
         QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(result, this);
         connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
@@ -273,6 +331,7 @@ void QOfonoSimManager::resetPin(PinType pinType, const QString &puk, const QStri
 void QOfonoSimManager::lockPin(PinType pinType, const QString &pin)
 {
     if (d_ptr->simManager) {
+        d_ptr->pendingOpPinType[QOfonoSimManagerPrivate::LockPin] = pinType;
         QDBusPendingReply<> result = d_ptr->simManager->LockPin(pinTypeToString(pinType), pin);
         QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(result, this);
         connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
@@ -283,6 +342,7 @@ void QOfonoSimManager::lockPin(PinType pinType, const QString &pin)
 void QOfonoSimManager::unlockPin(PinType pinType, const QString &pin)
 {
     if (d_ptr->simManager) {
+        d_ptr->pendingOpPinType[QOfonoSimManagerPrivate::UnlockPin] = pinType;
         QDBusPendingReply<> result = d_ptr->simManager->UnlockPin(pinTypeToString(pinType), pin);
         QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(result, this);
         connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
@@ -320,6 +380,7 @@ void QOfonoSimManager::changePinCallFinished(QDBusPendingCallWatcher *call)
          error = errorNameToEnum(reply.error().name());
          errorString = reply.error().name() + " " + reply.error().message();
     }
+    processPinOperationReply(error, QOfonoSimManagerPrivate::ChangePin);
 
     emit changePinComplete(error, errorString);
     call->deleteLater();
@@ -336,6 +397,7 @@ void QOfonoSimManager::enterPinCallFinished(QDBusPendingCallWatcher *call)
          error = errorNameToEnum(reply.error().name());
          errorString = reply.error().name() + " " + reply.error().message();
     }
+    processPinOperationReply(error, QOfonoSimManagerPrivate::EnterPin);
 
     emit enterPinComplete(error, errorString);
     call->deleteLater();
@@ -352,6 +414,7 @@ void QOfonoSimManager::resetPinCallFinished(QDBusPendingCallWatcher *call)
          error = errorNameToEnum(reply.error().name());
          errorString = reply.error().name() + " " + reply.error().message();
     }
+    processPinOperationReply(error, QOfonoSimManagerPrivate::ResetPin);
 
     emit resetPinComplete(error, errorString);
     call->deleteLater();
@@ -368,6 +431,7 @@ void QOfonoSimManager::lockPinCallFinished(QDBusPendingCallWatcher *call)
          error = errorNameToEnum(reply.error().name());
          errorString = reply.error().name() + " " + reply.error().message();
     }
+    processPinOperationReply(error, QOfonoSimManagerPrivate::LockPin);
 
     emit lockPinComplete(error, errorString);
     call->deleteLater();
@@ -384,9 +448,77 @@ void QOfonoSimManager::unlockPinCallFinished(QDBusPendingCallWatcher *call)
          error = errorNameToEnum(reply.error().name());
          errorString = reply.error().name() + " " + reply.error().message();
     }
+    processPinOperationReply(error, QOfonoSimManagerPrivate::UnlockPin);
 
     emit unlockPinComplete(error, errorString);
     call->deleteLater();
+}
+
+QString QOfonoSimManager::pinRetryConfPath(PinType pinType) const
+{
+    QString s = pinTypeToString(pinType);
+    if (s.isEmpty())
+        return "";
+    return "/nemo/qofono/retries/" + d_ptr->properties["CardIdentifier"].value<QString>() + "/" + s;
+}
+
+void QOfonoSimManager::updateSavedPinRetryCount(PinType pinType, bool hadWrongAttempt)
+{
+    // If the SIM's PIN retry count is not available, we keep our own count using gconf.
+
+    if ((pinType != SimPin && pinType != SimPin2 && pinType != SimPuk && pinType == SimPuk2)
+            || d_ptr->properties.value("Retries").value<QVariantMap>().contains(pinTypeToString(pinType))
+            || d_ptr->properties.value("CardIdentifier").toString().isEmpty()) {
+        return;
+    }
+
+    MGConfItem retryCountConf(pinRetryConfPath(pinType));
+    if (!retryCountConf.key().isEmpty()) {
+        QVariant retryCountVariant = retryCountConf.value();
+        int retryCount;
+        if (!retryCountVariant.isNull()) {
+            retryCount = retryCountVariant.toInt();
+        } else {
+            retryCount = (isPukType(pinType) ? qofonosimmanager_pukRetries : qofonosimmanager_pinRetries);
+        }
+        if (hadWrongAttempt) {
+            retryCount = qMax(0, retryCount - 1);
+            retryCountConf.set(retryCount);
+        }
+        QVariantMap currentRetries = d_ptr->properties["Retries"].toMap();
+        currentRetries[QString::number(pinType)] = retryCount;
+        d_ptr->properties["Retries"] = currentRetries;
+        Q_EMIT pinRetriesChanged(currentRetries);
+    }
+}
+
+void QOfonoSimManager::processPinOperationReply(Error error, int opType)
+{
+    QOfonoSimManager::PinType pinType = d_ptr->pendingOpPinType[(QOfonoSimManagerPrivate::PinOperation)opType];
+
+    if (error == NoError) {
+        MGConfItem retryCountConf(pinRetryConfPath(pinType));
+        retryCountConf.unset();
+
+        QVariantMap currentRetries = d_ptr->properties["Retries"].toMap();
+        currentRetries.remove(QString::number(pinType));
+
+        // If PUK was successfully entered, we can reset the retry count for the corresponding PIN
+        if (isPukType(pinType)) {
+            PinType matchingPin = (PinType)pukToPin(pinType);
+            if (matchingPin != NoPin) {
+                MGConfItem matchingPinRetryConf(pinRetryConfPath(matchingPin));
+                matchingPinRetryConf.unset();
+                currentRetries.remove(QString::number(matchingPin));
+            }
+        }
+        d_ptr->properties["Retries"] = currentRetries;
+        Q_EMIT pinRetriesChanged(currentRetries);
+
+    } else if (error == FailedError) { // other errors do not trigger change in retry count
+        updateSavedPinRetryCount(pinType, true);
+    }
+    d_ptr->pendingOpPinType.remove((QOfonoSimManagerPrivate::PinOperation)opType);
 }
 
 QOfonoSimManager::Error QOfonoSimManager::errorNameToEnum(const QString &errorName)
