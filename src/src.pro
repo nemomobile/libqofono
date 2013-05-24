@@ -11,13 +11,11 @@ include(version.pri)
 equals(QT_MAJOR_VERSION, 4): {
     TARGET = qofono
     pkgconfig.path = $$INSTALL_ROOT$$PREFIX/lib/pkgconfig
-    PKGCONFIG += mlite
 }
 
 equals(QT_MAJOR_VERSION, 5): {
     TARGET = qofono-qt5
     pkgconfig.path = $$INSTALL_ROOT$$PREFIX/lib/pkgconfig-qt5
-    PKGCONFIG += mlite5
 }
 
 TEMPLATE = lib

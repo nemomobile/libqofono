@@ -67,7 +67,8 @@ This package contains qml test for ofono Qt bindings.
 export QT_SELECT=5
 # << build pre
 
-%qmake5 
+%qmake5  \
+    CONFIG+=mlite
 
 make %{?jobs:-j%jobs}
 
@@ -79,7 +80,7 @@ rm -rf %{buildroot}
 # >> install pre
 export QT_SELECT=5
 # << install pre
-%qmake5_install
+%qmake_install
 
 # >> install post
 # << install post

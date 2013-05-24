@@ -63,7 +63,8 @@ This package contains qml test for ofono Qt bindings.
 # >> build pre
 # << build pre
 
-%qmake 
+%qmake  \
+    CONFIG+=mlite
 
 make %{?jobs:-j%jobs}
 

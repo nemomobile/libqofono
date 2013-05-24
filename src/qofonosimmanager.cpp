@@ -13,7 +13,9 @@
 **
 ****************************************************************************/
 
+#ifdef HAS_MLITE
 #include <mgconfitem.h>
+#endif
 #include <QDBusPendingCallWatcher>
 
 #include "qofonosimmanager.h"
@@ -109,6 +111,7 @@ void QOfonoSimManager::setModemPath(const QString &path)
             if (properties.value("Retries").toMap().isEmpty()
                     && !d_ptr->properties.value("CardIdentifier").toString().isEmpty()) {
                 QVariantMap retries;
+#ifdef HAS_MLITE
                 Q_FOREACH(PinType type, QOfonoSimManagerPrivate::allPinTypes.keys()) {
                     MGConfItem retryCountConf(pinRetryConfPath(type));
                     if (!retryCountConf.key().isEmpty()) {
@@ -117,6 +120,7 @@ void QOfonoSimManager::setModemPath(const QString &path)
                             retries[QString::number(type)] = value;
                     }
                 }
+#endif
                 if (!retries.isEmpty()) {
                     d_ptr->properties["Retries"] = retries;
                     Q_EMIT pinRetriesChanged(retries);
@@ -472,6 +476,7 @@ void QOfonoSimManager::updateSavedPinRetryCount(PinType pinType, bool hadWrongAt
         return;
     }
 
+#ifdef HAS_MLITE
     MGConfItem retryCountConf(pinRetryConfPath(pinType));
     if (!retryCountConf.key().isEmpty()) {
         QVariant retryCountVariant = retryCountConf.value();
@@ -490,6 +495,7 @@ void QOfonoSimManager::updateSavedPinRetryCount(PinType pinType, bool hadWrongAt
         d_ptr->properties["Retries"] = currentRetries;
         Q_EMIT pinRetriesChanged(currentRetries);
     }
+#endif
 }
 
 void QOfonoSimManager::processPinOperationReply(Error error, int opType)
@@ -497,8 +503,10 @@ void QOfonoSimManager::processPinOperationReply(Error error, int opType)
     QOfonoSimManager::PinType pinType = d_ptr->pendingOpPinType[(QOfonoSimManagerPrivate::PinOperation)opType];
 
     if (error == NoError) {
+#ifdef HAS_MLITE
         MGConfItem retryCountConf(pinRetryConfPath(pinType));
         retryCountConf.unset();
+#endif
 
         QVariantMap currentRetries = d_ptr->properties["Retries"].toMap();
         currentRetries.remove(QString::number(pinType));
@@ -507,14 +515,15 @@ void QOfonoSimManager::processPinOperationReply(Error error, int opType)
         if (isPukType(pinType)) {
             PinType matchingPin = (PinType)pukToPin(pinType);
             if (matchingPin != NoPin) {
+#ifdef HAS_MLITE
                 MGConfItem matchingPinRetryConf(pinRetryConfPath(matchingPin));
                 matchingPinRetryConf.unset();
+#endif
                 currentRetries.remove(QString::number(matchingPin));
             }
         }
         d_ptr->properties["Retries"] = currentRetries;
         Q_EMIT pinRetriesChanged(currentRetries);
-
     } else if (error == FailedError) { // other errors do not trigger change in retry count
         updateSavedPinRetryCount(pinType, true);
     }

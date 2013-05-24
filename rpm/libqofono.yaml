@@ -16,6 +16,8 @@ PkgConfigBR:
     - mlite
 Configure: none
 Builder: qmake
+QMakeOptions: CONFIG+=mlite
+
 SetupOptions: "-q -n libqofono-%{version}"
 Files:
     - "%{_libdir}/%{name}.so.*"

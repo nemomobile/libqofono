@@ -25,6 +25,7 @@ PkgConfigBR:
 
 Configure: none
 Builder: qmake5
+QMakeOptions: CONFIG+=mlite
 SetupOptions: "-q -n %{name}-%{version}"
 Files:
     - "%{_libdir}/%{name}.so.*"
