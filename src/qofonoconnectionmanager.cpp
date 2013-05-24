@@ -225,3 +225,9 @@ void QOfonoConnectionManager::onContextRemove(const QDBusObjectPath &path)
     Q_EMIT contextRemoved(path.path());
     Q_EMIT contextsChanged(d_ptr->contexts);
 }
+
+
+bool QOfonoConnectionManager::isValid() const
+{
+    return d_ptr->connman->isValid();
+}

@@ -82,6 +82,10 @@ void QOfonoPositioningRequestAgent::Request(const QString &xmlElement)
 {
     Q_EMIT request(xmlElement);
 }
+bool QOfonoPositioningRequestAgent::isValid() const
+{
+    return d_ptr->ofonoPositioningRequestAgent->isValid();
+}
 
 QOfonoPositioningRequestAgentAdaptor::QOfonoPositioningRequestAgentAdaptor(QOfonoPositioningRequestAgent *parent)
     : QDBusAbstractAdaptor(parent),
@@ -107,3 +111,4 @@ void QOfonoPositioningRequestAgentAdaptor::Request(const QString &xmlElement)
 {
     positioningAgent->Request(xmlElement);
 }
+

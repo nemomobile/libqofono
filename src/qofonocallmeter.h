@@ -57,6 +57,7 @@ public:
 
     Q_INVOKABLE void reset(const QString &password);
 
+    bool isValid() const;
 Q_SIGNALS:
     void nearMaximumWarning();
     void accumulatedCallMeterMaximumChanged(quint32);

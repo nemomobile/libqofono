@@ -42,6 +42,7 @@ QOfonoAssistedSatelliteNavigation::~QOfonoAssistedSatelliteNavigation()
     delete d_ptr;
 }
 
+
 void QOfonoAssistedSatelliteNavigation::setModemPath(const QString &path)
 {
     if (!d_ptr->ofonoAssistedSatelliteNav) {
@@ -74,4 +75,9 @@ void QOfonoAssistedSatelliteNavigation::unregisterPositioningRequestAgent(const 
 {
     if (d_ptr->ofonoAssistedSatelliteNav)
         d_ptr->ofonoAssistedSatelliteNav->UnregisterPositioningRequestAgent(QDBusObjectPath(path));
+}
+
+bool QOfonoAssistedSatelliteNavigation::isValid() const
+{
+    return d_ptr->ofonoAssistedSatelliteNav->isValid();
 }

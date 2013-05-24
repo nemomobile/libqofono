@@ -37,6 +37,7 @@ public:
     QString remoteAddress() const;
     QString localAddress() const;
 
+    bool isValid() const;
 Q_SIGNALS:
 //    void remoteAddressChanged();
 //    void localAddressChanged();

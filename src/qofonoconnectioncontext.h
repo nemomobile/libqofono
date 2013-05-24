@@ -81,6 +81,7 @@ public:
     QVariantMap settings() const;
     QVariantMap IPv6Settings() const;
 
+    bool isValid() const;
 
 Q_SIGNALS:
     void activeChanged(const bool);

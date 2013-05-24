@@ -191,3 +191,8 @@ void QOfonoMessageManager::onMessageRemoved(const QString &message)
         }
     }
 }
+
+bool QOfonoMessageManager::isValid() const
+{
+    return d_ptr->messageManager->isValid();
+}

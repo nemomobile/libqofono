@@ -64,3 +64,8 @@ QString QOfonoPhonebook::import()
     return QString();
 }
 
+bool QOfonoPhonebook::isValid() const
+{
+    return d_ptr->phonebook->isValid();
+}
+

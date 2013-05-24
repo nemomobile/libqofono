@@ -82,6 +82,7 @@ public:
 
     QString currentOperatorPath();
 
+    bool isValid() const;
 Q_SIGNALS:
     void modeChanged(const QString &mode);
     void statusChanged(const QString &status);

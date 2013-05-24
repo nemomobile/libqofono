@@ -43,6 +43,7 @@ public:
     bool ttyEnabled() const;
     void setTtyEnabled(bool enabled);
 
+    bool isValid() const;
 Q_SIGNALS:
 
     void ttyEnabledChanged(bool);

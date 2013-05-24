@@ -34,6 +34,7 @@ public:
     QString agentPath() const;
     void setAgentPath(const QString &path);
 
+    bool isValid() const;
 Q_SIGNALS:
     void request(const QString &xmlElement);
     void positioningRequest();

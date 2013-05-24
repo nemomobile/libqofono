@@ -136,3 +136,9 @@ void QOfonoManager::ofonoUnregistered(const QString &)
     Q_EMIT modemsChanged(d_ptr->modems);
     Q_EMIT availableChanged(false);
 }
+
+
+bool QOfonoManager::isValid() const
+{
+    return d_ptr->ofonoManager->isValid();
+}

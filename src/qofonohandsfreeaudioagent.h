@@ -35,6 +35,7 @@ public:
     QString agentPath() const;
     void setAgentPath(const QString &path);
 
+    bool isValid() const;
 Q_SIGNALS:
     void newConnection(const QString &card, QDBusUnixFileDescriptor sco, const QByteArray &codec);
     void release();

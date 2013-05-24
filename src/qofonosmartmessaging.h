@@ -38,7 +38,7 @@ public:
 
     QString modemPath() const;
     void setModemPath(const QString &path);
-
+    bool isValid() const;
 public slots:
 
     QDBusObjectPath sendAppointment(const QString &toPhoneNumber, const QByteArray &appointment);

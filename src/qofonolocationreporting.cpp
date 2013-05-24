@@ -98,3 +98,8 @@ int QOfonoLocationReporting::request()
     }
     return 0;
 }
+
+bool QOfonoLocationReporting::isValid() const
+{
+    return d_ptr->ofonoLocationReporting->isValid();
+}

@@ -127,3 +127,7 @@ void QOfonoRadioSettings::setFastDormancy(bool fastDormancy)
         d_ptr->radioSettings->SetProperty("FastDormancy", QDBusVariant(fastDormancy));
 }
 
+bool QOfonoRadioSettings::isValid() const
+{
+    return d_ptr->radioSettings->isValid();
+}
