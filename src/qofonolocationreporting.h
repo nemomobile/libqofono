@@ -38,6 +38,7 @@ public:
     QString type() const;
     bool enabled() const;
 
+    bool isValid() const;
 public slots:
     void release();
     int request();

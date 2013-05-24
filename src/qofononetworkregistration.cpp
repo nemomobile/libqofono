@@ -279,3 +279,8 @@ QString QOfonoNetworkRegistration::currentOperatorPath()
     }
     return QString();
 }
+
+bool QOfonoNetworkRegistration::isValid() const
+{
+    return d_ptr->networkRegistration->isValid();
+}

@@ -172,3 +172,7 @@ void QOfonoCallForwarding::disableAll(const QString &type)
         d_ptr->callForward->DisableAll(type);
 }
 
+bool QOfonoCallForwarding::isValid() const
+{
+    return d_ptr->callForward->isValid();
+}

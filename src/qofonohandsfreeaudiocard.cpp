@@ -100,3 +100,8 @@ void QOfonoHandsfreeAudioCard::connect() const
         d_ptr->ofonoHandsfreeAudioCard->Connect();
     }
 }
+
+bool QOfonoHandsfreeAudioCard::isValid() const
+{
+    return d_ptr->ofonoHandsfreeAudioCard->isValid();
+}

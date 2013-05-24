@@ -85,18 +85,19 @@ public:
     void setModemPath(const QString &path);
 
     bool present() const;
-      QString subscriberIdentity() const;
-      QString mobileCountryCode() const;
-      QString mobileNetworkCode() const;
-      QStringList subscriberNumbers() const;
-      QVariantMap serviceNumbers() const; //
-      PinType pinRequired() const;
-      QVariantList lockedPins() const;
-      QString cardIdentifier() const;
-      QStringList preferredLanguages() const;
-      QVariantMap pinRetries() const; //
-      bool fixedDialing() const;
-      bool barredDialing() const;
+    QString subscriberIdentity() const;
+    QString mobileCountryCode() const;
+    QString mobileNetworkCode() const;
+    QStringList subscriberNumbers() const;
+    QVariantMap serviceNumbers() const; //
+    PinType pinRequired() const;
+    QVariantList lockedPins() const;
+    QString cardIdentifier() const;
+    QStringList preferredLanguages() const;
+    QVariantMap pinRetries() const; //
+    bool fixedDialing() const;
+    bool barredDialing() const;
+    bool isValid() const;
 
 Q_SIGNALS:
       void modemPathChanged(const QString &modemPath);

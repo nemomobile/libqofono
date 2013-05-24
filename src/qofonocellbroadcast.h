@@ -48,6 +48,7 @@ public:
     QString topics() const;
     void setTopics(const QString &) const;
 
+    bool isValid() const;
 Q_SIGNALS:
     void enabledChanged(bool);
     void topicsChanged(const QString &);

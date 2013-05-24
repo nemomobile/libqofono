@@ -143,3 +143,8 @@ void QOfonoCallMeter::reset(const QString &password)
     if (d_ptr->callMeter)
         d_ptr->callMeter->Reset(password);
 }
+
+bool QOfonoCallMeter::isValid() const
+{
+    return d_ptr->callMeter->isValid();
+}

@@ -111,3 +111,8 @@ void QOfonoMessageWaiting::setVoicemailMailboxNumber(const QString &mailboxnumbe
         d_ptr->messageWaiting->SetProperty(QLatin1String("VoiceMailboxNumber"),QDBusVariant(mailboxnumber));
 
 }
+
+bool QOfonoMessageWaiting::isValid() const
+{
+    return d_ptr->messageWaiting->isValid();
+}

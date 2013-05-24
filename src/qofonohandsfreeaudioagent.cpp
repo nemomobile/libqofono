@@ -65,6 +65,11 @@ void QOfonoHandsfreeAudioAgent::Release()
     Q_EMIT release();
 }
 
+bool QOfonoHandsfreeAudioAgent::isValid() const
+{
+    return d_ptr->ofonoHandsfreeAudioAgent->isValid();
+}
+
 QOfonoHandsfreeAudioAgentAdaptor::QOfonoHandsfreeAudioAgentAdaptor(QOfonoHandsfreeAudioAgent *parent)
     : QDBusAbstractAdaptor(parent),
       audioAgent(parent)
@@ -84,4 +89,3 @@ void QOfonoHandsfreeAudioAgentAdaptor::Release()
 {
     audioAgent->Release();
 }
-

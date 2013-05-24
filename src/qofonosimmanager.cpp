@@ -622,3 +622,8 @@ int QOfonoSimManager::pukToPin(PinType puk)
         return (int)QOfonoSimManager::NoPin;
     }
 }
+
+bool QOfonoSimManager::isValid() const
+{
+    return d_ptr->simManager->isValid();
+}

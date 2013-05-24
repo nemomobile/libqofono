@@ -91,3 +91,8 @@ void QOfonoTextTelephony::setTtyEnabled(bool enabled)
     if (d_ptr->textTelephony)
         d_ptr->textTelephony->SetProperty(QLatin1String("Enabled"),QDBusVariant(enabled));
 }
+
+bool QOfonoTextTelephony::isValid() const
+{
+    return d_ptr->textTelephony->isValid();
+}

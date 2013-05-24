@@ -47,6 +47,7 @@ public:
     void setEchoCancelingNoiseReduction(bool on);
     uchar batteryChargeLevel() const;
 
+    bool isValid() const;
 Q_SIGNALS:
     void voiceRecognitionChanged(bool on);
     void echoCancelingNoiseReductionChanged(bool on);

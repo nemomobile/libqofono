@@ -41,6 +41,7 @@ public:
 
     QString state() const;
 
+    bool isValid() const;
 Q_SIGNALS:
     void notificationReceived(const QString &message);
     void requestReceived(const QString &message);

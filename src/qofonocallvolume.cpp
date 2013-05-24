@@ -123,3 +123,7 @@ void QOfonoCallVolume::setMicrophoneVolume(const quint8 &volume)
         d_ptr->callVolume->SetProperty("MicrophoneVolume",QDBusVariant(volume));
 }
 
+bool QOfonoCallVolume::isValid() const
+{
+    return d_ptr->callVolume->isValid();
+}
