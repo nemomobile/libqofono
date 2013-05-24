@@ -40,7 +40,8 @@ public:
 
     QStringList modems();
     bool available() const;
-    
+
+    bool isValid() const;
 Q_SIGNALS: // SIGNALS
     void modemAdded(const QString &modem);
     void modemRemoved(const QString &modem);

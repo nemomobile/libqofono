@@ -51,6 +51,7 @@ public:
     quint8 microphoneVolume()const ;
     void setMicrophoneVolume(const quint8 &mpvolume);
 
+    bool isValid() const;
 Q_SIGNALS:
     void mutedChanged(bool muted);
     void speakerVolumeChanged(const quint8 &volume);

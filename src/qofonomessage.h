@@ -42,6 +42,8 @@ public:
 
     QString state() const;
     Q_INVOKABLE void cancel();
+
+    bool isValid() const;
 Q_SIGNALS:
 
     void stateChanged(const QString &state);

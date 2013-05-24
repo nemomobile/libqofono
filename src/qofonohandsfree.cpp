@@ -132,5 +132,9 @@ uchar QOfonoHandsfree::batteryChargeLevel() const
     return 0;
 }
 
+bool QOfonoHandsfree::isValid() const
+{
+    return d_ptr->ofonoHandsFree->isValid();
+}
 
 

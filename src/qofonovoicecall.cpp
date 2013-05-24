@@ -215,3 +215,8 @@ void QOfonoVoiceCall::deflect(const QString &number)
     if (d_ptr->voiceCall)
         d_ptr->voiceCall->Deflect(number);
 }
+
+bool QOfonoVoiceCall::isValid() const
+{
+    return d_ptr->voiceCall->isValid();
+}

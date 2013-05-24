@@ -60,6 +60,7 @@ public:
     bool remoteHeld() const;
     bool remoteMultiparty() const;
 
+    bool isValid() const;
 Q_SIGNALS:
     void lineIdentificationChanged(const QString &name);
     void nameChanged(const QString &name);

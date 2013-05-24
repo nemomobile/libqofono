@@ -88,3 +88,8 @@ void QOfonoMessage::cancel()
     if (d_ptr->oMessage)
         d_ptr->oMessage->Cancel();
 }
+
+bool QOfonoMessage::isValid() const
+{
+    return d_ptr->oMessage->isValid();
+}

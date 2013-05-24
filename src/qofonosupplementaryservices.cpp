@@ -89,3 +89,8 @@ QString QOfonoSupplementaryServices::state() const
     else
         return QString();
 }
+
+bool QOfonoSupplementaryServices::isValid() const
+{
+    return d_ptr->supplementaryServices->isValid();
+}

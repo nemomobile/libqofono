@@ -49,7 +49,7 @@ public:
      QString voiceOutgoing();
      Q_INVOKABLE void setVoiceOutgoing(const QString &barrings, const QString &password);
 
-
+     bool isValid() const;
 Q_SIGNALS:
      void voiceIncomingChanged(const QString &barrings);
      void voiceOutgoingChanged(const QString &barrings);

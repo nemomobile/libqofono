@@ -180,3 +180,7 @@ QStringList QOfonoVoiceCallManager::getCalls() const
          d_ptr->voiceCallManager->HangupMultiparty();
  }
 
+ bool QOfonoVoiceCallManager::isValid() const
+ {
+     return d_ptr->voiceCallManager->isValid();
+ }

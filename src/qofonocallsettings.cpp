@@ -165,3 +165,7 @@ void QOfonoCallSettings::setVoiceCallWaiting(const QString &setting)
         d_ptr->callSettings->setProperty("VoiceCallWaiting", setting);
 }
 
+bool QOfonoCallSettings::isValid() const
+{
+    return d_ptr->callSettings->isValid();
+}

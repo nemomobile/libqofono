@@ -65,6 +65,7 @@ public:
 
     void disableAll(const QString &type);
 
+    bool isValid() const;
 Q_SIGNALS:
     void voiceUnconditionalChanged(const QString &property);
     void voiceBusyChanged(const QString &property);

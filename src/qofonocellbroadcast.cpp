@@ -108,3 +108,8 @@ void QOfonoCellBroadcast::propertyChanged(const QString& property, const QDBusVa
         Q_EMIT topicsChanged(value.value<QString>());
     }
 }
+
+bool QOfonoCellBroadcast::isValid() const
+{
+    return d_ptr->cellBroadcast->isValid();
+}

@@ -54,6 +54,8 @@ public:
     QString additionalInfo() const;
 
     Q_INVOKABLE void registerOperator();
+    bool isValid() const;
+
 Q_SIGNALS:
 
     void nameChanged(const QString &name);

@@ -53,6 +53,7 @@ public:
     QString voiceCallWaiting();
     void setVoiceCallWaiting(const QString &setting);
 
+    bool isValid() const;
 Q_SIGNALS:
 
     void callingLinePresentationChanged(const QString &setting);

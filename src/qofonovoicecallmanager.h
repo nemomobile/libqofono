@@ -44,6 +44,7 @@ public:
 
     Q_INVOKABLE QStringList getCalls() const;
 
+    bool isValid() const;
 Q_SIGNALS:
     void emergencyNumbersChanged(const QStringList &numbers);
 

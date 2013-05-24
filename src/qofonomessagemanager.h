@@ -58,7 +58,7 @@ public:
     Q_INVOKABLE void sendMessage(const QString &numberTo, const QString &message);
     Q_INVOKABLE QStringList messages();
 
-
+    bool isValid() const;
 Q_SIGNALS:
     void serviceCenterAddressChanged(const QString &address);
     void useDeliveryReportsChanged(const bool &useDeliveryReports);

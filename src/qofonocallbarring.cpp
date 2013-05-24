@@ -143,3 +143,8 @@ void QOfonoCallBarring::disableAllOutgoing(const QString &password)
     if (d_ptr->callBarring)
         d_ptr->callBarring->DisableAllOutgoing(password);
 }
+
+bool QOfonoCallBarring::isValid() const
+{
+    return d_ptr->callBarring->isValid();
+}

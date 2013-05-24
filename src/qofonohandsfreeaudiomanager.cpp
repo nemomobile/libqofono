@@ -82,3 +82,7 @@ void QOfonoHandsfreeAudioManager::registerAgent(const QString &path, CodecTypeFl
     d_ptr->ofonoHandsfreeAudioManager->Register(QDBusObjectPath(path),ba);
 }
 
+bool QOfonoHandsfreeAudioManager::isValid() const
+{
+    return d_ptr->ofonoHandsfreeAudioManager->isValid();
+}

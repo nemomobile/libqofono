@@ -46,6 +46,7 @@ public:
     QString voicemailMailboxNumber() const;
     void setVoicemailMailboxNumber(const QString &mailboxnumber);
 
+    bool isValid() const;
 Q_SIGNALS:
 
     void voicemailWaitingChanged(bool waiting);

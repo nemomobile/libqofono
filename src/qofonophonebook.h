@@ -38,6 +38,7 @@ public:
     QString modemPath() const;
     void setModemPath(const QString &path);
 
+    bool isValid() const;
 Q_SIGNALS:
 
 public slots:

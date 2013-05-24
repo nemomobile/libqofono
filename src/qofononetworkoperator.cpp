@@ -149,3 +149,8 @@ void QOfonoNetworkOperator::propertyChanged(const QString &property, const QDBus
     }
 }
 
+bool QOfonoNetworkOperator::isValid() const
+{
+    return d_ptr->networkOperator->isValid();
+}
+

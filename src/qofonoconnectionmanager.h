@@ -57,7 +57,7 @@ public:
     void setPowered(bool);
 
     QStringList contexts();
-
+    bool isValid() const;
 Q_SIGNALS:
     void attachedChanged(bool value);
     void bearerChanged(const QString &bearer);

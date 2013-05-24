@@ -252,3 +252,9 @@ void QOfonoConnectionContext::setMessageCenter(const QString &value)
         d_ptr->context->SetProperty(QLatin1String("MessageCenter"),QDBusVariant(value));
 }
 
+
+bool QOfonoConnectionContext::isValid() const
+{
+    return d_ptr->context->isValid();
+}
+

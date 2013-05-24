@@ -85,3 +85,8 @@ void QOfonoSmartMessaging::unregisterAgent(const QString &objectPath)
     if (d_ptr->smartMessaging)
         d_ptr->smartMessaging->UnregisterAgent(QDBusObjectPath(objectPath));
 }
+
+bool QOfonoSmartMessaging::isValid() const
+{
+    return d_ptr->smartMessaging->isValid();
+}
