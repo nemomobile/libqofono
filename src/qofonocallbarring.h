@@ -30,7 +30,7 @@ class QOfonoCallBarringPrivate;
 class QOFONOSHARED_EXPORT QOfonoCallBarring : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(QString modemPath READ modemPath WRITE setModemPath)
+    Q_PROPERTY(QString modemPath READ modemPath WRITE setModemPath NOTIFY modemPathChanged)
 
     Q_PROPERTY(QString voiceIncoming READ voiceIncoming NOTIFY voiceIncomingChanged)
     Q_PROPERTY(QString voiceOutgoing READ voiceOutgoing NOTIFY voiceOutgoingChanged)
@@ -53,6 +53,7 @@ public:
 Q_SIGNALS:
      void voiceIncomingChanged(const QString &barrings);
      void voiceOutgoingChanged(const QString &barrings);
+     void modemPathChanged(const QString &path);
 
 //     void changePasswordComplete(bool success);
 //     void disableAllComplete(bool success);

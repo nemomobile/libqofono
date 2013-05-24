@@ -29,7 +29,7 @@ class QOfonoMessageWaitingPrivate;
 class QOFONOSHARED_EXPORT QOfonoMessageWaiting : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(QString modemPath READ modemPath WRITE setModemPath)
+    Q_PROPERTY(QString modemPath READ modemPath WRITE setModemPath NOTIFY modemPathChanged)
     Q_PROPERTY(bool voicemailWaiting READ voicemailWaiting NOTIFY voicemailWaitingChanged)
     Q_PROPERTY(int voicemailMessageCount READ voicemailMessageCount NOTIFY voicemailMessageCountChanged)
     Q_PROPERTY(QString voicemailMailboxNumber READ voicemailMailboxNumber WRITE setVoicemailMailboxNumber NOTIFY voicemailMailboxNumberChanged)
@@ -52,6 +52,7 @@ Q_SIGNALS:
     void voicemailWaitingChanged(bool waiting);
     void voicemailMessageCountChanged(int count);
     void voicemailMailboxNumberChanged(const QString &mailboxnumber);
+    void modemPathChanged(const QString &path);
 
 public slots:
     

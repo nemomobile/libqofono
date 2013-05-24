@@ -24,7 +24,7 @@ class QOfonoAssistedSatelliteNavigationPrivate;
 class QOfonoAssistedSatelliteNavigation : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(QString modemPath READ modemPath WRITE setModemPath)
+    Q_PROPERTY(QString modemPath READ modemPath WRITE setModemPath NOTIFY modemPathChanged)
 
 public:
 
@@ -36,6 +36,7 @@ public:
 
     bool isValid() const;
 Q_SIGNALS:
+    void modemPathChanged(const QString &path);
 
 public slots:
 

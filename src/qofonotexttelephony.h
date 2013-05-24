@@ -29,7 +29,7 @@ class QOfonoTextTelephonyPrivate;
 class QOFONOSHARED_EXPORT QOfonoTextTelephony : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(QString modemPath READ modemPath WRITE setModemPath)
+    Q_PROPERTY(QString modemPath READ modemPath WRITE setModemPath NOTIFY modemPathChanged)
     Q_PROPERTY(bool ttyEnabled READ ttyEnabled WRITE setTtyEnabled NOTIFY ttyEnabledChanged)
 
 public:
@@ -47,6 +47,7 @@ public:
 Q_SIGNALS:
 
     void ttyEnabledChanged(bool);
+    void modemPathChanged(const QString &path);
 
 public slots:
     

@@ -46,16 +46,19 @@ QOfonoHandsfree::~QOfonoHandsfree()
 void QOfonoHandsfree::setModemPath(const QString &path)
 {
     if (!d_ptr->ofonoHandsFree) {
-        d_ptr->modemPath = path;
-        d_ptr->ofonoHandsFree = new OfonoHandsfree("org.ofono", path, QDBusConnection::systemBus(),this);
+        if (path != modemPath()) {
+            d_ptr->ofonoHandsFree = new OfonoHandsfree("org.ofono", path, QDBusConnection::systemBus(),this);
 
-        if (d_ptr->ofonoHandsFree) {
-            connect(d_ptr->ofonoHandsFree,SIGNAL(PropertyChanged(QString,QDBusVariant)),
-                    this,SLOT(propertyChanged(QString,QDBusVariant)));
+            if (d_ptr->ofonoHandsFree) {
+                d_ptr->modemPath = path;
+                connect(d_ptr->ofonoHandsFree,SIGNAL(PropertyChanged(QString,QDBusVariant)),
+                        this,SLOT(propertyChanged(QString,QDBusVariant)));
 
-            QDBusReply<QVariantMap> reply;
-            reply = d_ptr->ofonoHandsFree->GetProperties();
-            d_ptr->properties = reply.value();
+                QDBusReply<QVariantMap> reply;
+                reply = d_ptr->ofonoHandsFree->GetProperties();
+                d_ptr->properties = reply.value();
+                Q_EMIT modemPathChanged(path);
+            }
         }
     }
 }

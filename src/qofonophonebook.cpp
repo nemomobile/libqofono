@@ -44,9 +44,13 @@ QOfonoPhonebook::~QOfonoPhonebook()
 void QOfonoPhonebook::setModemPath(const QString &path)
 {
     if (!d_ptr->phonebook) {
-        d_ptr->phonebook = new OfonoPhonebook("org.ofono", path, QDBusConnection::systemBus(),this);
-        if (d_ptr->phonebook->isValid())
-            d_ptr->modemPath = path;
+        if (path != modemPath()) {
+            d_ptr->phonebook = new OfonoPhonebook("org.ofono", path, QDBusConnection::systemBus(),this);
+            if (d_ptr->phonebook->isValid()) {
+                d_ptr->modemPath = path;
+                Q_EMIT modemPathChanged(path);
+            }
+        }
     }
 }
 

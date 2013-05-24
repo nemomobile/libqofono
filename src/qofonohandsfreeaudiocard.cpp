@@ -46,16 +46,19 @@ QOfonoHandsfreeAudioCard::~QOfonoHandsfreeAudioCard()
 void QOfonoHandsfreeAudioCard::setModemPath(const QString &path)
 {
     if (!d_ptr->ofonoHandsfreeAudioCard) {
-        d_ptr->modemPath = path;
-        d_ptr->ofonoHandsfreeAudioCard = new OfonoHandsfreeAudioCard("org.ofono", path, QDBusConnection::systemBus(),this);
+        if (path != modemPath()) {
+            d_ptr->modemPath = path;
+            d_ptr->ofonoHandsfreeAudioCard = new OfonoHandsfreeAudioCard("org.ofono", path, QDBusConnection::systemBus(),this);
 
-        if (d_ptr->ofonoHandsfreeAudioCard) {
-//            connect(d_ptr->ofonoHandsfreeAudioCard,SIGNAL(PropertyChanged(QString,QDBusVariant)),
-//                    this,SLOT(propertyChanged(QString,QDBusVariant)));
+            if (d_ptr->ofonoHandsfreeAudioCard) {
+                //            connect(d_ptr->ofonoHandsfreeAudioCard,SIGNAL(PropertyChanged(QString,QDBusVariant)),
+                //                    this,SLOT(propertyChanged(QString,QDBusVariant)));
 
-            QDBusReply<QVariantMap> reply;
-            reply = d_ptr->ofonoHandsfreeAudioCard->GetProperties();
-            d_ptr->properties = reply.value();
+                QDBusReply<QVariantMap> reply;
+                reply = d_ptr->ofonoHandsfreeAudioCard->GetProperties();
+                d_ptr->properties = reply.value();
+                Q_EMIT modemPathChanged(path);
+            }
         }
     }
 }

@@ -46,8 +46,11 @@ QOfonoAssistedSatelliteNavigation::~QOfonoAssistedSatelliteNavigation()
 void QOfonoAssistedSatelliteNavigation::setModemPath(const QString &path)
 {
     if (!d_ptr->ofonoAssistedSatelliteNav) {
-        d_ptr->modemPath = path;
-        d_ptr->ofonoAssistedSatelliteNav = new OfonoAssistedSatelliteNavigation("org.ofono", path, QDBusConnection::systemBus(),this);
+        if (path != modemPath()) {
+            d_ptr->modemPath = path;
+            d_ptr->ofonoAssistedSatelliteNav = new OfonoAssistedSatelliteNavigation("org.ofono", path, QDBusConnection::systemBus(),this);
+            Q_EMIT modemPathChanged(path);
+        }
     }
 }
 

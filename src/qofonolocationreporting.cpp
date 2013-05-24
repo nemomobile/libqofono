@@ -47,14 +47,16 @@ QOfonoLocationReporting::~QOfonoLocationReporting()
 void QOfonoLocationReporting::setModemPath(const QString &path)
 {
     if (!d_ptr->ofonoLocationReporting) {
-        d_ptr->modemPath = path;
-        d_ptr->ofonoLocationReporting = new OfonoLocationReporting("org.ofono", path, QDBusConnection::systemBus(),this);
+        if (path != modemPath()) {
+            d_ptr->ofonoLocationReporting = new OfonoLocationReporting("org.ofono", path, QDBusConnection::systemBus(),this);
 
-        if (d_ptr->ofonoLocationReporting) {
-
-            QDBusReply<QVariantMap> reply;
-            reply = d_ptr->ofonoLocationReporting->GetProperties();
-            d_ptr->properties = reply.value();
+            if (d_ptr->ofonoLocationReporting) {
+                d_ptr->modemPath = path;
+                QDBusReply<QVariantMap> reply;
+                reply = d_ptr->ofonoLocationReporting->GetProperties();
+                d_ptr->properties = reply.value();
+                Q_EMIT modemPathChanged(path);
+            }
         }
     }
 }

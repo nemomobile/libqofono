@@ -29,7 +29,7 @@ class QOfonoPhonebookPrivate;
 class QOFONOSHARED_EXPORT QOfonoPhonebook : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(QString modemPath READ modemPath WRITE setModemPath)
+    Q_PROPERTY(QString modemPath READ modemPath WRITE setModemPath NOTIFY modemPathChanged)
 
 public:
     explicit QOfonoPhonebook(QObject *parent = 0);
@@ -40,6 +40,7 @@ public:
 
     bool isValid() const;
 Q_SIGNALS:
+    void modemPathChanged(const QString &path);
 
 public slots:
     QString import();

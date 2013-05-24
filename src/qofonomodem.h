@@ -48,7 +48,7 @@ class QOFONOSHARED_EXPORT QOfonoModem : public QObject
     Q_PROPERTY(QStringList features READ features NOTIFY featuresChanged)
     Q_PROPERTY(QStringList interfaces READ interfaces NOTIFY interfacesChanged)
 
-    Q_PROPERTY(QString modemPath READ modemPath WRITE setModemPath)
+    Q_PROPERTY(QString modemPath READ modemPath WRITE setModemPath NOTIFY modemPathChanged)
 
 public:
     explicit QOfonoModem(QObject *parent = 0);
@@ -94,6 +94,7 @@ Q_SIGNALS:
 
     void featuresChanged(const QStringList &features);
     void interfacesChanged(const QStringList &interfaces);
+    void modemPathChanged(const QString &path);
 
 private slots:
     void propertyChanged(const QString &property,const QDBusVariant &value);

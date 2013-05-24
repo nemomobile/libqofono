@@ -30,7 +30,7 @@ class QOfonoSmartMessagingPrivate;
 class QOFONOSHARED_EXPORT QOfonoSmartMessaging : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(QString modemPath READ modemPath WRITE setModemPath)
+    Q_PROPERTY(QString modemPath READ modemPath WRITE setModemPath NOTIFY modemPathChanged)
 
 public:
     explicit QOfonoSmartMessaging(QObject *parent = 0);
@@ -46,6 +46,8 @@ public slots:
 
     void registerAgent(const QString &objectPath);
     void unregisterAgent(const QString &objectPath);
+Q_SIGNALS:
+    void modemPathChanged(const QString &path);
 
 private:
     QOfonoSmartMessagingPrivate *d_ptr;

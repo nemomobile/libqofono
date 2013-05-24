@@ -36,7 +36,7 @@ class QOFONOSHARED_EXPORT QOfonoConnectionManager : public QObject
     Q_PROPERTY(bool roamingAllowed READ roamingAllowed WRITE setRoamingAllowed NOTIFY roamingAllowedChanged)
     Q_PROPERTY(bool powered READ powered WRITE setPowered NOTIFY poweredChanged)
 
-    Q_PROPERTY(QString modemPath READ modemPath WRITE setModemPath)
+    Q_PROPERTY(QString modemPath READ modemPath WRITE setModemPath NOTIFY modemPathChanged)
     Q_PROPERTY(QStringList contexts READ contexts NOTIFY contextsChanged)
 
 public:
@@ -68,6 +68,7 @@ Q_SIGNALS:
     void contextAdded(const QString &path);
     void contextRemoved(const QString &path);
     void contextsChanged(const QStringList &contexts);
+    void modemPathChanged(const QString &path);
 
 public slots:
     void deactivateAll();

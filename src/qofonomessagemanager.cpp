@@ -48,32 +48,35 @@ QOfonoMessageManager::~QOfonoMessageManager()
 void QOfonoMessageManager::setModemPath(const QString &path)
 {
     if (!d_ptr->messageManager) {
-        d_ptr->messageManager = new OfonoMessageManager("org.ofono", path, QDBusConnection::systemBus(),this);
+        if (path != modemPath()) {
+            d_ptr->messageManager = new OfonoMessageManager("org.ofono", path, QDBusConnection::systemBus(),this);
 
-        if (d_ptr->messageManager->isValid()) {
-            d_ptr->modemPath = path;
-            connect(d_ptr->messageManager,SIGNAL(PropertyChanged(QString,QDBusVariant)),
-                    this,SLOT(propertyChanged(QString,QDBusVariant)));
-            connect(d_ptr->messageManager,SIGNAL(ImmediateMessage(QString,QVariantMap)),
-                    this,SIGNAL(immediateMessage(QString,QVariantMap)));
-            connect(d_ptr->messageManager,SIGNAL(IncomingMessage(QString,QVariantMap)),
-                    this,SIGNAL(incomingMessage(QString,QVariantMap)));
+            if (d_ptr->messageManager->isValid()) {
+                d_ptr->modemPath = path;
+                connect(d_ptr->messageManager,SIGNAL(PropertyChanged(QString,QDBusVariant)),
+                        this,SLOT(propertyChanged(QString,QDBusVariant)));
+                connect(d_ptr->messageManager,SIGNAL(ImmediateMessage(QString,QVariantMap)),
+                        this,SIGNAL(immediateMessage(QString,QVariantMap)));
+                connect(d_ptr->messageManager,SIGNAL(IncomingMessage(QString,QVariantMap)),
+                        this,SIGNAL(incomingMessage(QString,QVariantMap)));
 
-            QDBusReply<QVariantMap> reply;
-            reply = d_ptr->messageManager->GetProperties();
-            d_ptr->properties = reply.value();
+                QDBusReply<QVariantMap> reply;
+                reply = d_ptr->messageManager->GetProperties();
+                d_ptr->properties = reply.value();
 
-            ObjectPathPropertiesList messages;
+                ObjectPathPropertiesList messages;
 
-            QDBusMessage request = QDBusMessage::createMethodCall("org.ofono",
-                                                                  "org.ofono.MessageManager",
-                                                                  path,
-                                                                  "GetMessages");
-              QDBusReply<ObjectPathPropertiesList> reply2 = QDBusConnection::systemBus().call(request);
+                QDBusMessage request = QDBusMessage::createMethodCall("org.ofono",
+                                                                      "org.ofono.MessageManager",
+                                                                      path,
+                                                                      "GetMessages");
+                QDBusReply<ObjectPathPropertiesList> reply2 = QDBusConnection::systemBus().call(request);
 
-            messages = reply2.value();
-            foreach(ObjectPathProperties message, messages) {
-                d_ptr->messageList << message.path.path();
+                messages = reply2.value();
+                foreach(ObjectPathProperties message, messages) {
+                    d_ptr->messageList << message.path.path();
+                }
+                Q_EMIT modemPathChanged(path);
             }
         }
     }

@@ -65,22 +65,25 @@ void QOfonoConnectionManager::setModemPath(const QString &path)
         return;
 
     if (!d_ptr->connman) {
-        d_ptr->connman = new OfonoConnectionManager("org.ofono", path, QDBusConnection::systemBus(),this);
+        if (path != modemPath()) {
+            d_ptr->connman = new OfonoConnectionManager("org.ofono", path, QDBusConnection::systemBus(),this);
 
-        if (d_ptr->connman->isValid()) {
-            d_ptr->modemPath = path;
+            if (d_ptr->connman->isValid()) {
+                d_ptr->modemPath = path;
 
-            connect(d_ptr->connman,SIGNAL(PropertyChanged(QString,QDBusVariant)),
-                    this,SLOT(propertyChanged(QString,QDBusVariant)));
-            connect(d_ptr->connman,SIGNAL(ContextAdded(QDBusObjectPath,QVariantMap)),
-                    this,SLOT(onContextAdd(QDBusObjectPath,QVariantMap)));
-            connect(d_ptr->connman,SIGNAL(ContextRemoved(QDBusObjectPath)),
-                    this,SLOT(onContextRemove(QDBusObjectPath)));
+                connect(d_ptr->connman,SIGNAL(PropertyChanged(QString,QDBusVariant)),
+                        this,SLOT(propertyChanged(QString,QDBusVariant)));
+                connect(d_ptr->connman,SIGNAL(ContextAdded(QDBusObjectPath,QVariantMap)),
+                        this,SLOT(onContextAdd(QDBusObjectPath,QVariantMap)));
+                connect(d_ptr->connman,SIGNAL(ContextRemoved(QDBusObjectPath)),
+                        this,SLOT(onContextRemove(QDBusObjectPath)));
 
-            QDBusReply<QVariantMap> reply;
-            reply = d_ptr->connman->GetProperties();
-            d_ptr->properties = reply.value();
-            d_ptr->getContexts();
+                QDBusReply<QVariantMap> reply;
+                reply = d_ptr->connman->GetProperties();
+                d_ptr->properties = reply.value();
+                d_ptr->getContexts();
+                Q_EMIT modemPathChanged(path);
+            }
         }
     }
 }

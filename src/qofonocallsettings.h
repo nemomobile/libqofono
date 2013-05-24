@@ -30,7 +30,7 @@ class QOfonoCallSettingsPrivate;
 class QOFONOSHARED_EXPORT QOfonoCallSettings : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(QString modemPath READ modemPath WRITE setModemPath)
+    Q_PROPERTY(QString modemPath READ modemPath WRITE setModemPath NOTIFY modemPathChanged)
 
 
 public:
@@ -64,6 +64,7 @@ Q_SIGNALS:
     void callingLineRestrictionChanged(const QString &setting);
     void hideCallerIdChanged(const QString &setting);
     void voiceCallWaitingChanged(const QString &setting);
+    void modemPathChanged(const QString &path);
 
 public slots:
     

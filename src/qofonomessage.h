@@ -30,7 +30,7 @@ class QOfonoMessagePrivate;
 class QOFONOSHARED_EXPORT QOfonoMessage : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(QString messagePath READ messagePath WRITE setMessagePath)
+    Q_PROPERTY(QString messagePath READ messagePath WRITE setMessagePath NOTIFY messagePathChanged)
     Q_PROPERTY(QString state READ state NOTIFY stateChanged)
 
 public:
@@ -47,6 +47,7 @@ public:
 Q_SIGNALS:
 
     void stateChanged(const QString &state);
+    void messagePathChanged(const QString &path);
 public slots:
     
 private:

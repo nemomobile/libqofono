@@ -24,7 +24,7 @@ class QOfonoHandsfreeAudioManagerPrivate;
 class QOfonoHandsfreeAudioManager : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(QString modemPath READ modemPath WRITE setModemPath)
+    Q_PROPERTY(QString modemPath READ modemPath WRITE setModemPath NOTIFY modemPathChanged)
     Q_ENUMS(CodecType)
     Q_FLAGS(CodecType CodecTypeFlags)
 
@@ -47,6 +47,7 @@ Q_SIGNALS:
     void cardAdded(const QString &card);
     void cardRemoved(const QString &card);
 
+    void modemPathChanged(const QString &path);
 
 public slots:
     QStringList cards() const;

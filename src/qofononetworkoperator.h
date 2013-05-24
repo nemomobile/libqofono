@@ -30,7 +30,7 @@ class QOfonoNetworkOperatorPrivate;
 class QOFONOSHARED_EXPORT QOfonoNetworkOperator : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(QString operatorPath READ operatorPath WRITE setOperatorPath)
+    Q_PROPERTY(QString operatorPath READ operatorPath WRITE setOperatorPath NOTIFY operatorPathChanged)
 
     Q_PROPERTY(QString name READ name NOTIFY nameChanged)
     Q_PROPERTY(QString status READ status NOTIFY statusChanged)
@@ -64,6 +64,7 @@ Q_SIGNALS:
     void mncChanged(const QString &mnc);
     void technologiesChanged(const QStringList &technologies);
     void additionalInfoChanged(const QString &additionalInfo);
+    void operatorPathChanged(const QString &path);
 
 public slots:
 

@@ -23,7 +23,7 @@ class QOfonoHandsfreeAudioCardPrivate;
 class QOfonoHandsfreeAudioCard : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(QString modemPath READ modemPath WRITE setModemPath)
+    Q_PROPERTY(QString modemPath READ modemPath WRITE setModemPath NOTIFY modemPathChanged)
     Q_PROPERTY(QString remoteAddress READ remoteAddress/* NOTIFY remoteAddressChanged*/)
     Q_PROPERTY(QString localAddress READ localAddress/* NOTIFY localAddressChanged*/)
 
@@ -41,6 +41,7 @@ public:
 Q_SIGNALS:
 //    void remoteAddressChanged();
 //    void localAddressChanged();
+    void modemPathChanged(const QString &path);
 
 public slots:
     void connect() const;

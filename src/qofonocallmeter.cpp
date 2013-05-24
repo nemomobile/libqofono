@@ -46,17 +46,20 @@ QOfonoCallMeter::~QOfonoCallMeter()
 void QOfonoCallMeter::setModemPath(const QString &path)
 {
     if (!d_ptr->callMeter) {
-        d_ptr->callMeter = new OfonoCallMeter("org.ofono", path, QDBusConnection::systemBus(),this);
+        if (path != modemPath()) {
+            d_ptr->callMeter = new OfonoCallMeter("org.ofono", path, QDBusConnection::systemBus(),this);
 
-        if (d_ptr->callMeter->isValid()) {
-            d_ptr->modemPath = path;
-            connect(d_ptr->callMeter,SIGNAL(PropertyChanged(QString,QDBusVariant)),
-                    this,SLOT(propertyChanged(QString,QDBusVariant)));
+            if (d_ptr->callMeter->isValid()) {
+                d_ptr->modemPath = path;
+                connect(d_ptr->callMeter,SIGNAL(PropertyChanged(QString,QDBusVariant)),
+                        this,SLOT(propertyChanged(QString,QDBusVariant)));
 
-            connect(d_ptr->callMeter,SIGNAL(NearMaximumWarning()),this,SIGNAL(nearMaximumWarning()));
-            QDBusReply<QVariantMap> reply;
-            reply = d_ptr->callMeter->GetProperties();
-            d_ptr->properties = reply.value();
+                connect(d_ptr->callMeter,SIGNAL(NearMaximumWarning()),this,SIGNAL(nearMaximumWarning()));
+                QDBusReply<QVariantMap> reply;
+                reply = d_ptr->callMeter->GetProperties();
+                d_ptr->properties = reply.value();
+                Q_EMIT modemPathChanged(path);
+            }
         }
     }
 }

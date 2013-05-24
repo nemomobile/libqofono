@@ -46,17 +46,20 @@ QOfonoTextTelephony::~QOfonoTextTelephony()
 void QOfonoTextTelephony::setModemPath(const QString &path)
 {
     if (!d_ptr->textTelephony) {
-        d_ptr->textTelephony = new OfonoTextTelephony("org.ofono", path, QDBusConnection::systemBus(),this);
+        if (path != modemPath()) {
+            d_ptr->textTelephony = new OfonoTextTelephony("org.ofono", path, QDBusConnection::systemBus(),this);
 
-        if (d_ptr->textTelephony->isValid()) {
-            d_ptr->modemPath = path;
+            if (d_ptr->textTelephony->isValid()) {
+                d_ptr->modemPath = path;
 
-            connect(d_ptr->textTelephony,SIGNAL(PropertyChanged(QString,QDBusVariant)),
-                    this,SLOT(propertyChanged(QString,QDBusVariant)));
+                connect(d_ptr->textTelephony,SIGNAL(PropertyChanged(QString,QDBusVariant)),
+                        this,SLOT(propertyChanged(QString,QDBusVariant)));
 
-            QDBusReply<QVariantMap> reply;
-            reply = d_ptr->textTelephony->GetProperties();
-            d_ptr->properties = reply.value();
+                QDBusReply<QVariantMap> reply;
+                reply = d_ptr->textTelephony->GetProperties();
+                d_ptr->properties = reply.value();
+                Q_EMIT modemPathChanged(path);
+            }
         }
     }
 }

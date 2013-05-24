@@ -29,7 +29,7 @@ class QOfonoVoiceCallPrivate;
 class QOFONOSHARED_EXPORT QOfonoVoiceCall : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(QString voiceCallPath READ voiceCallPath WRITE setVoiceCallPath)
+    Q_PROPERTY(QString voiceCallPath READ voiceCallPath WRITE setVoiceCallPath NOTIFY voiceCallPathChanged)
 
     Q_PROPERTY(QString lineIdentification READ lineIdentification NOTIFY lineIdentificationChanged)
     Q_PROPERTY(QString incomingLine READ incomingLine NOTIFY incomingLineChanged)
@@ -75,6 +75,7 @@ Q_SIGNALS:
     void remoteHeldChanged(bool remoteHeld);
     void remoteMultipartyChanged(bool remoteMultiparty);
 
+    void voiceCallPathChanged(const QString &path);
 
 public slots:
     void answer();

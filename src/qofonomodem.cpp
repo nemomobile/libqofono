@@ -49,16 +49,19 @@ void QOfonoModem::setModemPath(const QString &path)
         return;
 
     if (!d_ptr->modem) {
-        d_ptr->modem = new OfonoModem("org.ofono", path, QDBusConnection::systemBus(),this);
+        if (path != modemPath()) {
+            d_ptr->modem = new OfonoModem("org.ofono", path, QDBusConnection::systemBus(),this);
 
-        if (d_ptr->modem->isValid()) {
-            d_ptr->modemPath = path;
-            connect(d_ptr->modem,SIGNAL(PropertyChanged(QString,QDBusVariant)),
-                    this,SLOT(propertyChanged(QString,QDBusVariant)));
+            if (d_ptr->modem->isValid()) {
+                d_ptr->modemPath = path;
+                connect(d_ptr->modem,SIGNAL(PropertyChanged(QString,QDBusVariant)),
+                        this,SLOT(propertyChanged(QString,QDBusVariant)));
 
-            QDBusReply<QVariantMap> reply;
-            reply = d_ptr->modem->GetProperties();
-            d_ptr->properties = reply.value();
+                QDBusReply<QVariantMap> reply;
+                reply = d_ptr->modem->GetProperties();
+                d_ptr->properties = reply.value();
+                Q_EMIT modemPathChanged(path);
+            }
         }
     }
 }

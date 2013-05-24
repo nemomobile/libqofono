@@ -46,20 +46,23 @@ QOfonoCellBroadcast::~QOfonoCellBroadcast()
 void QOfonoCellBroadcast::setModemPath(const QString &path)
 {
     if (!d_ptr->cellBroadcast) {
-        d_ptr->cellBroadcast = new OfonoCellBroadcast("org.ofono", path, QDBusConnection::systemBus(),this);
+        if (path != modemPath()) {
+            d_ptr->cellBroadcast = new OfonoCellBroadcast("org.ofono", path, QDBusConnection::systemBus(),this);
 
-        if (d_ptr->cellBroadcast->isValid()) {
-            d_ptr->modemPath = path;
-            connect(d_ptr->cellBroadcast,SIGNAL(PropertyChanged(QString,QDBusVariant)),
-                    this,SLOT(propertyChanged(QString,QDBusVariant)));
-            connect(d_ptr->cellBroadcast,SIGNAL(IncomingBroadcast(QString,quint16)),
-                    this,SIGNAL(incomingBroadcast(QString,quint16)));
-            connect(d_ptr->cellBroadcast,SIGNAL(EmergencyBroadcast(QString,QVariantMap)),
-                    this,SIGNAL(emergencyBroadcast(QString,QVariantMap)));
+            if (d_ptr->cellBroadcast->isValid()) {
+                d_ptr->modemPath = path;
+                connect(d_ptr->cellBroadcast,SIGNAL(PropertyChanged(QString,QDBusVariant)),
+                        this,SLOT(propertyChanged(QString,QDBusVariant)));
+                connect(d_ptr->cellBroadcast,SIGNAL(IncomingBroadcast(QString,quint16)),
+                        this,SIGNAL(incomingBroadcast(QString,quint16)));
+                connect(d_ptr->cellBroadcast,SIGNAL(EmergencyBroadcast(QString,QVariantMap)),
+                        this,SIGNAL(emergencyBroadcast(QString,QVariantMap)));
 
-            QDBusReply<QVariantMap> reply;
-            reply = d_ptr->cellBroadcast->GetProperties();
-            d_ptr->properties = reply.value();
+                QDBusReply<QVariantMap> reply;
+                reply = d_ptr->cellBroadcast->GetProperties();
+                d_ptr->properties = reply.value();
+                Q_EMIT modemPathChanged(path);
+            }
         }
     }
 }

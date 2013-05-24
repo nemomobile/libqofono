@@ -24,7 +24,7 @@ class QOfonoLocationReportingPrivate;
 class QOfonoLocationReporting : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(QString modemPath READ modemPath WRITE setModemPath)
+    Q_PROPERTY(QString modemPath READ modemPath WRITE setModemPath NOTIFY modemPathChanged)
     Q_PROPERTY(QString type READ type)
     Q_PROPERTY(bool enabled READ enabled)
 
@@ -43,6 +43,7 @@ public slots:
     void release();
     int request();
 Q_SIGNALS:
+    void modemPathChanged(const QString &path);
 
 private:
     QOfonoLocationReportingPrivate *d_ptr;

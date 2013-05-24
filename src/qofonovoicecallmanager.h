@@ -30,7 +30,7 @@ class QOfonoVoiceCallManagerPrivate;
 class QOFONOSHARED_EXPORT QOfonoVoiceCallManager : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(QString modemPath READ modemPath WRITE setModemPath)
+    Q_PROPERTY(QString modemPath READ modemPath WRITE setModemPath NOTIFY modemPathChanged)
     Q_PROPERTY(QStringList emergencyNumbers READ emergencyNumbers)
 
 public:
@@ -64,6 +64,7 @@ Q_SIGNALS:
 
     void barringActive(const QString &type);
     void forwarded(const QString &type);
+    void modemPathChanged(const QString &path);
 
 public slots:
     void dial(const QString &number, const QString &calleridHide);

@@ -29,7 +29,7 @@ class QOfonoCallVolumePrivate;
 class QOFONOSHARED_EXPORT QOfonoCallVolume : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(QString modemPath READ modemPath WRITE setModemPath)
+    Q_PROPERTY(QString modemPath READ modemPath WRITE setModemPath NOTIFY modemPathChanged)
     Q_PROPERTY(bool muted READ muted WRITE setMuted NOTIFY mutedChanged)
 
     Q_PROPERTY(quint8 speakerVolume READ speakerVolume WRITE setSpeakerVolume NOTIFY speakerVolumeChanged)
@@ -57,6 +57,7 @@ Q_SIGNALS:
     void speakerVolumeChanged(const quint8 &volume);
     void microphoneVolumeChanged(const quint8 &mvolume);
 
+    void modemPathChanged(const QString &path);
 
 public slots:
     

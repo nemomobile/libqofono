@@ -46,21 +46,24 @@ QOfonoSupplementaryServices::~QOfonoSupplementaryServices()
 void QOfonoSupplementaryServices::setModemPath(const QString &path)
 {
     if (!d_ptr->supplementaryServices) {
-        d_ptr->supplementaryServices = new OfonoSupplementaryServices("org.ofono", path, QDBusConnection::systemBus(),this);
+        if (path != modemPath()) {
+            d_ptr->supplementaryServices = new OfonoSupplementaryServices("org.ofono", path, QDBusConnection::systemBus(),this);
 
-        if (d_ptr->supplementaryServices->isValid()) {
-            d_ptr->modemPath = path;
+            if (d_ptr->supplementaryServices->isValid()) {
+                d_ptr->modemPath = path;
 
-            connect(d_ptr->supplementaryServices,SIGNAL(PropertyChanged(QString,QDBusVariant)),
-                    this,SLOT(propertyChanged(QString,QDBusVariant)));
+                connect(d_ptr->supplementaryServices,SIGNAL(PropertyChanged(QString,QDBusVariant)),
+                        this,SLOT(propertyChanged(QString,QDBusVariant)));
 
-            connect(d_ptr->supplementaryServices,SIGNAL(NotificationReceived(QString)),
-                    this,SIGNAL(notificationReceived(QString)));
-            connect(d_ptr->supplementaryServices,SIGNAL(RequestReceived(QString)),
-                    this,SIGNAL(requestReceived(QString)));
-            QDBusReply<QVariantMap> reply;
-            reply = d_ptr->supplementaryServices->GetProperties();
-            d_ptr->properties = reply.value();
+                connect(d_ptr->supplementaryServices,SIGNAL(NotificationReceived(QString)),
+                        this,SIGNAL(notificationReceived(QString)));
+                connect(d_ptr->supplementaryServices,SIGNAL(RequestReceived(QString)),
+                        this,SIGNAL(requestReceived(QString)));
+                QDBusReply<QVariantMap> reply;
+                reply = d_ptr->supplementaryServices->GetProperties();
+                d_ptr->properties = reply.value();
+                Q_EMIT modemPathChanged(path);
+            }
         }
     }
 }

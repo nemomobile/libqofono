@@ -29,7 +29,7 @@ class QOfonoSupplementaryServicesPrivate;
 class QOFONOSHARED_EXPORT QOfonoSupplementaryServices : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(QString modemPath READ modemPath WRITE setModemPath)
+    Q_PROPERTY(QString modemPath READ modemPath WRITE setModemPath NOTIFY modemPathChanged)
    Q_PROPERTY(QString state READ state)
 
 public:
@@ -47,6 +47,7 @@ Q_SIGNALS:
     void requestReceived(const QString &message);
 
     void stateChanged(const QString &state);
+    void modemPathChanged(const QString &path);
 
 public slots:
     

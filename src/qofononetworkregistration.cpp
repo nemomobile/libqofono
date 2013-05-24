@@ -77,17 +77,20 @@ void QOfonoNetworkRegistration::setModemPath(const QString &path)
     }
 
     if (!d_ptr->networkRegistration) {
-        d_ptr->networkRegistration = new OfonoNetworkRegistration("org.ofono", path, QDBusConnection::systemBus(),this);
+        if (path != modemPath()) {
+            d_ptr->networkRegistration = new OfonoNetworkRegistration("org.ofono", path, QDBusConnection::systemBus(),this);
 
-        if (d_ptr->networkRegistration->isValid()) {
-            d_ptr->modemPath = path;
+            if (d_ptr->networkRegistration->isValid()) {
+                d_ptr->modemPath = path;
 
-            connect(d_ptr->networkRegistration,SIGNAL(PropertyChanged(QString,QDBusVariant)),
-                    this,SLOT(propertyChanged(QString,QDBusVariant)));
+                connect(d_ptr->networkRegistration,SIGNAL(PropertyChanged(QString,QDBusVariant)),
+                        this,SLOT(propertyChanged(QString,QDBusVariant)));
 
-            QDBusReply<QVariantMap> reply;
-            reply = d_ptr->networkRegistration->GetProperties();
-            d_ptr->properties = reply.value();
+                QDBusReply<QVariantMap> reply;
+                reply = d_ptr->networkRegistration->GetProperties();
+                d_ptr->properties = reply.value();
+                Q_EMIT modemPathChanged(path);
+            }
         }
     }
 }

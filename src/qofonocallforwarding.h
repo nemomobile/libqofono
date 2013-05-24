@@ -30,7 +30,7 @@ class QOfonoCallForwardingPrivate;
 class QOFONOSHARED_EXPORT QOfonoCallForwarding : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(QString modemPath READ modemPath WRITE setModemPath)
+    Q_PROPERTY(QString modemPath READ modemPath WRITE setModemPath NOTIFY modemPathChanged)
     Q_PROPERTY(QString voiceUnconditional READ voiceUnconditional WRITE setVoiceUnconditional NOTIFY voiceUnconditionalChanged)
     Q_PROPERTY(QString voiceBusy READ voiceBusy WRITE setVoiceBusy NOTIFY voiceBusyChanged)
     Q_PROPERTY(QString voiceNoReply READ voiceNoReply WRITE setVoiceNoReply NOTIFY voiceNoReplyChanged)
@@ -73,6 +73,7 @@ Q_SIGNALS:
     void voiceNoReplyTimeoutChanged(ushort timeout);
     void voiceNotReachableChanged(const QString &property);
     void forwardingFlagOnSimChanged(bool property);
+    void modemPathChanged(const QString &path);
 
 
 public slots:

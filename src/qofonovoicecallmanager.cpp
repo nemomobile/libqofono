@@ -48,17 +48,20 @@ QOfonoVoiceCallManager::~QOfonoVoiceCallManager()
 void QOfonoVoiceCallManager::setModemPath(const QString &path)
 {
     if (!d_ptr->voiceCallManager) {
-        d_ptr->voiceCallManager = new OfonoVoiceCallManager("org.ofono", path, QDBusConnection::systemBus(),this);
+        if (path != modemPath()) {
+            d_ptr->voiceCallManager = new OfonoVoiceCallManager("org.ofono", path, QDBusConnection::systemBus(),this);
 
-        if (d_ptr->voiceCallManager->isValid()) {
-            d_ptr->modemPath = path;
+            if (d_ptr->voiceCallManager->isValid()) {
+                d_ptr->modemPath = path;
 
-            connect(d_ptr->voiceCallManager,SIGNAL(PropertyChanged(QString,QDBusVariant)),
-                    this,SLOT(propertyChanged(QString,QDBusVariant)));
-            connectSignals();
-            QDBusReply<QVariantMap> reply;
-            reply = d_ptr->voiceCallManager->GetProperties();
-            d_ptr->properties = reply.value();
+                connect(d_ptr->voiceCallManager,SIGNAL(PropertyChanged(QString,QDBusVariant)),
+                        this,SLOT(propertyChanged(QString,QDBusVariant)));
+                connectSignals();
+                QDBusReply<QVariantMap> reply;
+                reply = d_ptr->voiceCallManager->GetProperties();
+                d_ptr->properties = reply.value();
+                Q_EMIT modemPathChanged(path);
+            }
         }
     }
 }

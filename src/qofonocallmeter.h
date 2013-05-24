@@ -30,7 +30,7 @@ class QOfonoCallMeterPrivate;
 class QOFONOSHARED_EXPORT QOfonoCallMeter : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(QString modemPath READ modemPath WRITE setModemPath)
+    Q_PROPERTY(QString modemPath READ modemPath WRITE setModemPath NOTIFY modemPathChanged)
     Q_PROPERTY(quint32 callMeter READ callMeter CONSTANT)
     Q_PROPERTY(quint32 accumulatedCallMeter READ accumulatedCallMeter CONSTANT)
     Q_PROPERTY(quint32 accumulatedCallMeterMaximum READ accumulatedCallMeterMaximum NOTIFY accumulatedCallMeterMaximumChanged)
@@ -62,6 +62,7 @@ Q_SIGNALS:
     void nearMaximumWarning();
     void accumulatedCallMeterMaximumChanged(quint32);
     void pricePerUnitChanged(qreal);
+    void modemPathChanged(const QString &path);
 
 public slots:
     

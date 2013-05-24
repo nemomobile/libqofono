@@ -24,7 +24,7 @@ class QOfonoHandsfreePrivate;
 class QOfonoHandsfree : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(QString modemPath READ modemPath WRITE setModemPath)
+    Q_PROPERTY(QString modemPath READ modemPath WRITE setModemPath NOTIFY modemPathChanged)
     Q_PROPERTY(QStringList features READ features)
     Q_PROPERTY(bool inbandRinging READ inbandRinging)
     Q_PROPERTY(bool voiceRecognition READ voiceRecognition WRITE setVoiceRecognition WRITE voiceRecognitionChanged)
@@ -51,6 +51,7 @@ public:
 Q_SIGNALS:
     void voiceRecognitionChanged(bool on);
     void echoCancelingNoiseReductionChanged(bool on);
+    void modemPathChanged(const QString &path);
 
 private:
     QOfonoHandsfreePrivate *d_ptr;

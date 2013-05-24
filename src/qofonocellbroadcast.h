@@ -30,7 +30,7 @@ class QOfonoCellBroadcastPrivate;
 class QOFONOSHARED_EXPORT QOfonoCellBroadcast : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(QString modemPath READ modemPath WRITE setModemPath)
+    Q_PROPERTY(QString modemPath READ modemPath WRITE setModemPath NOTIFY modemPathChanged)
 
     Q_PROPERTY(bool enabled READ enabled WRITE setEnabled NOTIFY enabledChanged)
     Q_PROPERTY(QString topics READ topics NOTIFY topicsChanged)
@@ -54,6 +54,7 @@ Q_SIGNALS:
     void topicsChanged(const QString &);
     void incomingBroadcast(const QString &, quint16);
     void emergencyBroadcast(const QString &, const QVariantMap &);
+    void modemPathChanged(const QString &path);
 
 public slots:
     
