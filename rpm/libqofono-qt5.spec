@@ -80,7 +80,7 @@ rm -rf %{buildroot}
 # >> install pre
 export QT_SELECT=5
 # << install pre
-%qmake_install
+%qmake5_install
 
 # >> install post
 # << install post
