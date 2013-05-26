@@ -44,27 +44,23 @@ QOfonoNetworkOperator::~QOfonoNetworkOperator()
 
 void QOfonoNetworkOperator::setOperatorPath(const QString &path)
 {
-    if (path.isEmpty())
-        return;
+    if (path != operatorPath()) {
+        if (d_ptr->networkOperator) {
+            delete d_ptr->networkOperator;
+            d_ptr->networkOperator = 0;
+        }
+        d_ptr->networkOperator = new OfonoNetworkOperator("org.ofono", path, QDBusConnection::systemBus(),this);
+        if (d_ptr->networkOperator->isValid()) {
+            d_ptr->modemPath = path;
 
-    if (d_ptr->networkOperator) {
-        delete d_ptr->networkOperator;
-        d_ptr->networkOperator = 0;
-    }
-    if (!d_ptr->networkOperator) {
-        if (path != operatorPath()) {
-            d_ptr->networkOperator = new OfonoNetworkOperator("org.ofono", path, QDBusConnection::systemBus(),this);
-            if (d_ptr->networkOperator->isValid()) {
-                d_ptr->modemPath = path;
+            connect(d_ptr->networkOperator,SIGNAL(PropertyChanged(QString,QDBusVariant)),
+                    this,SLOT(propertyChanged(QString,QDBusVariant)));
 
-                connect(d_ptr->networkOperator,SIGNAL(PropertyChanged(QString,QDBusVariant)),
-                        this,SLOT(propertyChanged(QString,QDBusVariant)));
-
-                QDBusReply<QVariantMap> reply;
-                reply = d_ptr->networkOperator->GetProperties();
-                d_ptr->properties = reply.value();
-                Q_EMIT operatorPathChanged(path);
-            }
+            QDBusPendingReply<QVariantMap> reply;
+            reply = d_ptr->networkOperator->GetProperties();
+            reply.waitForFinished();
+            d_ptr->properties = reply.value();
+            Q_EMIT operatorPathChanged(path);
         }
     }
 }

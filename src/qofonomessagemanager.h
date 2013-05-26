@@ -72,6 +72,8 @@ Q_SIGNALS:
     void messageRemoved(const QString &message);
     void modemPathChanged(const QString &path);
 
+    void messagesFinished();
+
 public slots:
     void onMessageAdded(const QString &message);
     void onMessageRemoved(const QString &message);
@@ -80,6 +82,8 @@ private:
     QOfonoMessageManagerPrivate *d_ptr;
 private slots:
     void propertyChanged(const QString &property,const QDBusVariant &value);
+    void getMessagesFinished(const ObjectPathPropertiesList &list);
+    void messagesError(const QDBusError &error);
 };
 
 #endif // QOFONOMessageManager_H

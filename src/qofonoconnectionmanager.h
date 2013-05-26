@@ -70,6 +70,8 @@ Q_SIGNALS:
     void contextsChanged(const QStringList &contexts);
     void modemPathChanged(const QString &path);
 
+    void messagesFinished();
+
 public slots:
     void deactivateAll();
     void addContext(const QString &type);

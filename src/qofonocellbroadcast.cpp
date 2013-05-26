@@ -45,24 +45,32 @@ QOfonoCellBroadcast::~QOfonoCellBroadcast()
 
 void QOfonoCellBroadcast::setModemPath(const QString &path)
 {
-    if (!d_ptr->cellBroadcast) {
-        if (path != modemPath()) {
-            d_ptr->cellBroadcast = new OfonoCellBroadcast("org.ofono", path, QDBusConnection::systemBus(),this);
+    if (path == d_ptr->modemPath ||
+            path.isEmpty())
+        return;
 
-            if (d_ptr->cellBroadcast->isValid()) {
-                d_ptr->modemPath = path;
-                connect(d_ptr->cellBroadcast,SIGNAL(PropertyChanged(QString,QDBusVariant)),
-                        this,SLOT(propertyChanged(QString,QDBusVariant)));
-                connect(d_ptr->cellBroadcast,SIGNAL(IncomingBroadcast(QString,quint16)),
-                        this,SIGNAL(incomingBroadcast(QString,quint16)));
-                connect(d_ptr->cellBroadcast,SIGNAL(EmergencyBroadcast(QString,QVariantMap)),
-                        this,SIGNAL(emergencyBroadcast(QString,QVariantMap)));
+    if (path != modemPath()) {
+        if (d_ptr->cellBroadcast) {
+            delete d_ptr->cellBroadcast;
+            d_ptr->cellBroadcast = 0;
+            d_ptr->properties.clear();
+        }
+        d_ptr->cellBroadcast = new OfonoCellBroadcast("org.ofono", path, QDBusConnection::systemBus(),this);
 
-                QDBusReply<QVariantMap> reply;
-                reply = d_ptr->cellBroadcast->GetProperties();
-                d_ptr->properties = reply.value();
-                Q_EMIT modemPathChanged(path);
-            }
+        if (d_ptr->cellBroadcast->isValid()) {
+            d_ptr->modemPath = path;
+            connect(d_ptr->cellBroadcast,SIGNAL(PropertyChanged(QString,QDBusVariant)),
+                    this,SLOT(propertyChanged(QString,QDBusVariant)));
+            connect(d_ptr->cellBroadcast,SIGNAL(IncomingBroadcast(QString,quint16)),
+                    this,SIGNAL(incomingBroadcast(QString,quint16)));
+            connect(d_ptr->cellBroadcast,SIGNAL(EmergencyBroadcast(QString,QVariantMap)),
+                    this,SIGNAL(emergencyBroadcast(QString,QVariantMap)));
+
+            QDBusPendingReply<QVariantMap> reply;
+            reply = d_ptr->cellBroadcast->GetProperties();
+            reply.waitForFinished();
+            d_ptr->properties = reply.value();
+            Q_EMIT modemPathChanged(path);
         }
     }
 }

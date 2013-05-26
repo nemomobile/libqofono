@@ -96,8 +96,12 @@ Q_SIGNALS:
     void interfacesChanged(const QStringList &interfaces);
     void modemPathChanged(const QString &path);
 
+protected:
+    void setOneProperty(const QString &prop,const QDBusVariant &var);
+
 private slots:
     void propertyChanged(const QString &property,const QDBusVariant &value);
+    void setPropertyFinished(QDBusPendingCallWatcher*);
 
 private:
     QOfonoModemPrivate *d_ptr;

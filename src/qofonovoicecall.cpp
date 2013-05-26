@@ -45,21 +45,25 @@ QOfonoVoiceCall::~QOfonoVoiceCall()
 
 void QOfonoVoiceCall::setVoiceCallPath(const QString &path)
 {
-    if (!d_ptr->voiceCall) {
-        if (path != voiceCallPath()) {
-            d_ptr->voiceCall = new OfonoVoiceCall("org.ofono", path, QDBusConnection::systemBus(),this);
+    if (path != voiceCallPath()) {
+        if (d_ptr->voiceCall) {
+            delete d_ptr->voiceCall;
+            d_ptr->voiceCall = 0;
+            d_ptr->properties.clear();
+        }
+        d_ptr->voiceCall = new OfonoVoiceCall("org.ofono", path, QDBusConnection::systemBus(),this);
 
-            if (d_ptr->voiceCall->isValid()) {
-                d_ptr->voiceCallPath = path;
+        if (d_ptr->voiceCall->isValid()) {
+            d_ptr->voiceCallPath = path;
 
-                connect(d_ptr->voiceCall,SIGNAL(PropertyChanged(QString,QDBusVariant)),
-                        this,SLOT(propertyChanged(QString,QDBusVariant)));
+            connect(d_ptr->voiceCall,SIGNAL(PropertyChanged(QString,QDBusVariant)),
+                    this,SLOT(propertyChanged(QString,QDBusVariant)));
 
-                QDBusReply<QVariantMap> reply;
-                reply = d_ptr->voiceCall->GetProperties();
-                d_ptr->properties = reply.value();
-                Q_EMIT voiceCallPathChanged(path);
-            }
+            QDBusPendingReply<QVariantMap> reply;
+            reply = d_ptr->voiceCall->GetProperties();
+            reply.waitForFinished();
+            d_ptr->properties = reply.value();
+            Q_EMIT voiceCallPathChanged(path);
         }
     }
 }

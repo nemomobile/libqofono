@@ -25,6 +25,8 @@
 
 #include "qofononetworkoperator.h"
 #include "qofononetworkregistration.h"
+#include "qofonomessagemanager.h"
+#include "qofonosimmanager.h"
 
 // These auto tests require
 // phonesim or real modem
@@ -41,10 +43,12 @@ private Q_SLOTS:
     void testConnectionManager();
     void testContextConnection();
     void testNetworkRegistration();
+    void testNetworkOperator();
+    void testSimManager();
 
     void testHandsfree();
     void testHandsfreeAudioCard();
-    void testNetworkOperator();
+    void testMessageManager();
 };
 
 Tst_qofonoTest::Tst_qofonoTest()
@@ -65,8 +69,16 @@ void Tst_qofonoTest::testModem()
     QOfonoManager manager;
     QOfonoModem modem;
     QVERIFY(modem.modemPath().isEmpty());
+
     QStringList modemList = manager.modems();
+
+    QSignalSpy spy(&modem, SIGNAL(modemPathChanged(QString)));
     modem.setModemPath(modemList[0]);
+    QTest::qWait(1000);
+    QCOMPARE(spy.count(),1);
+//    QList<QVariant> arguments ;
+//    arguments = spy.takeFirst();
+
     QVERIFY(!modem.modemPath().isEmpty());
 
     if (!modem.powered()) {
@@ -76,8 +88,11 @@ void Tst_qofonoTest::testModem()
         if (modemList[0] != "/phonesim") {
             // power off phonesim modem doesnt work
             modem.setPowered(false);
+             QTest::qWait(2000);
             QVERIFY(!modem.powered());
+
             modem.setPowered(true);
+             QTest::qWait(2000);
             QVERIFY(modem.powered());
         }
     }
@@ -216,7 +231,7 @@ void Tst_qofonoTest::testNetworkRegistration()
     QOfonoNetworkRegistration netreg;
 
     QVERIFY(netreg.modemPath().isEmpty());
-    netreg.setModemPath(modems[0]);
+    netreg.setModemPath(modems.at(0));
 
     QVERIFY(!netreg.name().isEmpty());
     QVERIFY(!netreg.mode().isEmpty());
@@ -236,10 +251,6 @@ void Tst_qofonoTest::testNetworkRegistration()
     QVERIFY(netreg.mnc() == "01");
     QVERIFY(netreg.technology().isEmpty());
     QVERIFY(!netreg.networkOperators().isEmpty());
-
-
-
-
 }
 
 void Tst_qofonoTest::testHandsfree()
@@ -266,14 +277,46 @@ void Tst_qofonoTest::testHandsfreeAudioCard()
 
 void Tst_qofonoTest::testNetworkOperator()
 {
-//    QOfonoNetworkOperator netOp;
-//    netOp.setModemPath("/phonesim");
-//    qDebug() << netOp.name()
-//                netOp.status()
-//                netOp.mcc()
-//                netOp..mnc()
-//                netOp.technologies()
-//                netOp.additionalInfo();
+    QOfonoManager manager;
+    QStringList modems = manager.modems();
+    QOfonoNetworkRegistration netreg;
+    netreg.setModemPath(modems.at(0));
+    QStringList operators = netreg.networkOperators();
+
+    Q_FOREACH(const QString &onetopPath, operators) {
+        QOfonoNetworkOperator netOp;
+        netOp.setOperatorPath(onetopPath);
+
+        qDebug() << netOp.name()
+                 << netOp.status()
+                 << netOp.mcc()
+                 << netOp.mnc()
+                 << netOp.technologies()
+                 << netOp.additionalInfo();
+    }
+}
+
+void Tst_qofonoTest::testMessageManager()
+{
+    QOfonoManager manager;
+    QStringList modems = manager.modems();
+    QOfonoMessageManager messageManager;
+    messageManager.setModemPath(modems.at(0));
+
+ //   QSignalSpy spy1(&messageManager, SIGNAL(messagesFinished()));
+
+}
+
+void Tst_qofonoTest::testSimManager()
+{
+    QOfonoManager manager;
+    QStringList modems = manager.modems();
+    QOfonoSimManager simManager;
+
+    QSignalSpy spy(&simManager, SIGNAL(modemPathChanged(QString)));
+    simManager.setModemPath(modems[0]);
+    QTest::qWait(1000);
+    QCOMPARE(spy.count(),1);
 
 }
 

@@ -45,20 +45,24 @@ QOfonoMessage::~QOfonoMessage()
 
 void QOfonoMessage::setMessagePath(const QString &path)
 {
-    if (!d_ptr->oMessage) {
-        if (path != messagePath()) {
-            d_ptr->oMessage = new OfonoMessage("org.ofono", path, QDBusConnection::systemBus(),this);
-            d_ptr->messagePath = path;
+    if (path != messagePath()) {
+        if (d_ptr->oMessage) {
+            delete d_ptr->oMessage;
+            d_ptr->oMessage = 0;
+            d_ptr->properties.clear();
+        }
+        d_ptr->oMessage = new OfonoMessage("org.ofono", path, QDBusConnection::systemBus(),this);
+        d_ptr->messagePath = path;
 
-            if (d_ptr->oMessage) {
-                connect(d_ptr->oMessage,SIGNAL(PropertyChanged(QString,QDBusVariant)),
-                        this,SLOT(propertyChanged(QString,QDBusVariant)));
+        if (d_ptr->oMessage) {
+            connect(d_ptr->oMessage,SIGNAL(PropertyChanged(QString,QDBusVariant)),
+                    this,SLOT(propertyChanged(QString,QDBusVariant)));
 
-                QDBusReply<QVariantMap> reply;
-                reply = d_ptr->oMessage->GetProperties();
-                d_ptr->properties = reply.value();
-                Q_EMIT messagePathChanged(path);
-            }
+            QDBusPendingReply<QVariantMap> reply;
+            reply = d_ptr->oMessage->GetProperties();
+            reply.waitForFinished();
+            d_ptr->properties = reply.value();
+            Q_EMIT messagePathChanged(path);
         }
     }
 }

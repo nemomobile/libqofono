@@ -47,37 +47,41 @@ QOfonoMessageManager::~QOfonoMessageManager()
 
 void QOfonoMessageManager::setModemPath(const QString &path)
 {
-    if (!d_ptr->messageManager) {
-        if (path != modemPath()) {
-            d_ptr->messageManager = new OfonoMessageManager("org.ofono", path, QDBusConnection::systemBus(),this);
+    if (path == d_ptr->modemPath ||
+            path.isEmpty())
+        return;
 
-            if (d_ptr->messageManager->isValid()) {
-                d_ptr->modemPath = path;
-                connect(d_ptr->messageManager,SIGNAL(PropertyChanged(QString,QDBusVariant)),
-                        this,SLOT(propertyChanged(QString,QDBusVariant)));
-                connect(d_ptr->messageManager,SIGNAL(ImmediateMessage(QString,QVariantMap)),
-                        this,SIGNAL(immediateMessage(QString,QVariantMap)));
-                connect(d_ptr->messageManager,SIGNAL(IncomingMessage(QString,QVariantMap)),
-                        this,SIGNAL(incomingMessage(QString,QVariantMap)));
+       if (path != modemPath()) {
+           if (d_ptr->messageManager) {
+            delete d_ptr->messageManager;
+            d_ptr->messageManager = 0;
+            d_ptr->properties.clear();
+        }
+        d_ptr->messageManager = new OfonoMessageManager("org.ofono", path, QDBusConnection::systemBus(),this);
 
-                QDBusReply<QVariantMap> reply;
-                reply = d_ptr->messageManager->GetProperties();
-                d_ptr->properties = reply.value();
+        if (d_ptr->messageManager->isValid()) {
+            d_ptr->modemPath = path;
+            connect(d_ptr->messageManager,SIGNAL(PropertyChanged(QString,QDBusVariant)),
+                    this,SLOT(propertyChanged(QString,QDBusVariant)));
+            connect(d_ptr->messageManager,SIGNAL(ImmediateMessage(QString,QVariantMap)),
+                    this,SIGNAL(immediateMessage(QString,QVariantMap)));
+            connect(d_ptr->messageManager,SIGNAL(IncomingMessage(QString,QVariantMap)),
+                    this,SIGNAL(incomingMessage(QString,QVariantMap)));
 
-                ObjectPathPropertiesList messages;
+            QDBusPendingReply<QVariantMap> reply;
+            reply = d_ptr->messageManager->GetProperties();
+            reply.waitForFinished();
+            d_ptr->properties = reply.value();
 
-                QDBusMessage request = QDBusMessage::createMethodCall("org.ofono",
-                                                                      "org.ofono.MessageManager",
-                                                                      path,
-                                                                      "GetMessages");
-                QDBusReply<ObjectPathPropertiesList> reply2 = QDBusConnection::systemBus().call(request);
+            QDBusMessage request = QDBusMessage::createMethodCall("org.ofono",
+                                                                  path,
+                                                                  "org.ofono.MessageManager",
+                                                                  "GetMessages");
 
-                messages = reply2.value();
-                foreach(ObjectPathProperties message, messages) {
-                    d_ptr->messageList << message.path.path();
-                }
-                Q_EMIT modemPathChanged(path);
-            }
+            QDBusConnection::systemBus().callWithCallback(request,
+                                                           this,
+                                                           SLOT(getMessagesFinished(ObjectPathPropertiesList)),
+                                                           SLOT(messagesError(QDBusError)));
         }
     }
 }
@@ -182,7 +186,6 @@ void QOfonoMessageManager::onMessageAdded(const QString &message)
         if (!d_ptr->messageList.contains(message)) {
             d_ptr->messageList.append(message);
         }
-
     }
 }
 
@@ -198,4 +201,19 @@ void QOfonoMessageManager::onMessageRemoved(const QString &message)
 bool QOfonoMessageManager::isValid() const
 {
     return d_ptr->messageManager->isValid();
+}
+
+void QOfonoMessageManager::getMessagesFinished(const ObjectPathPropertiesList &list)
+{
+    qDebug() << Q_FUNC_INFO << list.count();
+//    messages = reply2.value();
+    foreach(ObjectPathProperties message, list) {
+        d_ptr->messageList << message.path.path();
+    }
+    Q_EMIT messagesFinished();
+}
+
+void QOfonoMessageManager::messagesError(const QDBusError &error)
+{
+    qDebug() << Q_FUNC_INFO << error.message();
 }

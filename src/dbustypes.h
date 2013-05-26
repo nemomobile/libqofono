@@ -25,6 +25,6 @@ struct ObjectPathProperties
 };
 typedef QList<ObjectPathProperties> ObjectPathPropertiesList;
 Q_DECLARE_METATYPE(ObjectPathProperties)
-Q_DECLARE_METATYPE (ObjectPathPropertiesList)
+Q_DECLARE_METATYPE(ObjectPathPropertiesList)
 
 #endif // DBUSTYPES_H

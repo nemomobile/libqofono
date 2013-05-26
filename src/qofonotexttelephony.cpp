@@ -45,21 +45,29 @@ QOfonoTextTelephony::~QOfonoTextTelephony()
 
 void QOfonoTextTelephony::setModemPath(const QString &path)
 {
-    if (!d_ptr->textTelephony) {
-        if (path != modemPath()) {
-            d_ptr->textTelephony = new OfonoTextTelephony("org.ofono", path, QDBusConnection::systemBus(),this);
+    if (path == d_ptr->modemPath ||
+            path.isEmpty())
+        return;
 
-            if (d_ptr->textTelephony->isValid()) {
-                d_ptr->modemPath = path;
+    if (path != modemPath()) {
+        if (d_ptr->textTelephony) {
+            delete d_ptr->textTelephony;
+            d_ptr->textTelephony = 0;
+            d_ptr->properties.clear();
+        }
+        d_ptr->textTelephony = new OfonoTextTelephony("org.ofono", path, QDBusConnection::systemBus(),this);
 
-                connect(d_ptr->textTelephony,SIGNAL(PropertyChanged(QString,QDBusVariant)),
-                        this,SLOT(propertyChanged(QString,QDBusVariant)));
+        if (d_ptr->textTelephony->isValid()) {
+            d_ptr->modemPath = path;
 
-                QDBusReply<QVariantMap> reply;
-                reply = d_ptr->textTelephony->GetProperties();
-                d_ptr->properties = reply.value();
-                Q_EMIT modemPathChanged(path);
-            }
+            connect(d_ptr->textTelephony,SIGNAL(PropertyChanged(QString,QDBusVariant)),
+                    this,SLOT(propertyChanged(QString,QDBusVariant)));
+
+            QDBusPendingReply<QVariantMap> reply;
+            reply = d_ptr->textTelephony->GetProperties();
+            reply.waitForFinished();
+            d_ptr->properties = reply.value();
+            Q_EMIT modemPathChanged(path);
         }
     }
 }

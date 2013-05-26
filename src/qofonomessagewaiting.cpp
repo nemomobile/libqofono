@@ -45,20 +45,28 @@ QOfonoMessageWaiting::~QOfonoMessageWaiting()
 
 void QOfonoMessageWaiting::setModemPath(const QString &path)
 {
-    if (!d_ptr->messageWaiting) {
-        if (path != modemPath()) {
-            d_ptr->messageWaiting = new OfonoMessageWaiting("org.ofono", path, QDBusConnection::systemBus(),this);
+    if (path == d_ptr->modemPath ||
+            path.isEmpty())
+        return;
 
-            if (d_ptr->messageWaiting->isValid()) {
-                d_ptr->modemPath = path;
-                connect(d_ptr->messageWaiting,SIGNAL(PropertyChanged(QString,QDBusVariant)),
-                        this,SLOT(propertyChanged(QString,QDBusVariant)));
+    if (path != modemPath()) {
+        if (d_ptr->messageWaiting) {
+            delete d_ptr->messageWaiting;
+            d_ptr->messageWaiting = 0;
+            d_ptr->properties.clear();
+        }
+        d_ptr->messageWaiting = new OfonoMessageWaiting("org.ofono", path, QDBusConnection::systemBus(),this);
 
-                QDBusReply<QVariantMap> reply;
-                reply = d_ptr->messageWaiting->GetProperties();
-                d_ptr->properties = reply.value();
-                Q_EMIT modemPathChanged(path);
-            }
+        if (d_ptr->messageWaiting->isValid()) {
+            d_ptr->modemPath = path;
+            connect(d_ptr->messageWaiting,SIGNAL(PropertyChanged(QString,QDBusVariant)),
+                    this,SLOT(propertyChanged(QString,QDBusVariant)));
+
+            QDBusPendingReply<QVariantMap> reply;
+            reply = d_ptr->messageWaiting->GetProperties();
+            reply.waitForFinished();
+            d_ptr->properties = reply.value();
+            Q_EMIT modemPathChanged(path);
         }
     }
 }

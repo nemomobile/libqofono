@@ -45,19 +45,27 @@ QOfonoCallSettings::~QOfonoCallSettings()
 
 void QOfonoCallSettings::setModemPath(const QString &path)
 {
-    if (!d_ptr->callSettings) {
-        if (path != modemPath()) {
-            d_ptr->callSettings = new OfonoCallSettings("org.ofono", path, QDBusConnection::systemBus(),this);
+    if (path == d_ptr->modemPath ||
+            path.isEmpty())
+        return;
 
-            if (d_ptr->callSettings->isValid()) {
-                d_ptr->modemPath = path;
-                connect(d_ptr->callSettings,SIGNAL(PropertyChanged(QString,QDBusVariant)),
-                        this,SLOT(propertyChanged(QString,QDBusVariant)));
-                QDBusReply<QVariantMap> reply;
-                reply = d_ptr->callSettings->GetProperties();
-                d_ptr->properties = reply.value();
-                Q_EMIT modemPathChanged(path);
-            }
+    if (path != modemPath()) {
+        if (d_ptr->callSettings) {
+            delete d_ptr->callSettings;
+            d_ptr->callSettings = 0;
+            d_ptr->properties.clear();
+        }
+        d_ptr->callSettings = new OfonoCallSettings("org.ofono", path, QDBusConnection::systemBus(),this);
+
+        if (d_ptr->callSettings->isValid()) {
+            d_ptr->modemPath = path;
+            connect(d_ptr->callSettings,SIGNAL(PropertyChanged(QString,QDBusVariant)),
+                    this,SLOT(propertyChanged(QString,QDBusVariant)));
+            QDBusPendingReply<QVariantMap> reply;
+            reply = d_ptr->callSettings->GetProperties();
+            reply.waitForFinished();
+            d_ptr->properties = reply.value();
+            Q_EMIT modemPathChanged(path);
         }
     }
 }

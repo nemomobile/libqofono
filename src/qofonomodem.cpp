@@ -16,6 +16,7 @@
 
 #include "qofonomodem.h"
 #include "dbus/ofonomodem.h"
+#include <QDBusPendingCallWatcher>
 
 class QOfonoModemPrivate
 {
@@ -45,23 +46,24 @@ QOfonoModem::~QOfonoModem()
 
 void QOfonoModem::setModemPath(const QString &path)
 {
-    if (path.isEmpty())
-        return;
+    if (path != modemPath()) {
+        if (d_ptr->modem) {
+            delete d_ptr->modem;
+            d_ptr->modem = 0;
+            d_ptr->properties.clear();
+        }
+        d_ptr->modem = new OfonoModem("org.ofono", path, QDBusConnection::systemBus(),this);
 
-    if (!d_ptr->modem) {
-        if (path != modemPath()) {
-            d_ptr->modem = new OfonoModem("org.ofono", path, QDBusConnection::systemBus(),this);
+        if (d_ptr->modem->isValid()) {
+            d_ptr->modemPath = path;
+            connect(d_ptr->modem,SIGNAL(PropertyChanged(QString,QDBusVariant)),
+                    this,SLOT(propertyChanged(QString,QDBusVariant)));
 
-            if (d_ptr->modem->isValid()) {
-                d_ptr->modemPath = path;
-                connect(d_ptr->modem,SIGNAL(PropertyChanged(QString,QDBusVariant)),
-                        this,SLOT(propertyChanged(QString,QDBusVariant)));
-
-                QDBusReply<QVariantMap> reply;
-                reply = d_ptr->modem->GetProperties();
-                d_ptr->properties = reply.value();
-                Q_EMIT modemPathChanged(path);
-            }
+            QDBusPendingReply<QVariantMap> reply;
+            reply = d_ptr->modem->GetProperties();
+            reply.waitForFinished();
+            d_ptr->properties = reply.value();
+            Q_EMIT modemPathChanged(path);
         }
     }
 }
@@ -169,23 +171,24 @@ QStringList QOfonoModem::interfaces() const
 
 void QOfonoModem::setPowered(bool powered)
 {
-    if (d_ptr->modem) {
-        d_ptr->modem->SetProperty("Powered",QDBusVariant(powered));
-    }
+    qDebug() << Q_FUNC_INFO << powered << d_ptr->modem;
+    QString str("Powered");
+    QDBusVariant var(powered);
+    setOneProperty(str,var);
 }
 
 void QOfonoModem::setOnline(bool online)
 {
-    if (d_ptr->modem) {
-        d_ptr->modem->SetProperty("Online",QDBusVariant(online));
-    }
+    QString str("Online");
+    QDBusVariant var(online);
+    setOneProperty(str,var);
 }
 
 void QOfonoModem::setLockdown(bool lockdown)
 {
-    if (d_ptr->modem) {
-        d_ptr->modem->setProperty("Lockdown",qVariantFromValue(lockdown));
-    }
+    QString str = "Lockdown";
+    QDBusVariant var(lockdown);
+    setOneProperty(str,var);
 }
 
 void QOfonoModem::propertyChanged(const QString& property, const QDBusVariant& dbusValue)
@@ -222,4 +225,23 @@ void QOfonoModem::propertyChanged(const QString& property, const QDBusVariant& d
 bool QOfonoModem::isValid() const
 {
     return d_ptr->modem->isValid();
+}
+
+void QOfonoModem::setOneProperty(const QString &prop, const QDBusVariant &var)
+{
+    if (d_ptr->modem) {
+        QDBusPendingReply <> reply = d_ptr->modem->SetProperty(prop,var);
+
+        QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(reply, this);
+        connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
+                SLOT(setPropertyFinished(QDBusPendingCallWatcher*)));
+    }
+}
+
+void QOfonoModem::setPropertyFinished(QDBusPendingCallWatcher *watch)
+{
+    QDBusPendingReply<> reply = *watch;
+    if(reply.isError()) {
+        qDebug() << Q_FUNC_INFO  << reply.error().message();
+    }
 }

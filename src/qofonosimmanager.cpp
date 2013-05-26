@@ -86,7 +86,12 @@ QOfonoSimManager::~QOfonoSimManager()
 
 void QOfonoSimManager::setModemPath(const QString &path)
 {
-    if (path == d_ptr->modemPath)
+    if (path == d_ptr->modemPath ||
+            path.isEmpty())
+        return;
+
+    if (path == d_ptr->modemPath ||
+            path.isEmpty())
         return;
 
     d_ptr->properties.clear();

@@ -35,6 +35,7 @@ const QDBusArgument &operator>>(const QDBusArgument &argument, ObjectPathPropert
     return argument;
 }
 
+
 class QOfonoManagerPrivate
 {
 public:
@@ -53,6 +54,8 @@ QOfonoManagerPrivate::QOfonoManagerPrivate() :
 {
     qDBusRegisterMetaType<ObjectPathProperties>();
     qDBusRegisterMetaType<ObjectPathPropertiesList>();
+    qRegisterMetaType<ObjectPathProperties>("ObjectPathProperties");
+    qRegisterMetaType<ObjectPathPropertiesList>("ObjectPathPropertiesList");
 }
 
 QOfonoManager::QOfonoManager(QObject *parent) :
@@ -114,7 +117,8 @@ void QOfonoManager::connectToOfono(const QString &)
 {
     d_ptr->ofonoManager = new OfonoManager("org.ofono","/",QDBusConnection::systemBus(),this);
     if (d_ptr->ofonoManager->isValid()) {
-        QDBusReply<ObjectPathPropertiesList> reply = d_ptr->ofonoManager->GetModems();
+        QDBusPendingReply<ObjectPathPropertiesList> reply = d_ptr->ofonoManager->GetModems();
+        reply.waitForFinished();
         foreach(ObjectPathProperties modem, reply.value()) {
             d_ptr->modems << modem.path.path();
             Q_EMIT modemAdded(modem.path.path());
