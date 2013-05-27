@@ -215,7 +215,7 @@ QStringList QOfonoVoiceCallManager::getCalls() const
  void QOfonoVoiceCallManager::createMultiparty()
  {
      if(d_ptr->voiceCallManager) {
-         QDBusPendingReply<<QList<QDBusObjectPath>> result = d_ptr->voiceCallManager->CreateMultiparty();
+         QDBusPendingReply<QList<QDBusObjectPath> > result = d_ptr->voiceCallManager->CreateMultiparty();
          QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(result, this);
          connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
                  SLOT(createMultipartyFinished(QDBusPendingCallWatcher*)));
