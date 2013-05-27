@@ -90,10 +90,6 @@ void QOfonoSimManager::setModemPath(const QString &path)
             path.isEmpty())
         return;
 
-    if (path == d_ptr->modemPath ||
-            path.isEmpty())
-        return;
-
     d_ptr->properties.clear();
     d_ptr->pendingOpPinType.clear();
 
