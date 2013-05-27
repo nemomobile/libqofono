@@ -210,6 +210,10 @@ xmlfiles.files = $$XML_FILES
 
 CONFIG += create_pc create_prl link_pkgconfig
 
+contains(CONFIG, mlite) {
+    PKGCONFIG += mlite
+    DEFINES += HAS_MLITE
+}
 
 QMAKE_PKGCONFIG_DESTDIR = pkgconfig
 QMAKE_PKGCONFIG_INCDIR = $$headers.path
