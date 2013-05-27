@@ -24,6 +24,7 @@ public:
     OfonoVoiceCallManager *voiceCallManager;
     QVariantMap properties;
     QStringList callList;
+    QString errorMessage;
 
 };
 
@@ -133,65 +134,239 @@ QStringList QOfonoVoiceCallManager::getCalls() const
 
  void QOfonoVoiceCallManager::dial(const QString &number, const QString &calleridHide)
  {
-     if(d_ptr->voiceCallManager)
-         d_ptr->voiceCallManager->Dial(number,calleridHide);
+     if(d_ptr->voiceCallManager) {
+         QDBusPendingReply<> result = d_ptr->voiceCallManager->Dial(number,calleridHide);
+         QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(result, this);
+         connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
+                 SLOT(dialFinished(QDBusPendingCallWatcher*)));
+     }
  }
 
  void QOfonoVoiceCallManager::hangupAll()
  {
-     if(d_ptr->voiceCallManager)
-         d_ptr->voiceCallManager->HangupAll();
+     if(d_ptr->voiceCallManager) {
+         QDBusPendingReply<> result =  d_ptr->voiceCallManager->HangupAll();
+         QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(result, this);
+         connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
+                 SLOT(hangupAllFinished(QDBusPendingCallWatcher*)));
+     }
  }
 
  void QOfonoVoiceCallManager::sendTones(const QString &tonestring)
  {
-     if(d_ptr->voiceCallManager)
-         d_ptr->voiceCallManager->SendTones(tonestring);
+     if(d_ptr->voiceCallManager) {
+         QDBusPendingReply<> result = d_ptr->voiceCallManager->SendTones(tonestring);
+         QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(result, this);
+         connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
+                 SLOT(sendTonesFinished(QDBusPendingCallWatcher*)));
+     }
  }
 
  void QOfonoVoiceCallManager::transfer()
  {
-     if(d_ptr->voiceCallManager)
-         d_ptr->voiceCallManager->Transfer();
+     if(d_ptr->voiceCallManager) {
+         QDBusPendingReply<> result = d_ptr->voiceCallManager->Transfer();
+         QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(result, this);
+         connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
+                 SLOT(transferFinished(QDBusPendingCallWatcher*)));
+     }
  }
 
  void QOfonoVoiceCallManager::swapCalls()
  {
-     if(d_ptr->voiceCallManager)
-         d_ptr->voiceCallManager->SwapCalls();
+     if(d_ptr->voiceCallManager) {
+         QDBusPendingReply<> result =  d_ptr->voiceCallManager->SwapCalls();
+         QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(result, this);
+         connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
+                 SLOT(swapCallsFinished(QDBusPendingCallWatcher*)));
+     }
  }
 
  void QOfonoVoiceCallManager::releaseAndAnswer()
  {
-     if(d_ptr->voiceCallManager)
-         d_ptr->voiceCallManager->ReleaseAndAnswer();
+     if(d_ptr->voiceCallManager) {
+         QDBusPendingReply<> result = d_ptr->voiceCallManager->ReleaseAndAnswer();
+         QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(result, this);
+         connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
+                 SLOT(releaseAndAnswerFinished(QDBusPendingCallWatcher*)));
+     }
  }
 
  void QOfonoVoiceCallManager::holdAndAnswer()
  {
-     if(d_ptr->voiceCallManager)
-         d_ptr->voiceCallManager->HoldAndAnswer();
+     if(d_ptr->voiceCallManager) {
+         QDBusPendingReply<> result = d_ptr->voiceCallManager->HoldAndAnswer();
+         QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(result, this);
+         connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
+                 SLOT(holdAndAnswerFinished(QDBusPendingCallWatcher*)));
+     }
  }
 
  void QOfonoVoiceCallManager::privateChat(const QString &path)
  {
-     if(d_ptr->voiceCallManager)
-         d_ptr->voiceCallManager->PrivateChat(QDBusObjectPath(path));
+     if(d_ptr->voiceCallManager) {
+         QDBusPendingReply<> result = d_ptr->voiceCallManager->PrivateChat(QDBusObjectPath(path));
+         QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(result, this);
+         connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
+                 SLOT(privateChatFinished(QDBusPendingCallWatcher*)));
+     }
  }
 
  void QOfonoVoiceCallManager::createMultiparty()
  {
-     if(d_ptr->voiceCallManager)
-         d_ptr->voiceCallManager->CreateMultiparty();
+     if(d_ptr->voiceCallManager) {
+         QDBusPendingReply<> result = d_ptr->voiceCallManager->CreateMultiparty();
+         QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(result, this);
+         connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
+                 SLOT(createMultipartyFinished(QDBusPendingCallWatcher*)));
+     }
  }
 
  void QOfonoVoiceCallManager::hangupMultiparty()
  {
-     if(d_ptr->voiceCallManager)
-         d_ptr->voiceCallManager->HangupMultiparty();
+     if(d_ptr->voiceCallManager) {
+         QDBusPendingReply<> result = d_ptr->voiceCallManager->HangupMultiparty();
+         QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(result, this);
+         connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
+                 SLOT(hangupMultipartyFinished(QDBusPendingCallWatcher*)));
+     }
  }
 
  bool QOfonoVoiceCallManager::isValid() const
  {
      return d_ptr->voiceCallManager->isValid();
  }
+
+ void QOfonoVoiceCallManager::dialFinished(QDBusPendingCallWatcher *call)
+ {
+     QDBusPendingReply<> reply = *call;
+     bool ok = true;
+     if (reply.isError()) {
+         qWarning() << Q_FUNC_INFO << "failed:" << reply.error();
+         d_ptr->errorMessage = reply.error().name() + " " + reply.error().message();
+         ok = false;
+     }
+     Q_EMIT dialComplete(ok);
+
+ }
+
+ void QOfonoVoiceCallManager::hangupAllFinished(QDBusPendingCallWatcher *call)
+ {
+     QDBusPendingReply<> reply = *call;
+     bool ok = true;
+     if (reply.isError()) {
+         qWarning() << Q_FUNC_INFO << "failed:" << reply.error();
+         d_ptr->errorMessage = reply.error().name() + " " + reply.error().message();
+         ok = false;
+     }
+     Q_EMIT hangupAllComplete(ok);
+ }
+
+ void QOfonoVoiceCallManager::sendTonesFinished(QDBusPendingCallWatcher *call)
+ {
+     QDBusPendingReply<> reply = *call;
+//     bool ok = true;
+     if (reply.isError()) {
+         qWarning() << Q_FUNC_INFO << "failed:" << reply.error();
+         d_ptr->errorMessage = reply.error().name() + " " + reply.error().message();
+//         ok = false;
+     }
+   //  Q_EMIT sendTonesComplete(ok);
+ }
+
+ void QOfonoVoiceCallManager::transferFinished(QDBusPendingCallWatcher *call)
+ {
+     QDBusPendingReply<> reply = *call;
+     bool ok = true;
+     if (reply.isError()) {
+         qWarning() << Q_FUNC_INFO << "failed:" << reply.error();
+         d_ptr->errorMessage = reply.error().name() + " " + reply.error().message();
+         ok = false;
+     }
+     Q_EMIT transferComplete(ok);
+ }
+
+ void QOfonoVoiceCallManager::swapCallsFinished(QDBusPendingCallWatcher *call)
+ {
+     QDBusPendingReply<> reply = *call;
+     bool ok = true;
+     if (reply.isError()) {
+         qWarning() << Q_FUNC_INFO << "failed:" << reply.error();
+         d_ptr->errorMessage = reply.error().name() + " " + reply.error().message();
+         ok = false;
+     }
+     Q_EMIT swapCallsComplete(ok);
+ }
+
+ void QOfonoVoiceCallManager::releaseAndAnswerFinished(QDBusPendingCallWatcher *call)
+ {
+     QDBusPendingReply<> reply = *call;
+     bool ok = true;
+     if (reply.isError()) {
+         qWarning() << Q_FUNC_INFO << "failed:" << reply.error();
+         d_ptr->errorMessage = reply.error().name() + " " + reply.error().message();
+         ok = false;
+     }
+     Q_EMIT releaseAndAnswerComplete(ok);
+ }
+
+ void QOfonoVoiceCallManager::holdAndAnswerFinished(QDBusPendingCallWatcher *call)
+ {
+     QDBusPendingReply<> reply = *call;
+     bool ok = true;
+     if (reply.isError()) {
+         qWarning() << Q_FUNC_INFO << "failed:" << reply.error();
+          d_ptr->errorMessage = reply.error().name() + " " + reply.error().message();
+          ok = false;
+     }
+    Q_EMIT holdAndAnswerComplete(ok);
+ }
+
+ void QOfonoVoiceCallManager::privateChatFinished(QDBusPendingCallWatcher *call)
+ {
+     QDBusPendingReply<QList<QDBusObjectPath> > reply = *call;
+     QStringList calls;
+     bool ok = true;
+     if (reply.isError()) {
+         qWarning() << Q_FUNC_INFO << "failed:" << reply.error();
+         d_ptr->errorMessage = reply.error().name() + " " + reply.error().message();
+         ok = false;
+     } else {
+         Q_FOREACH(const QDBusObjectPath &path, reply.value())
+             calls << path.path();
+
+     }
+     Q_EMIT privateChatComplete(ok, calls);
+ }
+
+ void QOfonoVoiceCallManager::createMultipartyFinished(QDBusPendingCallWatcher *call)
+ {
+     QDBusPendingReply<> reply = *call;
+     bool ok = true;
+     if (reply.isError()) {
+         qWarning() << Q_FUNC_INFO << "failed:" << reply.error();
+          d_ptr->errorMessage = reply.error().name() + " " + reply.error().message();
+          ok = false;
+     }
+     Q_EMIT createMultipartyComplete(ok, QStringList());
+ }
+
+ void QOfonoVoiceCallManager::hangupMultipartyFinished(QDBusPendingCallWatcher *call)
+ {
+     QDBusPendingReply<> reply = *call;
+     bool ok = true;
+     if (reply.isError()) {
+         qWarning() << Q_FUNC_INFO << "failed:" << reply.error();
+          d_ptr->errorMessage = reply.error().name() + " " + reply.error().message();
+          ok = false;
+     }
+     Q_EMIT hangupMultipartyComplete(ok);
+ }
+
+
+ QString QOfonoVoiceCallManager::errorMessage() const
+ {
+     return d_ptr->errorMessage;
+ }
+
+
