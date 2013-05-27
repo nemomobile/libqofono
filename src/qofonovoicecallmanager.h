@@ -32,6 +32,7 @@ class QOFONOSHARED_EXPORT QOfonoVoiceCallManager : public QObject
     Q_OBJECT
     Q_PROPERTY(QString modemPath READ modemPath WRITE setModemPath NOTIFY modemPathChanged)
     Q_PROPERTY(QStringList emergencyNumbers READ emergencyNumbers)
+    Q_PROPERTY(QString errorMessage READ errorMessage)
 
 public:
     explicit QOfonoVoiceCallManager(QObject *parent = 0);
@@ -45,6 +46,9 @@ public:
     Q_INVOKABLE QStringList getCalls() const;
 
     bool isValid() const;
+
+    QString errorMessage() const;
+
 Q_SIGNALS:
     void emergencyNumbersChanged(const QStringList &numbers);
 
@@ -53,7 +57,6 @@ Q_SIGNALS:
 
     void dialComplete(bool status);
     void hangupAllComplete(bool status);
-    void sendTonesComplete(bool status);
     void transferComplete(bool status);
     void swapCallsComplete(bool status);
     void releaseAndAnswerComplete(bool status);
@@ -84,6 +87,18 @@ private:
 
 private slots:
     void propertyChanged(const QString &property,const QDBusVariant &value);
+
+    void dialFinished(QDBusPendingCallWatcher *call);
+    void hangupAllFinished(QDBusPendingCallWatcher *call);
+    void sendTonesFinished(QDBusPendingCallWatcher *call);
+    void transferFinished(QDBusPendingCallWatcher *call);
+    void swapCallsFinished(QDBusPendingCallWatcher *call);
+    void releaseAndAnswerFinished(QDBusPendingCallWatcher *call);
+    void holdAndAnswerFinished(QDBusPendingCallWatcher *call);
+    void privateChatFinished(QDBusPendingCallWatcher *call);
+    void createMultipartyFinished(QDBusPendingCallWatcher *call);
+    void hangupMultipartyFinished(QDBusPendingCallWatcher *call);
+
 };
 
 #endif // QOFONOVoiceCallManager_H

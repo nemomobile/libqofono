@@ -25,6 +25,7 @@ public:
     OfonoMessageManager *messageManager;
     QVariantMap properties;
     QStringList messageList;
+    QString errorMessage;
 };
 
 QOfonoMessageManagerPrivate::QOfonoMessageManagerPrivate() :
@@ -168,8 +169,12 @@ void QOfonoMessageManager::setAlphabet(const QString &alphabet)
 
 void QOfonoMessageManager::sendMessage(const QString &numberTo, const QString &message)
 {
-    if (d_ptr->messageManager)
-        d_ptr->messageManager->SendMessage(numberTo,message);
+    if (d_ptr->messageManager) {
+        QDBusPendingReply<QDBusObjectPath> result = d_ptr->messageManager->SendMessage(numberTo,message);
+        QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(result, this);
+        connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
+                SLOT(sendMessageFinished(QDBusPendingCallWatcher*)));
+    }
 }
 
 QStringList QOfonoMessageManager::messages()
@@ -217,3 +222,16 @@ void QOfonoMessageManager::messagesError(const QDBusError &error)
 {
     qDebug() << Q_FUNC_INFO << error.message();
 }
+
+void QOfonoMessageManager::sendMessageFinished(QDBusPendingCallWatcher *call)
+{
+    QDBusPendingReply<QDBusObjectPath> reply = *call;
+    bool ok = true;
+    if (reply.isError()) {
+        qWarning() << Q_FUNC_INFO << "failed:" << reply.error();
+         d_ptr->errorMessage = reply.error().name() + " " + reply.error().message();
+         ok = false;
+    }
+    Q_EMIT sendMessageComplete(ok, reply.value().path());
+}
+
