@@ -205,7 +205,7 @@ QStringList QOfonoVoiceCallManager::getCalls() const
  void QOfonoVoiceCallManager::privateChat(const QString &path)
  {
      if(d_ptr->voiceCallManager) {
-         QDBusPendingReply<> result = d_ptr->voiceCallManager->PrivateChat(QDBusObjectPath(path));
+         QDBusPendingReply<QList<QDBusObjectPath> > result = d_ptr->voiceCallManager->PrivateChat(QDBusObjectPath(path));
          QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(result, this);
          connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
                  SLOT(privateChatFinished(QDBusPendingCallWatcher*)));
@@ -215,7 +215,7 @@ QStringList QOfonoVoiceCallManager::getCalls() const
  void QOfonoVoiceCallManager::createMultiparty()
  {
      if(d_ptr->voiceCallManager) {
-         QDBusPendingReply<> result = d_ptr->voiceCallManager->CreateMultiparty();
+         QDBusPendingReply<<QList<QDBusObjectPath>> result = d_ptr->voiceCallManager->CreateMultiparty();
          QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(result, this);
          connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
                  SLOT(createMultipartyFinished(QDBusPendingCallWatcher*)));
