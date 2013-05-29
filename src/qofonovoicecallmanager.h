@@ -52,8 +52,8 @@ public:
 Q_SIGNALS:
     void emergencyNumbersChanged(const QStringList &numbers);
 
-    void callAdded(const QString &call, const QVariantMap &map);
-    void callRemoved(const QString &call, const QVariantMap &map);
+    void callAdded(const QString &call);
+    void callRemoved(const QString &call);
 
     void dialComplete(bool status);
     void hangupAllComplete(bool status);
@@ -98,6 +98,9 @@ private slots:
     void privateChatFinished(QDBusPendingCallWatcher *call);
     void createMultipartyFinished(QDBusPendingCallWatcher *call);
     void hangupMultipartyFinished(QDBusPendingCallWatcher *call);
+
+    void onCallAdded(const QDBusObjectPath &, const QVariantMap &map);
+    void onCallRemoved(const QDBusObjectPath &);
 
 };
 

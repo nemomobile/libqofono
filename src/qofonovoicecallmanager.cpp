@@ -113,18 +113,20 @@ QStringList QOfonoVoiceCallManager::getCalls() const
  void QOfonoVoiceCallManager::connectSignals()
  {
      disconnect(d_ptr->voiceCallManager,SIGNAL(CallAdded(QDBusObjectPath,QVariantMap)),
-             this,SIGNAL(callAdded(QString,QVariantMap)));
+             this,SLOT(onCallAdded(QDBusObjectPath,QVariantMap)));
      disconnect(d_ptr->voiceCallManager,SIGNAL(CallRemoved(QDBusObjectPath)),
-             this,SIGNAL(callRemoved(QString,QVariantMap)));
+             this,SLOT(onCallRemoved(QDBusObjectPath)));
+
      disconnect(d_ptr->voiceCallManager,SIGNAL(BarringActive(QString)),
              this,SIGNAL(barringActive(QString)));
      disconnect(d_ptr->voiceCallManager,SIGNAL(Forwarded(QString)),
              this,SIGNAL(forwarded(QString)));
 
      connect(d_ptr->voiceCallManager,SIGNAL(CallAdded(QDBusObjectPath,QVariantMap)),
-             this,SIGNAL(callAdded(QString,QVariantMap)));
+             this,SLOT(callAdded(QDBusObjectPath,QVariantMap)));
      connect(d_ptr->voiceCallManager,SIGNAL(CallRemoved(QDBusObjectPath)),
-             this,SIGNAL(callRemoved(QString,QVariantMap)));
+             this,SIGNAL(onCallRemoved(QDBusObjectPath)));
+
      connect(d_ptr->voiceCallManager,SIGNAL(BarringActive(QString)),
              this,SIGNAL(barringActive(QString)));
      connect(d_ptr->voiceCallManager,SIGNAL(Forwarded(QString)),
@@ -369,4 +371,12 @@ QStringList QOfonoVoiceCallManager::getCalls() const
      return d_ptr->errorMessage;
  }
 
+ void QOfonoVoiceCallManager::onCallRemoved(const QDBusObjectPath &path)
+ {
+     Q_EMIT callRemoved(path.path());
+ }
 
+ void QOfonoVoiceCallManager::onCallAdded(const QDBusObjectPath &path, const QVariantMap &)
+ {
+     Q_EMIT callAdded(path.path;
+ }
