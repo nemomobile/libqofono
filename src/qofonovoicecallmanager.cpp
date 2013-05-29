@@ -378,5 +378,5 @@ QStringList QOfonoVoiceCallManager::getCalls() const
 
  void QOfonoVoiceCallManager::onCallAdded(const QDBusObjectPath &path, const QVariantMap &)
  {
-     Q_EMIT callAdded(path.path;
+     Q_EMIT callAdded(path.path());
  }
