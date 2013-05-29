@@ -109,20 +109,31 @@ void QOfonoConnectionManager::addContext(const QString &type)
 {
     if (!d_ptr->connman)
         return;
-    QDBusPendingReply<QDBusObjectPath> reply = d_ptr->connman->AddContext(type);
-    if (reply.isError()) {
-        qDebug() << Q_FUNC_INFO <<reply.error();
+
+    QStringList allowedTypes;
+    allowedTypes << "internet";
+    allowedTypes << "mms";
+    allowedTypes << "wap";
+    allowedTypes << "ims";
+
+    if(!allowedTypes.contains(type)) {
+        Q_EMIT reportError("Type not allowed");
+        return;
     }
+    QDBusPendingReply<QDBusObjectPath> reply = d_ptr->connman->AddContext(type);
+    QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(reply, this);
+    connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
+            SLOT(addContextFinished(QDBusPendingCallWatcher*)));
 }
 
 void QOfonoConnectionManager::removeContext(const QString &path)
 {
     if (!d_ptr->connman)
         return;
-    QDBusPendingReply<QDBusObjectPath> reply = d_ptr->connman->RemoveContext(QDBusObjectPath(path));
-    if (reply.isError()) {
-        qDebug() << Q_FUNC_INFO <<reply.error();
-    }
+    QDBusPendingReply<> reply = d_ptr->connman->RemoveContext(QDBusObjectPath(path));
+    QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(reply, this);
+    connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
+            SLOT(removeContextFinished(QDBusPendingCallWatcher*)));
 }
 
 bool QOfonoConnectionManager::attached() const
@@ -158,12 +169,12 @@ bool QOfonoConnectionManager::roamingAllowed() const
         return false;
 }
 
-void QOfonoConnectionManager::setRoamingAllowed(bool b)
+void QOfonoConnectionManager::setRoamingAllowed(bool value)
 {
-    if (d_ptr->connman)
-        d_ptr->connman->SetProperty("RoamingAllowed",QDBusVariant(b));
+    QString str("RoamingAllowed");
+    QDBusVariant var(value);
+    setOneProperty(str,var);
 }
-
 
 bool QOfonoConnectionManager::powered() const
 {
@@ -173,18 +184,12 @@ bool QOfonoConnectionManager::powered() const
         return false;
 }
 
-void QOfonoConnectionManager::setPowered(bool b)
+void QOfonoConnectionManager::setPowered(bool value)
 {
-    if (d_ptr->connman) {
-
-        QDBusPendingReply<void> reply =
-                d_ptr->connman->SetProperty("Powered",QDBusVariant(b));
-        if(reply.isError()) {
-         qDebug() << reply.error().message();
-        }
-    }
+    QString str("Powered");
+    QDBusVariant var(value);
+    setOneProperty(str,var);
 }
-
 
 void QOfonoConnectionManager::propertyChanged(const QString& property, const QDBusVariant& dbusvalue)
 {
@@ -239,3 +244,41 @@ bool QOfonoConnectionManager::isValid() const
 {
     return d_ptr->connman->isValid();
 }
+
+void QOfonoConnectionManager::setOneProperty(const QString &prop, const QDBusVariant &var)
+{
+    if (d_ptr->connman) {
+        QDBusPendingReply <> reply = d_ptr->connman->SetProperty(prop,var);
+        QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(reply, this);
+        connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
+                SLOT(setPropertyFinished(QDBusPendingCallWatcher*)));
+    }
+}
+
+void QOfonoConnectionManager::addContextFinished(QDBusPendingCallWatcher *watch)
+{
+    QDBusPendingReply<QDBusObjectPath> reply = *watch;
+    if (reply.isError()) {
+        qDebug() << Q_FUNC_INFO << reply.error();
+        Q_EMIT reportError(reply.error().message());
+    }
+}
+
+void QOfonoConnectionManager::removeContextFinished(QDBusPendingCallWatcher *watch)
+{
+    QDBusPendingReply<> reply = *watch;
+    if (reply.isError()) {
+        qDebug() << Q_FUNC_INFO << reply.error();
+        Q_EMIT reportError(reply.error().message());
+    }
+}
+
+void QOfonoConnectionManager::setPropertyFinished(QDBusPendingCallWatcher *watch)
+{
+    QDBusPendingReply<> reply = *watch;
+    if (reply.isError()) {
+        qDebug() << Q_FUNC_INFO << reply.error();
+        Q_EMIT reportError(reply.error().message());
+    }
+}
+

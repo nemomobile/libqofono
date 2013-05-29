@@ -98,8 +98,14 @@ Q_SIGNALS:
 
     void contextPathChanged(const QString &);
 
+    void reportError(const QString &);
+
 public slots:
 
+protected:
+    void setOneProperty(const QString &prop,const QDBusVariant &var);
+protected slots:
+    void setPropertyFinished(QDBusPendingCallWatcher *watch);
 
 private slots:
     void propertyChanged(const QString &property,const QDBusVariant &value);

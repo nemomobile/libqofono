@@ -198,63 +198,91 @@ QVariantMap QOfonoConnectionContext::IPv6Settings() const
 
 void QOfonoConnectionContext::setActive(const bool value)
 {
-    if (d_ptr->context)
-        d_ptr->context->SetProperty(QLatin1String("Active"),QDBusVariant(value));
+    QString str("Active");
+    QDBusVariant var(value);
+    setOneProperty(str,var);
 }
 
 void QOfonoConnectionContext::setAccessPointName(const QString &value)
 {
-    if (d_ptr->context) {
-        if (!active())
-            d_ptr->context->SetProperty(QLatin1String("AccessPointName"),QDBusVariant(value));
+    if (!active()) {
+        d_ptr->context->SetProperty(QLatin1String("AccessPointName"),QDBusVariant(value));
+        QString str("AccessPointName");
+        QDBusVariant var(value);
+        setOneProperty(str,var);
     }
 }
 
 void QOfonoConnectionContext::setType(const QString &value)
 {
-    if (d_ptr->context)
-        d_ptr->context->SetProperty(QLatin1String("Type"),QDBusVariant(value));
+    QString str("Type");
+    QDBusVariant var(value);
+    setOneProperty(str,var);
 }
 
 void QOfonoConnectionContext::setUsername(const QString &value)
 {
-    if (d_ptr->context)
-        d_ptr->context->SetProperty(QLatin1String("Username"),QDBusVariant(value));
+    QString str("Username");
+    QDBusVariant var(value);
+    setOneProperty(str,var);
 }
 
 void QOfonoConnectionContext::setPassword(const QString &value)
 {
-    if (d_ptr->context)
-        d_ptr->context->SetProperty(QLatin1String("Password"),QDBusVariant(value));
+    QString str("Password");
+    QDBusVariant var(value);
+    setOneProperty(str,var);
 }
 
 void QOfonoConnectionContext::setProtocol(const QString &value)
 {
-    if (d_ptr->context)
-        d_ptr->context->SetProperty(QLatin1String("Protocol"),QDBusVariant(value));
+    QString str("Protocol");
+    QDBusVariant var(value);
+    setOneProperty(str,var);
 }
 
 void QOfonoConnectionContext::setName(const QString &value)
 {
-    if (d_ptr->context)
-        d_ptr->context->SetProperty(QLatin1String("Name"),QDBusVariant(value));
+    QString str("Name");
+    QDBusVariant var(value);
+    setOneProperty(str,var);
 }
 
 void QOfonoConnectionContext::setMessageProxy(const QString &value)
 {
-    if (d_ptr->context)
-        d_ptr->context->SetProperty(QLatin1String("MessageProxy"),QDBusVariant(value));
+    QString str("MessageProxy");
+    QDBusVariant var(value);
+    setOneProperty(str,var);
 }
 
 void QOfonoConnectionContext::setMessageCenter(const QString &value)
 {
-    if (d_ptr->context)
-        d_ptr->context->SetProperty(QLatin1String("MessageCenter"),QDBusVariant(value));
+    QString str("MessageCenter");
+    QDBusVariant var(value);
+    setOneProperty(str,var);
 }
-
 
 bool QOfonoConnectionContext::isValid() const
 {
     return d_ptr->context->isValid();
+}
+
+void QOfonoConnectionContext::setOneProperty(const QString &prop, const QDBusVariant &var)
+{
+    if (d_ptr->context) {
+        QDBusPendingReply <> reply = d_ptr->context->SetProperty(prop,var);
+        QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(reply, this);
+        connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
+                SLOT(setPropertyFinished(QDBusPendingCallWatcher*)));
+    }
+}
+
+void QOfonoConnectionContext::setPropertyFinished(QDBusPendingCallWatcher *watch)
+{
+    QDBusPendingReply<> reply = *watch;
+    if(reply.isError()) {
+        qDebug() << Q_FUNC_INFO  << reply.error().message();
+        Q_EMIT reportError(reply.error().message());
+    }
 }
 

@@ -71,11 +71,19 @@ Q_SIGNALS:
     void modemPathChanged(const QString &path);
 
     void messagesFinished();
+    void reportError(const QString &errorMessage);
 
 public slots:
     void deactivateAll();
     void addContext(const QString &type);
     void removeContext(const QString &path);
+
+protected slots:
+    void addContextFinished(QDBusPendingCallWatcher *watch);
+    void removeContextFinished(QDBusPendingCallWatcher *watch);
+    void setPropertyFinished(QDBusPendingCallWatcher *watch);
+protected:
+    void setOneProperty(const QString &prop,const QDBusVariant &var);
 
 private slots:
     void propertyChanged(const QString &property,const QDBusVariant &value);

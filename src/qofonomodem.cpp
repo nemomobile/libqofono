@@ -171,7 +171,6 @@ QStringList QOfonoModem::interfaces() const
 
 void QOfonoModem::setPowered(bool powered)
 {
-    qDebug() << Q_FUNC_INFO << powered << d_ptr->modem;
     QString str("Powered");
     QDBusVariant var(powered);
     setOneProperty(str,var);
@@ -231,7 +230,6 @@ void QOfonoModem::setOneProperty(const QString &prop, const QDBusVariant &var)
 {
     if (d_ptr->modem) {
         QDBusPendingReply <> reply = d_ptr->modem->SetProperty(prop,var);
-
         QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(reply, this);
         connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
                 SLOT(setPropertyFinished(QDBusPendingCallWatcher*)));
@@ -243,5 +241,7 @@ void QOfonoModem::setPropertyFinished(QDBusPendingCallWatcher *watch)
     QDBusPendingReply<> reply = *watch;
     if(reply.isError()) {
         qDebug() << Q_FUNC_INFO  << reply.error().message();
+        Q_EMIT reportError(reply.error().message());
     }
 }
+

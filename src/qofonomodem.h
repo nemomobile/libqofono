@@ -95,13 +95,15 @@ Q_SIGNALS:
     void featuresChanged(const QStringList &features);
     void interfacesChanged(const QStringList &interfaces);
     void modemPathChanged(const QString &path);
+    void reportError(const QString &errorMessage);
 
 protected:
     void setOneProperty(const QString &prop,const QDBusVariant &var);
+protected slots:
+    void setPropertyFinished(QDBusPendingCallWatcher *watch);
 
 private slots:
     void propertyChanged(const QString &property,const QDBusVariant &value);
-    void setPropertyFinished(QDBusPendingCallWatcher*);
 
 private:
     QOfonoModemPrivate *d_ptr;
