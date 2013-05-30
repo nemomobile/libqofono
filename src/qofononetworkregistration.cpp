@@ -83,6 +83,7 @@ void QOfonoNetworkRegistration::setModemPath(const QString &path)
 
         if (d_ptr->networkRegistration->isValid()) {
             d_ptr->modemPath = path;
+            d_ptr->networkRegistration->setTimeout(1000 * 120); //increase dbus timeout as scanning can take a long time
 
             connect(d_ptr->networkRegistration,SIGNAL(PropertyChanged(QString,QDBusVariant)),
                     this,SLOT(propertyChanged(QString,QDBusVariant)));

@@ -34,6 +34,23 @@
 
 // These auto tests require
 // phonesim or real modem
+
+static bool waitForSignal(QObject *obj, const char *signal, int timeout = 0)
+{
+    QEventLoop loop;
+    QObject::connect(obj, signal, &loop, SLOT(quit()));
+    QTimer timer;
+    QSignalSpy timeoutSpy(&timer, SIGNAL(timeout()));
+    if (timeout > 0) {
+        QObject::connect(&timer, SIGNAL(timeout()), &loop, SLOT(quit()));
+        timer.setSingleShot(true);
+        timer.start(timeout);
+    }
+    loop.exec();
+    return timeoutSpy.isEmpty();
+}
+
+
 class Tst_qofonoTest : public QObject
 {
     Q_OBJECT
@@ -45,6 +62,7 @@ private Q_SLOTS:
 
     void testManager();
     void testModem();
+    void testScan();
 
     void testContextConnection();
     void testConnectionManager();
@@ -114,6 +132,25 @@ void Tst_qofonoTest::testModem()
 //     modem.setOnline(true);
 }
 
+void Tst_qofonoTest::testScan()
+{
+    QOfonoManager manager;
+    QOfonoModem modem;
+    modem.setModemPath(manager.modems()[0]);
+    QOfonoNetworkRegistration netreg;
+    netreg.setModemPath(manager.modems()[0]);
+
+    QSignalSpy spy_scanFinished(&netreg, SIGNAL(scanFinished()));
+    QSignalSpy spy_scanError(&netreg, SIGNAL(scanError(QString)));
+
+    netreg.scan();
+    ::waitForSignal(&netreg, SIGNAL(scanFinished()), 1000 * 500);
+
+    QCOMPARE(spy_scanError.count(),0);
+    QCOMPARE(spy_scanFinished.count(),1);
+
+}
+
 void Tst_qofonoTest::testConnectionManager()
 {
     QOfonoManager manager;
@@ -131,7 +168,7 @@ void Tst_qofonoTest::testConnectionManager()
 
     QSignalSpy spy(&connman, SIGNAL(contextAdded(QString)));
     connman.addContext("internet");
-    QTest::qWait(1000);
+    ::waitForSignal(&connman,SIGNAL(contextAdded(QString)),1000);
     QCOMPARE(spy.count(),1);
 
 //    QList<QVariant> arguments ;
@@ -195,7 +232,7 @@ void Tst_qofonoTest::testContextConnection()
     if (!modem.online()) {
         QSignalSpy spy_bogusContext(&modem, SIGNAL(onlineChanged(bool)));
         modem.setOnline(true);
-        QTest::qWait(3000);
+        ::waitForSignal(&modem,SIGNAL(onlineChanged(bool)),3000);
         QCOMPARE(spy_bogusContext.count(),1);
     }
 
@@ -210,7 +247,8 @@ void Tst_qofonoTest::testContextConnection()
     if (!connman.powered()) {
         QSignalSpy spy_connPowered(&connman, SIGNAL(poweredChanged(bool)));
         connman.setPowered(true);
-        QTest::qWait(3000);
+        ::waitForSignal(&connman,SIGNAL(poweredChanged(bool)),3000);
+
         QCOMPARE(spy_connPowered.count(),1);
     }
 
@@ -223,14 +261,15 @@ void Tst_qofonoTest::testContextConnection()
     QSignalSpy spy_contextError(&connman, SIGNAL(reportError(QString)));
 
     connman.addContext(QString("test"));
-    QTest::qWait(3000);
+    ::waitForSignal(&connman,SIGNAL(reportError(QString)),3000);
+
     QCOMPARE(spy_bogusContext.count(),0);
     QCOMPARE(spy_contextError.count(),1);
-    QTest::qWait(10000);
 
     QSignalSpy spy_realContext(&connman, SIGNAL(contextAdded(QString)));
     connman.addContext(QString("internet"));
-    QTest::qWait(3000);
+    ::waitForSignal(&connman,SIGNAL(contextAdded(QString)),3000);
+
     QCOMPARE(spy_realContext.count(),1);
 
     contextList = connman.contexts();
@@ -242,14 +281,16 @@ void Tst_qofonoTest::testContextConnection()
 
         QSignalSpy spy2(&connContext, SIGNAL(contextPathChanged(QString)));
         connContext.setContextPath(path);
-        QTest::qWait(1000);
+        ::waitForSignal(&connContext,SIGNAL(contextPathChanged(QString)),1000);
+
         QCOMPARE(spy2.count(),1);
         QVERIFY(!connContext.contextPath().isEmpty());
 
         QVERIFY(connContext.accessPointName().isEmpty());
         QSignalSpy spy1(&connContext, SIGNAL(accessPointNameChanged(QString)));
         connContext.setAccessPointName("Jolla");
-        QTest::qWait(2000);
+        ::waitForSignal(&connman,SIGNAL(accessPointNameChanged(QString)),2000);
+
         QCOMPARE(spy1.count(),1);
 
         QList<QVariant> arguments1;
@@ -258,6 +299,8 @@ void Tst_qofonoTest::testContextConnection()
 
         QSignalSpy spy_name(&connContext, SIGNAL(nameChanged(QString)));
         connContext.setName("Test AP");
+        ::waitForSignal(&connman,SIGNAL(nameChanged(QString)),2000);
+
         QTest::qWait(2000);
         QCOMPARE(spy_name.count(),1);
         QList<QVariant> arguments ;
@@ -270,7 +313,8 @@ void Tst_qofonoTest::testContextConnection()
     QVERIFY(!connContext.active());
     QSignalSpy spy_active(&connContext, SIGNAL(activeChanged(bool)));
     connContext.setActive(true);
-    QTest::qWait(3000);
+    ::waitForSignal(&connman,SIGNAL(activeChanged(bool)),3000);
+
     QCOMPARE(spy_active.count(),1);
 
     QList<QVariant> arguments2 = spy_active.takeFirst();
@@ -370,7 +414,7 @@ void Tst_qofonoTest::testSimManager()
 
     QSignalSpy spy(&simManager, SIGNAL(modemPathChanged(QString)));
     simManager.setModemPath(modems[0]);
-    QTest::qWait(1000);
+    ::waitForSignal(&simManager,SIGNAL(modemPathChanged(QString)),1000);
     QCOMPARE(spy.count(),1);
 
 }
