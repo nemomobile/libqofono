@@ -9,7 +9,7 @@ Name:       libqofono-qt5
 # << macros
 
 Summary:    A library of Qt 5 bindings for ofono
-Version:    0.18
+Version:    0.19
 Release:    1
 Group:      System/Libraries
 License:    LGPLv2.1
