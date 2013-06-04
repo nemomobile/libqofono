@@ -1,6 +1,6 @@
 Name: libqofono-qt5
 Summary: A library of Qt 5 bindings for ofono
-Version: 0.19
+Version: 0.20
 Release: 1
 Group: System/Libraries
 License: LGPLv2.1
@@ -25,7 +25,8 @@ PkgConfigBR:
 
 Configure: none
 Builder: qmake5
-QMakeOptions: CONFIG+=mlite
+QMakeOptions:
+    - CONFIG+=mlite
 SetupOptions: "-q -n %{name}-%{version}"
 Files:
     - "%{_libdir}/%{name}.so.*"
@@ -38,7 +39,7 @@ SubPackages:
       Requires:
           - "%{name} = %{version}"
       Files:
-          - "%{_libdir}/qt5/imports/MeeGo/QOfono/*"
+          - "%{_libdir}/qt5/qml/MeeGo/QOfono/*"
 
     - Name: devel
       Summary: Development files for ofono Qt bindings
