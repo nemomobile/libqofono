@@ -9,7 +9,7 @@ Name:       libqofono-qt5
 # << macros
 
 Summary:    A library of Qt 5 bindings for ofono
-Version:    0.19
+Version:    0.20
 Release:    1
 Group:      System/Libraries
 License:    LGPLv2.1
@@ -80,7 +80,7 @@ rm -rf %{buildroot}
 # >> install pre
 export QT_SELECT=5
 # << install pre
-%qmake5_install
+%qmake_install
 
 # >> install post
 # << install post
@@ -97,7 +97,7 @@ export QT_SELECT=5
 
 %files declarative
 %defattr(-,root,root,-)
-%{_libdir}/qt5/imports/MeeGo/QOfono/*
+%{_libdir}/qt5/qml/MeeGo/QOfono/*
 # >> files declarative
 # << files declarative
 

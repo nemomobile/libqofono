@@ -13,7 +13,7 @@ equals(QT_MAJOR_VERSION, 4):{
 }
 
 equals(QT_MAJOR_VERSION, 5): {
-    QT += quick
+    QT += qml
     LIBS += -L../src -lqofono-qt5
 }
 
@@ -29,8 +29,15 @@ OTHER_FILES += \
     plugin.json qmldir
 #plugins.qmltypes
 
-qmldir.path = $$[QT_INSTALL_IMPORTS]/MeeGo/QOfono
-target.path = $$[QT_INSTALL_IMPORTS]/MeeGo/QOfono
+equals(QT_MAJOR_VERSION, 4): {
+    qmldir.path = $$[QT_INSTALL_IMPORTS]/MeeGo/QOfono
+    target.path = $$[QT_INSTALL_IMPORTS]/MeeGo/QOfono
+}
+
+equals(QT_MAJOR_VERSION, 5): {
+    qmldir.path = $$[QT_INSTALL_QML]/MeeGo/QOfono
+    target.path = $$[QT_INSTALL_QML]/MeeGo/QOfono
+}
 
 qmldir.files += qmldir
 
