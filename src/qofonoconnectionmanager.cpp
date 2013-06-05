@@ -89,6 +89,7 @@ void QOfonoConnectionManager::setModemPath(const QString &path)
             d_ptr->properties = reply.value();
             d_ptr->getContexts();
             Q_EMIT modemPathChanged(path);
+            Q_EMIT contextsChanged(d_ptr->contexts);
         }
     }
 }
