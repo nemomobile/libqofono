@@ -49,7 +49,7 @@ Q_SIGNALS: // SIGNALS
     void modemsChanged(const QStringList &modems);
 
 private slots:
-    void onModemAdd(const QDBusObjectPath &path, const QVariantMap &map);
+    void onModemAdd(const QDBusObjectPath &path, const QVariantMap &var);
     void onModemRemove(const QDBusObjectPath &path);
     void connectToOfono(const QString &);
     void ofonoUnregistered(const QString &);
