@@ -41,7 +41,7 @@ class QOFONOSHARED_EXPORT QOfonoNetworkRegistration : public QObject
 {
     Q_OBJECT
 
-    Q_PROPERTY(QString mode READ mode NOTIFY modeChanged NOTIFY modemPathChanged)
+    Q_PROPERTY(QString mode READ mode NOTIFY modeChanged)
     Q_PROPERTY(QString status READ status NOTIFY statusChanged)
     Q_PROPERTY(uint locationAreaCode READ locationAreaCode NOTIFY locationAreaCodeChanged)
     Q_PROPERTY(uint cellId READ cellId NOTIFY cellIdChanged)

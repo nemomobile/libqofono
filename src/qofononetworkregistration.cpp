@@ -93,6 +93,8 @@ void QOfonoNetworkRegistration::setModemPath(const QString &path)
             reply.waitForFinished();
             d_ptr->properties = reply.value();
             Q_EMIT modemPathChanged(path);
+            Q_EMIT nameChanged(name());
+            Q_EMIT modeChanged(mode());
         }
     }
 }
