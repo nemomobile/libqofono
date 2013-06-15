@@ -44,7 +44,7 @@ public Q_SLOTS: // METHODS
     }
 
 Q_SIGNALS: // SIGNALS
-    void ModemAdded(const QDBusObjectPath &in0, const QDBusVariant &in1);
+    void ModemAdded(const QDBusObjectPath &in0, const QVariantMap &in1);
     void ModemRemoved(const QDBusObjectPath &in0);
 };
 

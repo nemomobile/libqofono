@@ -88,7 +88,7 @@ QStringList QOfonoManager::modems()
     return d_ptr->modems;
 }
 
-void QOfonoManager::onModemAdd(const QDBusObjectPath& path, const QVariantMap& /*map*/)
+void QOfonoManager::onModemAdd(const QDBusObjectPath& path, const QVariantMap& var)
 {
     QString pathStr = path.path();
     if (!d_ptr->modems.contains(pathStr)) {
@@ -101,9 +101,10 @@ void QOfonoManager::onModemAdd(const QDBusObjectPath& path, const QVariantMap& /
 void QOfonoManager::onModemRemove(const QDBusObjectPath& path)
 {
     QString pathStr = path.path();
-    if (!d_ptr->modems.contains(pathStr)) {
+    /* we need to send out modem removed signal, since we decided to turn modem off directly */
+    Q_EMIT modemRemoved(pathStr);
+    if (d_ptr->modems.contains(pathStr)) {
         d_ptr->modems.removeOne(pathStr);
-        Q_EMIT modemRemoved(pathStr);
         Q_EMIT modemsChanged(d_ptr->modems);
     }
 }
@@ -124,9 +125,10 @@ void QOfonoManager::connectToOfono(const QString &)
             Q_EMIT modemAdded(modem.path.path());
         }
         Q_EMIT modemsChanged(d_ptr->modems);
-
     }
     Q_EMIT availableChanged(true);
+    connect(d_ptr->ofonoManager, SIGNAL(ModemAdded(QDBusObjectPath,QVariantMap)), this, SLOT(onModemAdd(QDBusObjectPath,QVariantMap)));
+    connect(d_ptr->ofonoManager, SIGNAL(ModemRemoved(QDBusObjectPath)), this, SLOT(onModemRemove(QDBusObjectPath)));
 }
 
 void QOfonoManager::ofonoUnregistered(const QString &)
