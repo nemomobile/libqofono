@@ -103,7 +103,7 @@ void QOfonoManager::onModemRemove(const QDBusObjectPath& path)
     QString pathStr = path.path();
     /* we need to send out modem removed signal, since we decided to turn modem off directly */
     Q_EMIT modemRemoved(pathStr);
-    if (!d_ptr->modems.contains(pathStr)) {
+    if (d_ptr->modems.contains(pathStr)) {
         d_ptr->modems.removeOne(pathStr);
         Q_EMIT modemsChanged(d_ptr->modems);
     }
