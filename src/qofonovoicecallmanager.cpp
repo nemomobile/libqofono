@@ -23,7 +23,7 @@ public:
     QString modemPath;
     OfonoVoiceCallManager *voiceCallManager;
     QVariantMap properties;
-    QStringList callList;
+    QVariantMap callList;
     QString errorMessage;
 
 };
@@ -31,7 +31,7 @@ public:
 QOfonoVoiceCallManagerPrivate::QOfonoVoiceCallManagerPrivate() :
     modemPath(QString())
   , voiceCallManager(0)
-  , callList(QStringList())
+  , callList(QVariantMap())
 {
 }
 
@@ -98,13 +98,13 @@ QStringList QOfonoVoiceCallManager::emergencyNumbers() const
     return QStringList();
 }
 
-QStringList QOfonoVoiceCallManager::getCalls() const
+QVariantMap QOfonoVoiceCallManager::getCalls() const
 {
     if(d_ptr->voiceCallManager) {
         d_ptr->callList.clear();
         QDBusReply<ObjectPathPropertiesList> reply = d_ptr->voiceCallManager->GetCalls();
         foreach(ObjectPathProperties calls, reply.value()) {
-            d_ptr->callList << calls.path.path();
+            d_ptr->callList.insert(calls.path.path(), calls.properties);
         }
     }
     return d_ptr->callList;
