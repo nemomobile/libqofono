@@ -43,7 +43,7 @@ public:
 
     QStringList emergencyNumbers() const;
 
-    Q_INVOKABLE QStringList getCalls() const;
+    Q_INVOKABLE QVariantMap getCalls() const;
 
     bool isValid() const;
 
