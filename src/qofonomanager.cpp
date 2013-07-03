@@ -14,6 +14,7 @@
 ****************************************************************************/
 
 #include "qofonomanager.h"
+#include "qofonomodem.h"
 #include "dbus/ofonomanager.h"
 #include <QVariant>
 #include <QTimer>
@@ -120,9 +121,19 @@ void QOfonoManager::connectToOfono(const QString &)
     if (d_ptr->ofonoManager->isValid()) {
         QDBusPendingReply<ObjectPathPropertiesList> reply = d_ptr->ofonoManager->GetModems();
         reply.waitForFinished();
+        // fugly I know... but we need sorted modems
+        // with hardware listed first
+        QOfonoModem oModem;
         foreach(ObjectPathProperties modem, reply.value()) {
-            d_ptr->modems << modem.path.path();
-            Q_EMIT modemAdded(modem.path.path());
+            QString modemPath = modem.path.path();
+            oModem.setModemPath(modemPath);
+            if (oModem.type() == "hardware") {
+                d_ptr->modems.prepend(modemPath);
+            } else {
+                d_ptr->modems.append(modemPath);
+            }
+
+            Q_EMIT modemAdded(modemPath);
         }
         Q_EMIT modemsChanged(d_ptr->modems);
     }
