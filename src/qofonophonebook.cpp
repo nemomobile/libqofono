@@ -22,11 +22,13 @@ public:
     QOfonoPhonebookPrivate();
     QString modemPath;
     OfonoPhonebook *phonebook;
+    bool importing;
 };
 
 QOfonoPhonebookPrivate::QOfonoPhonebookPrivate() :
     modemPath(QString())
   , phonebook(0)
+  , importing(false)
 {
 }
 
@@ -65,13 +67,34 @@ QString QOfonoPhonebook::modemPath() const
     return d_ptr->modemPath;
 }
 
-QString QOfonoPhonebook::import()
+bool QOfonoPhonebook::importing() const
+{
+    return d_ptr->importing;
+}
+
+void QOfonoPhonebook::beginImport()
 {
     if (d_ptr->phonebook) {
-        QDBusReply<QString> reply =  d_ptr->phonebook->Import();
-        return reply.value();
+        QDBusPendingReply<QString> result = d_ptr->phonebook->Import();
+        QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(result, this);
+        connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
+                SLOT(importComplete(QDBusPendingCallWatcher*)));
+        d_ptr->importing = true;
+        emit importingChanged();
     }
-    return QString();
+}
+
+void QOfonoPhonebook::importComplete(QDBusPendingCallWatcher *call)
+{
+    QDBusPendingReply<QString> reply = *call;
+    if (!reply.isError()) {
+        QString data = reply.value();
+        emit importReady(data);
+    } else {
+        emit importFailed();
+    }
+    d_ptr->importing = false;
+    emit importingChanged();
 }
 
 bool QOfonoPhonebook::isValid() const
