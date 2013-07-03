@@ -247,7 +247,7 @@ QVariantMap QOfonoSimManager::serviceNumbers() const //
 QOfonoSimManager::PinType QOfonoSimManager::pinRequired() const
 {
     if (d_ptr->simManager)
-        return (PinType)pinTypeFromString(d_ptr->properties["PinRequired"].value<QString>());
+        return (QOfonoSimManager::PinType)pinTypeFromString(d_ptr->properties["PinRequired"].value<QString>());
     else
         return QOfonoSimManager::NoPin;
 }
@@ -300,7 +300,7 @@ bool QOfonoSimManager::barredDialing() const
         return false;
 }
 
-void QOfonoSimManager::changePin(PinType pinType, const QString &oldpin, const QString &newpin)
+void QOfonoSimManager::changePin(QOfonoSimManager::PinType pinType, const QString &oldpin, const QString &newpin)
 {
     if (d_ptr->simManager) {
         d_ptr->pendingOpPinType[QOfonoSimManagerPrivate::ChangePin] = pinType;
@@ -311,7 +311,7 @@ void QOfonoSimManager::changePin(PinType pinType, const QString &oldpin, const Q
     }
 }
 
-void QOfonoSimManager::enterPin(PinType pinType, const QString &pin)
+void QOfonoSimManager::enterPin(QOfonoSimManager::PinType pinType, const QString &pin)
 {
     if (d_ptr->simManager) {
         d_ptr->pendingOpPinType[QOfonoSimManagerPrivate::EnterPin] = pinType;
@@ -322,7 +322,7 @@ void QOfonoSimManager::enterPin(PinType pinType, const QString &pin)
     }
 }
 
-void QOfonoSimManager::resetPin(PinType pinType, const QString &puk, const QString &newpin)
+void QOfonoSimManager::resetPin(QOfonoSimManager::PinType pinType, const QString &puk, const QString &newpin)
 {
     if (d_ptr->simManager) {
         d_ptr->pendingOpPinType[QOfonoSimManagerPrivate::ResetPin] = pinType;
@@ -333,7 +333,7 @@ void QOfonoSimManager::resetPin(PinType pinType, const QString &puk, const QStri
     }
 }
 
-void QOfonoSimManager::lockPin(PinType pinType, const QString &pin)
+void QOfonoSimManager::lockPin(QOfonoSimManager::PinType pinType, const QString &pin)
 {
     if (d_ptr->simManager) {
         d_ptr->pendingOpPinType[QOfonoSimManagerPrivate::LockPin] = pinType;
@@ -344,7 +344,7 @@ void QOfonoSimManager::lockPin(PinType pinType, const QString &pin)
     }
 }
 
-void QOfonoSimManager::unlockPin(PinType pinType, const QString &pin)
+void QOfonoSimManager::unlockPin(QOfonoSimManager::PinType pinType, const QString &pin)
 {
     if (d_ptr->simManager) {
         d_ptr->pendingOpPinType[QOfonoSimManagerPrivate::UnlockPin] = pinType;
@@ -459,7 +459,7 @@ void QOfonoSimManager::unlockPinCallFinished(QDBusPendingCallWatcher *call)
     call->deleteLater();
 }
 
-QString QOfonoSimManager::pinRetryConfPath(PinType pinType) const
+QString QOfonoSimManager::pinRetryConfPath(QOfonoSimManager::PinType pinType) const
 {
     QString s = pinTypeToString(pinType);
     if (s.isEmpty())
@@ -499,7 +499,7 @@ void QOfonoSimManager::updateSavedPinRetryCount(PinType pinType, bool hadWrongAt
 #endif
 }
 
-void QOfonoSimManager::processPinOperationReply(Error error, int opType)
+void QOfonoSimManager::processPinOperationReply(QOfonoSimManager::Error error, int opType)
 {
     QOfonoSimManager::PinType pinType = d_ptr->pendingOpPinType[(QOfonoSimManagerPrivate::PinOperation)opType];
 
@@ -549,7 +549,7 @@ QOfonoSimManager::Error QOfonoSimManager::errorNameToEnum(const QString &errorNa
         return UnknownError;
 }
 
-int QOfonoSimManager::minimumPinLength(PinType pinType)
+int QOfonoSimManager::minimumPinLength(QOfonoSimManager::PinType pinType)
 {
     if (isPukType(pinType))
         return 8;
@@ -568,7 +568,7 @@ int QOfonoSimManager::minimumPinLength(PinType pinType)
     }
 }
 
-int QOfonoSimManager::maximumPinLength(PinType pinType)
+int QOfonoSimManager::maximumPinLength(QOfonoSimManager::PinType pinType)
 {
     if (isPukType(pinType))
         return 8;
@@ -588,7 +588,7 @@ int QOfonoSimManager::maximumPinLength(PinType pinType)
     }
 }
 
-QString QOfonoSimManager::pinTypeToString(PinType pinType)
+QString QOfonoSimManager::pinTypeToString(QOfonoSimManager::PinType pinType)
 {
     return QOfonoSimManagerPrivate::allPinTypes.value(pinType);
 }
@@ -598,7 +598,7 @@ int QOfonoSimManager::pinTypeFromString(const QString &s)
     return (int)QOfonoSimManagerPrivate::allPinTypes.key(s);
 }
 
-bool QOfonoSimManager::isPukType(PinType pinType)
+bool QOfonoSimManager::isPukType(QOfonoSimManager::PinType pinType)
 {
     switch (pinType) {
     case SimPuk:
@@ -613,7 +613,7 @@ bool QOfonoSimManager::isPukType(PinType pinType)
     }
 }
 
-int QOfonoSimManager::pukToPin(PinType puk)
+int QOfonoSimManager::pukToPin(QOfonoSimManager::PinType puk)
 {
     switch (puk) {
     case QOfonoSimManager::SimPuk:

@@ -115,34 +115,34 @@ Q_SIGNALS:
       void fixedDialingChanged(bool fixedDialing);
       void barredDialingChanged(bool barredDialing);
 
-      void enterPinComplete(Error error, const QString &errorString);
-      void resetPinComplete(Error error, const QString &errorString);
-      void changePinComplete(Error error, const QString &errorString);
-      void lockPinComplete(Error error, const QString &errorString);
-      void unlockPinComplete(Error error, const QString &errorString);
+      void enterPinComplete(QOfonoSimManager::Error error, const QString &errorString);
+      void resetPinComplete(QOfonoSimManager::Error error, const QString &errorString);
+      void changePinComplete(QOfonoSimManager::Error error, const QString &errorString);
+      void lockPinComplete(QOfonoSimManager::Error error, const QString &errorString);
+      void unlockPinComplete(QOfonoSimManager::Error error, const QString &errorString);
 
 public slots:
-      void changePin(PinType pinType, const QString &oldpin, const QString &newpin);
-      void enterPin(PinType pinType, const QString &pin);
-      void resetPin(PinType pinType, const QString &puk, const QString &newpin);
-      void lockPin(PinType pinType, const QString &pin);
-      void unlockPin(PinType pinType, const QString &pin);
+      void changePin(QOfonoSimManager::PinType pinType, const QString &oldpin, const QString &newpin);
+      void enterPin(QOfonoSimManager::PinType pinType, const QString &pin);
+      void resetPin(QOfonoSimManager::PinType pinType, const QString &puk, const QString &newpin);
+      void lockPin(QOfonoSimManager::PinType pinType, const QString &pin);
+      void unlockPin(QOfonoSimManager::PinType pinType, const QString &pin);
       QByteArray getIcon(quint8 id);
 
       void setSubscriberNumbers(const QStringList &numbers);
 
-      static int minimumPinLength(PinType pinType);
-      static int maximumPinLength(PinType pinType);
-      static QString pinTypeToString(PinType pinType);
+      static int minimumPinLength(QOfonoSimManager::PinType pinType);
+      static int maximumPinLength(QOfonoSimManager::PinType pinType);
+      static QString pinTypeToString(QOfonoSimManager::PinType pinType);
       static int pinTypeFromString(const QString &s);
-      static bool isPukType(PinType pinType);
-      static int pukToPin(PinType puk);
+      static bool isPukType(QOfonoSimManager::PinType pinType);
+      static int pukToPin(QOfonoSimManager::PinType puk);
 
 private:
       void updateProperty(const QString& property, const QVariant& value);
-      QString pinRetryConfPath(PinType pinType) const;
-      void updateSavedPinRetryCount(PinType pinType, bool hadWrongAttempt);
-      void processPinOperationReply(Error error, int opType);
+      QString pinRetryConfPath(QOfonoSimManager::PinType pinType) const;
+      void updateSavedPinRetryCount(QOfonoSimManager::PinType pinType, bool hadWrongAttempt);
+      void processPinOperationReply(QOfonoSimManager::Error error, int opType);
       Error errorNameToEnum(const QString &errorName);
 
     QOfonoSimManagerPrivate *d_ptr;
