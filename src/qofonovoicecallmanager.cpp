@@ -123,7 +123,7 @@ QStringList QOfonoVoiceCallManager::getCalls() const
              this,SIGNAL(forwarded(QString)));
 
      connect(d_ptr->voiceCallManager,SIGNAL(CallAdded(QDBusObjectPath,QVariantMap)),
-             this,SLOT(callAdded(QDBusObjectPath,QVariantMap)));
+             this,SLOT(onCallAdded(QDBusObjectPath,QVariantMap)));
      connect(d_ptr->voiceCallManager,SIGNAL(CallRemoved(QDBusObjectPath)),
              this,SIGNAL(onCallRemoved(QDBusObjectPath)));
 

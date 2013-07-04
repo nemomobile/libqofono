@@ -30,6 +30,7 @@
 
 #include "qofonoconnectioncontext.h"
 #include "qofonoconnectionmanager.h"
+#include "qofonovoicecallmanager.h"
 
 
 // These auto tests require
@@ -74,6 +75,8 @@ private Q_SLOTS:
     void testHandsfree();
     void testHandsfreeAudioCard();
     void testMessageManager();
+
+    void testVoiceCallManager();
 
 };
 
@@ -418,6 +421,17 @@ void Tst_qofonoTest::testSimManager()
     QCOMPARE(spy.count(),1);
 
 }
+
+
+void Tst_qofonoTest::testVoiceCallManager()
+{
+    QOfonoManager manager;
+    QStringList modems = manager.modems();
+    QOfonoVoiceCallManager callManager;
+    callManager.setModemPath(modems.at(0));
+
+}
+
 
 QTEST_MAIN(Tst_qofonoTest)
 
