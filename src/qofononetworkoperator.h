@@ -30,6 +30,7 @@ class QOfonoNetworkOperatorPrivate;
 class QOFONOSHARED_EXPORT QOfonoNetworkOperator : public QObject
 {
     Q_OBJECT
+    Q_ENUMS(Error)
     Q_PROPERTY(QString operatorPath READ operatorPath WRITE setOperatorPath NOTIFY operatorPathChanged)
 
     Q_PROPERTY(QString name READ name NOTIFY nameChanged)
@@ -40,6 +41,16 @@ class QOFONOSHARED_EXPORT QOfonoNetworkOperator : public QObject
     Q_PROPERTY(QString additionalInfo READ additionalInfo NOTIFY additionalInfoChanged)
 
 public:
+    enum Error {
+        NoError,
+        NotImplementedError,
+        InProgressError,
+        InvalidArgumentsError,
+        InvalidFormatError,
+        FailedError,
+        UnknownError
+    };
+
     explicit QOfonoNetworkOperator(QObject *parent = 0);
     ~QOfonoNetworkOperator();
 
@@ -66,14 +77,17 @@ Q_SIGNALS:
     void additionalInfoChanged(const QString &additionalInfo);
     void operatorPathChanged(const QString &path);
 
+    void registerComplete(QOfonoNetworkOperator::Error error, const QString &errorString);
+
 public slots:
 
 private:
     QOfonoNetworkOperatorPrivate *d_ptr;
+    Error errorNameToEnum(const QString &errorName);
 
 private slots:
     void propertyChanged(const QString &property, const QDBusVariant &value);
-
+    void registerFinished(QDBusPendingCallWatcher *call);
 };
 
 #endif // QOFONONETWORKOPERATOR_H

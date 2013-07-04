@@ -30,6 +30,7 @@ class QOfonoCallMeterPrivate;
 class QOFONOSHARED_EXPORT QOfonoCallMeter : public QObject
 {
     Q_OBJECT
+    Q_ENUMS(Error)
     Q_PROPERTY(QString modemPath READ modemPath WRITE setModemPath NOTIFY modemPathChanged)
     Q_PROPERTY(quint32 callMeter READ callMeter CONSTANT)
     Q_PROPERTY(quint32 accumulatedCallMeter READ accumulatedCallMeter CONSTANT)
@@ -38,6 +39,16 @@ class QOFONOSHARED_EXPORT QOfonoCallMeter : public QObject
     Q_PROPERTY(QString currency READ currency CONSTANT)
 
 public:
+    enum Error {
+        NoError,
+        NotImplementedError,
+        InProgressError,
+        InvalidArgumentsError,
+        InvalidFormatError,
+        FailedError,
+        UnknownError
+    };
+
     explicit QOfonoCallMeter(QObject *parent = 0);
     ~QOfonoCallMeter();
 
@@ -63,13 +74,18 @@ Q_SIGNALS:
     void accumulatedCallMeterMaximumChanged(quint32);
     void pricePerUnitChanged(qreal);
     void modemPathChanged(const QString &path);
+    void resetComplete(QOfonoCallMeter::Error error,const QString &errorString);
 
 public slots:
     
 private:
     QOfonoCallMeterPrivate *d_ptr;
+    Error errorNameToEnum(const QString &errorName);
+
 private slots:
     void propertyChanged(const QString &property,const QDBusVariant &value);
+    void resetFinished(QDBusPendingCallWatcher *call);
+
 };
 
 #endif // QOFONOCallMeter_H

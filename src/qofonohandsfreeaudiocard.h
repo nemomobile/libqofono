@@ -18,16 +18,27 @@
 
 #include <QObject>
 #include <QDBusVariant>
+#include <QDBusPendingCallWatcher>
 
 class QOfonoHandsfreeAudioCardPrivate;
 class QOfonoHandsfreeAudioCard : public QObject
 {
     Q_OBJECT
+    Q_ENUMS(Error)
     Q_PROPERTY(QString modemPath READ modemPath WRITE setModemPath NOTIFY modemPathChanged)
-    Q_PROPERTY(QString remoteAddress READ remoteAddress/* NOTIFY remoteAddressChanged*/)
-    Q_PROPERTY(QString localAddress READ localAddress/* NOTIFY localAddressChanged*/)
+    Q_PROPERTY(QString remoteAddress READ remoteAddress)
+    Q_PROPERTY(QString localAddress READ localAddress)
 
 public:
+    enum Error {
+        NoError,
+        NotImplementedError,
+        InProgressError,
+        InvalidArgumentsError,
+        InvalidFormatError,
+        FailedError,
+        UnknownError
+    };
     explicit QOfonoHandsfreeAudioCard(QObject *parent = 0);
     ~QOfonoHandsfreeAudioCard();
 
@@ -39,17 +50,19 @@ public:
 
     bool isValid() const;
 Q_SIGNALS:
-//    void remoteAddressChanged();
-//    void localAddressChanged();
     void modemPathChanged(const QString &path);
+    void connectAudioComplete(QOfonoHandsfreeAudioCard::Error error, const QString &errorString);
 
 public slots:
-    void connect() const;
+    void connectAudio();
 
 private:
     QOfonoHandsfreeAudioCardPrivate *d_ptr;
+    Error errorNameToEnum(const QString &errorName);
+
 private slots:
     void propertyChanged(const QString &property,const QDBusVariant &value);
+    void connectAudioFinished(QDBusPendingCallWatcher *call);
 };
 
 #endif // QOFONOQOfonoHandsfreeAudioCard_H

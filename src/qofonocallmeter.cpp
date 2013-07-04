@@ -151,11 +151,47 @@ QString QOfonoCallMeter:: currency() const
 
 void QOfonoCallMeter::reset(const QString &password)
 {
-    if (d_ptr->callMeter)
-        d_ptr->callMeter->Reset(password);
+    if (d_ptr->callMeter) {
+    QDBusPendingReply<> result = d_ptr->callMeter->Reset(password);
+    QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(result, this);
+    connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
+            SLOT(resetFinished(QDBusPendingCallWatcher*)));
+    }
 }
 
 bool QOfonoCallMeter::isValid() const
 {
     return d_ptr->callMeter->isValid();
+}
+
+void QOfonoCallMeter::resetFinished(QDBusPendingCallWatcher *call)
+{
+    QDBusPendingReply<> reply = *call;
+    QOfonoCallMeter::Error error = NoError;
+    QString errorString;
+
+    if (reply.isError()) {
+        qWarning() << "QOfonoCallMeter::reset() failed:" << reply.error();
+        error = errorNameToEnum(reply.error().name());
+        errorString = reply.error().name() + " " + reply.error().message();
+        Q_EMIT resetComplete(error,errorString);
+    }
+}
+
+QOfonoCallMeter::Error QOfonoCallMeter::errorNameToEnum(const QString &errorName)
+{
+    if (errorName == "")
+        return NoError;
+    else if (errorName == "org.ofono.Error.NotImplemented")
+        return NotImplementedError;
+    else if (errorName == "org.ofono.Error.InProgress")
+        return InProgressError;
+    else if (errorName == "org.ofono.Error.InvalidArguments")
+        return InvalidArgumentsError;
+    else if (errorName == "org.ofono.Error.InvalidFormat")
+        return InvalidFormatError;
+    else if (errorName == "org.ofono.Error.Failed")
+        return FailedError;
+    else
+        return UnknownError;
 }
