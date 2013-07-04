@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testdefinition version="1.0">
+  <suite name="libofono-qt-tests">
+    <set name="libofono-qt-unit-tests">
+      <description>Ofono test set with manual, automatic and semi-automatic case.</description>
+      <case name="test_ofonocallbarring">
+        <step>/opt/tests/libofono-qt/test_ofonocallbarring</step>
+      </case>
+      <case name="test_ofonocallforwarding">
+        <step>/opt/tests/libofono-qt/test_ofonocallforwarding</step>
+      </case>
+      <case name="test_ofonocallmeter">
+        <step>/opt/tests/libofono-qt/test_ofonocallmeter</step>
+      </case>
+      <case name="test_ofonocallsettings">
+        <step>/opt/tests/libofono-qt/test_ofonocallsettings</step>
+      </case>
+      <case name="test_ofonocallvolume">
+        <step>/opt/tests/libofono-qt/test_ofonocallvolume</step>
+      </case>
+      <case name="test_ofonocellbroadcast">
+        <step>/opt/tests/libofono-qt/test_ofonocellbroadcast</step>
+      </case>
+      <case name="test_ofonoconnmancontext">
+        <step>/opt/tests/libofono-qt/test_ofonoconnmancontext</step>
+      </case>
+      <case name="test_ofonoconnman">
+        <step>/opt/tests/libofono-qt/test_ofonoconnman</step>
+      </case>
+      <case name="test_ofonointerface">
+        <step>/opt/tests/libofono-qt/test_ofonointerface</step>
+      </case>
+      <case name="test_ofonomessagemanager">
+        <step>/opt/tests/libofono-qt/test_ofonomessagemanager</step>
+      </case>
+      <case name="test_ofonomessagewaiting">
+      <step>/opt/tests/libofono-qt/test_ofonomessagewaiting</step>
+      </case>
+      <case manual="true" name="test_ofonomodem">
+        <step>/opt/tests/libofono-qt/test_ofonomodem</step>
+      </case>
+      <case manual="true" name="test_ofonomodeminterface">
+        <step>/opt/tests/libofono-qt/test_ofonomodeminterface</step>
+      </case>
+      <case manual="true" name="test_ofonomodemmanager">
+        <step>/opt/tests/libofono-qt/test_ofonomodemmanager</step>
+      </case>
+      <case manual="true" name="test_ofonomultipartycall">
+        <step>/opt/tests/libofono-qt/test_ofonomultipartycall</step>
+      </case>
+      <case name="test_ofononetworkoperator">
+        <step>/opt/tests/libofono-qt/test_ofononetworkoperator</step>
+      </case>
+      <case name="test_ofononetworkregistration">
+        <step>/opt/tests/libofono-qt/test_ofononetworkregistration</step>
+      </case>
+      <case name="test_ofonophonebook">
+      <step>/opt/tests/libofono-qt/test_ofonophonebook</step>
+      </case>
+      <case insignificant="true" name="test_ofonoradiosettings">
+        <step>/opt/tests/libofono-qt/test_ofonoradiosettings</step>
+      </case>
+      <case name="test_ofonosimmanager">
+        <step>/opt/tests/libofono-qt/test_ofonosimmanager</step>
+      </case>
+      <case name="test_ofonosupplementaryservices">
+        <step>/opt/tests/libofono-qt/test_ofonosupplementaryservices</step>
+      </case>
+      <case manual="true" name="test_ofonovoicecall">
+        <step>/opt/tests/libofono-qt/test_ofonovoicecall</step>
+      </case>
+      <case manual="true" name="test_ofonovoicecallmanager">
+        <step>/opt/tests/libofono-qt/test_ofonovoicecallmanager</step>
+      </case>
+    </set>
+  </suite>
+</testdefinition>
