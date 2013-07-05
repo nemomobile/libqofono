@@ -16,6 +16,7 @@
 #include "qofonohandsfreeaudiocard.h"
 #include "dbus/ofonohandsfreeaudiocard.h"
 
+
 class QOfonoHandsfreeAudioCardPrivate
 {
 public:
@@ -59,8 +60,6 @@ void QOfonoHandsfreeAudioCard::setModemPath(const QString &path)
         d_ptr->ofonoHandsfreeAudioCard = new OfonoHandsfreeAudioCard("org.ofono", path, QDBusConnection::systemBus(),this);
 
         if (d_ptr->ofonoHandsfreeAudioCard) {
-            //            connect(d_ptr->ofonoHandsfreeAudioCard,SIGNAL(PropertyChanged(QString,QDBusVariant)),
-            //                    this,SLOT(propertyChanged(QString,QDBusVariant)));
 
             QDBusPendingReply<QVariantMap> reply;
             reply = d_ptr->ofonoHandsfreeAudioCard->GetProperties();
@@ -81,12 +80,6 @@ void QOfonoHandsfreeAudioCard::propertyChanged(const QString& property, const QD
     QVariant value = dbusvalue.variant();
     d_ptr->properties.insert(property,value);
 
-    // do these ever change?
-//    if (property == QLatin1String("RemoteAddress")) {
-//        Q_EMIT remoteAddressChanged(value.value<QString>());
-//    } else if (property == QLatin1String("LocalAddress")) {
-//        Q_EMIT localAddressChanged(value.value<QString>());
-//    }
 }
 
 QString QOfonoHandsfreeAudioCard::remoteAddress() const
@@ -105,14 +98,51 @@ QString QOfonoHandsfreeAudioCard::localAddress() const
     return QString();
 }
 
-void QOfonoHandsfreeAudioCard::connect() const
+void QOfonoHandsfreeAudioCard::connectAudio()
 {
     if (d_ptr->ofonoHandsfreeAudioCard) {
-        d_ptr->ofonoHandsfreeAudioCard->Connect();
+        QDBusPendingReply<> result = d_ptr->ofonoHandsfreeAudioCard->Connect();
+
+        QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(result, this);
+        connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
+                SLOT(connectAudioFinished(QDBusPendingCallWatcher*)));
     }
 }
 
 bool QOfonoHandsfreeAudioCard::isValid() const
 {
     return d_ptr->ofonoHandsfreeAudioCard->isValid();
+}
+
+void QOfonoHandsfreeAudioCard::connectAudioFinished(QDBusPendingCallWatcher *call)
+{
+    QDBusPendingReply<> reply = *call;
+    QOfonoHandsfreeAudioCard::Error error = NoError;
+    QString errorString;
+
+    if (reply.isError()) {
+         qWarning() << "QOfonoHandsfreeAudioCard::connectAudio() failed:" << reply.error();
+         error = errorNameToEnum(reply.error().name());
+         errorString = reply.error().name() + " " + reply.error().message();
+    }
+
+    emit connectAudioComplete(error, errorString);
+}
+
+QOfonoHandsfreeAudioCard::Error QOfonoHandsfreeAudioCard::errorNameToEnum(const QString &errorName)
+{
+    if (errorName == "")
+        return NoError;
+    else if (errorName == "org.ofono.Error.NotImplemented")
+        return NotImplementedError;
+    else if (errorName == "org.ofono.Error.InProgress")
+        return InProgressError;
+    else if (errorName == "org.ofono.Error.InvalidArguments")
+        return InvalidArgumentsError;
+    else if (errorName == "org.ofono.Error.InvalidFormat")
+        return InvalidFormatError;
+    else if (errorName == "org.ofono.Error.Failed")
+        return FailedError;
+    else
+        return UnknownError;
 }

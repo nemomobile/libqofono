@@ -29,6 +29,7 @@ class QOfonoVoiceCallPrivate;
 class QOFONOSHARED_EXPORT QOfonoVoiceCall : public QObject
 {
     Q_OBJECT
+    Q_ENUMS(Error)
     Q_PROPERTY(QString voiceCallPath READ voiceCallPath WRITE setVoiceCallPath NOTIFY voiceCallPathChanged)
 
     Q_PROPERTY(QString lineIdentification READ lineIdentification NOTIFY lineIdentificationChanged)
@@ -42,6 +43,15 @@ class QOFONOSHARED_EXPORT QOfonoVoiceCall : public QObject
     Q_PROPERTY(quint8 icon READ icon NOTIFY iconChanged)
 
 public:
+    enum Error {
+        NoError,
+        NotImplementedError,
+        InProgressError,
+        InvalidArgumentsError,
+        InvalidFormatError,
+        FailedError,
+        UnknownError
+    };
     explicit QOfonoVoiceCall(QObject *parent = 0);
     ~QOfonoVoiceCall();
 
@@ -77,6 +87,10 @@ Q_SIGNALS:
 
     void voiceCallPathChanged(const QString &path);
 
+    void answerComplete(QOfonoVoiceCall::Error error, const QString &errorString);
+    void hangupComplete(QOfonoVoiceCall::Error error, const QString &errorString);
+    void deflectComplete(QOfonoVoiceCall::Error error, const QString &errorString);
+
 public slots:
     void answer();
     void hangup();
@@ -84,8 +98,13 @@ public slots:
 
 private:
     QOfonoVoiceCallPrivate *d_ptr;
+    Error errorNameToEnum(const QString &errorName);
+
 private slots:
     void propertyChanged(const QString &property,const QDBusVariant &value);
+    void answerFinished(QDBusPendingCallWatcher *call);
+    void hangupFinished(QDBusPendingCallWatcher *call);
+    void deflectFinished(QDBusPendingCallWatcher *call);
 };
 
 #endif // QOFONOVoiceCall_H

@@ -207,23 +207,95 @@ bool QOfonoVoiceCall::remoteMultiparty() const
 
 void QOfonoVoiceCall::answer()
 {
-    if (d_ptr->voiceCall)
-        d_ptr->voiceCall->Answer();
+    if (d_ptr->voiceCall) {
+        QDBusPendingReply<> result = d_ptr->voiceCall->Answer();
+        QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(result, this);
+        connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
+                SLOT(answerFinished(QDBusPendingCallWatcher*)));
+    }
 }
 
 void QOfonoVoiceCall::hangup()
 {
-    if (d_ptr->voiceCall)
-        d_ptr->voiceCall->Hangup();
+    if (d_ptr->voiceCall)  {
+        QDBusPendingReply<> result = d_ptr->voiceCall->Hangup();
+        QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(result, this);
+        connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
+                SLOT(hangupFinished(QDBusPendingCallWatcher*)));
+    }
 }
 
 void QOfonoVoiceCall::deflect(const QString &number)
 {
-    if (d_ptr->voiceCall)
-        d_ptr->voiceCall->Deflect(number);
+    if (d_ptr->voiceCall) {
+        QDBusPendingReply<> result = d_ptr->voiceCall->Deflect(number);
+        QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(result, this);
+        connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
+                SLOT(deflectFinished(QDBusPendingCallWatcher*)));
+    }
 }
 
 bool QOfonoVoiceCall::isValid() const
 {
     return d_ptr->voiceCall->isValid();
+}
+
+void QOfonoVoiceCall::answerFinished(QDBusPendingCallWatcher *call)
+{
+    QDBusPendingReply<> reply = *call;
+    QOfonoVoiceCall::Error error = NoError;
+    QString errorString;
+
+    if (reply.isError()) {
+         qWarning() << "QOfonoVoiceCall::answer() failed:" << reply.error();
+         error = errorNameToEnum(reply.error().name());
+         errorString = reply.error().name() + " " + reply.error().message();
+    }
+    Q_EMIT answerComplete(error, errorString);
+}
+
+void QOfonoVoiceCall::hangupFinished(QDBusPendingCallWatcher *call)
+{
+    QDBusPendingReply<> reply = *call;
+    QOfonoVoiceCall::Error error = NoError;
+    QString errorString;
+
+    if (reply.isError()) {
+         qWarning() << "QOfonoVoiceCall::hangup() failed:" << reply.error();
+         error = errorNameToEnum(reply.error().name());
+         errorString = reply.error().name() + " " + reply.error().message();
+    }
+    Q_EMIT hangupComplete(error, errorString);
+}
+
+void QOfonoVoiceCall::deflectFinished(QDBusPendingCallWatcher *call)
+{
+    QDBusPendingReply<> reply = *call;
+    QOfonoVoiceCall::Error error = NoError;
+    QString errorString;
+
+    if (reply.isError()) {
+         qWarning() << "QOfonoVoiceCall::deflect() failed:" << reply.error();
+         error = errorNameToEnum(reply.error().name());
+         errorString = reply.error().name() + " " + reply.error().message();
+    }
+    Q_EMIT deflectComplete(error, errorString);
+}
+
+QOfonoVoiceCall::Error QOfonoVoiceCall::errorNameToEnum(const QString &errorName)
+{
+    if (errorName == "")
+        return NoError;
+    else if (errorName == "org.ofono.Error.NotImplemented")
+        return NotImplementedError;
+    else if (errorName == "org.ofono.Error.InProgress")
+        return InProgressError;
+    else if (errorName == "org.ofono.Error.InvalidArguments")
+        return InvalidArgumentsError;
+    else if (errorName == "org.ofono.Error.InvalidFormat")
+        return InvalidFormatError;
+    else if (errorName == "org.ofono.Error.Failed")
+        return FailedError;
+    else
+        return UnknownError;
 }

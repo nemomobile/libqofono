@@ -72,10 +72,25 @@ QString QOfonoNetworkOperator::operatorPath() const
 
 void QOfonoNetworkOperator::registerOperator()
 {
-    QDBusPendingReply<void> reply = d_ptr->networkOperator->Register();
+    QDBusPendingReply<void> result = d_ptr->networkOperator->Register();
+
+    QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(result, this);
+    connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
+            SLOT(registerFinished(QDBusPendingCallWatcher*)));
+}
+
+void QOfonoNetworkOperator::registerFinished(QDBusPendingCallWatcher *call)
+{
+    QDBusPendingReply<> reply = *call;
+    QOfonoNetworkOperator::Error error = NoError;
+    QString errorString;
+
     if (reply.isError()) {
-        qDebug() << reply.error().message();
+         qWarning() << "QOfonoNetworkOperator::registerOperator() failed:" << reply.error();
+         error = errorNameToEnum(reply.error().name());
+         errorString = reply.error().name() + " " + reply.error().message();
     }
+    Q_EMIT registerComplete(error,errorString);
 }
 
 QString QOfonoNetworkOperator::name() const
@@ -153,3 +168,20 @@ bool QOfonoNetworkOperator::isValid() const
     return d_ptr->networkOperator->isValid();
 }
 
+QOfonoNetworkOperator::Error QOfonoNetworkOperator::errorNameToEnum(const QString &errorName)
+{
+    if (errorName == "")
+        return NoError;
+    else if (errorName == "org.ofono.Error.NotImplemented")
+        return NotImplementedError;
+    else if (errorName == "org.ofono.Error.InProgress")
+        return InProgressError;
+    else if (errorName == "org.ofono.Error.InvalidArguments")
+        return InvalidArgumentsError;
+    else if (errorName == "org.ofono.Error.InvalidFormat")
+        return InvalidFormatError;
+    else if (errorName == "org.ofono.Error.Failed")
+        return FailedError;
+    else
+        return UnknownError;
+}
