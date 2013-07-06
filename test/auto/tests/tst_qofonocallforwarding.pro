@@ -1,3 +1,3 @@
 include(testcase.pri)                     
-SOURCES += test_ofonocallforwarding.cpp
+SOURCES += tst_qofonocallforwarding.cpp
 

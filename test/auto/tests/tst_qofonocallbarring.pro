@@ -1,3 +1,3 @@
 include(testcase.pri)                     
-SOURCES += test_ofonocallbarring.cpp
+SOURCES += tst_qofonocallbarring.cpp
 

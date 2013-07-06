@@ -1,3 +1,3 @@
 include(testcase.pri)                     
-SOURCES += test_ofononetworkregistration.cpp
+SOURCES += tst_qofononetworkregistration.cpp
 

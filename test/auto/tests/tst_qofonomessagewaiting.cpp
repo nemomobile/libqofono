@@ -24,11 +24,12 @@
 #include <QtTest/QtTest>
 #include <QtCore/QObject>
 
-#include <ofonomessagewaiting.h>
+#include "../../../src/qofonomessagewaiting.h"
+#include "../../../src/qofonomodem.h"
 
 #include <QtDebug>
 
-class TestOfonoMessageWaiting : public QObject
+class TestQOfonoMessageWaiting : public QObject
 {
     Q_OBJECT
 
@@ -36,40 +37,33 @@ private slots:
 
     void initTestCase()
     {
-	m = new OfonoMessageWaiting(OfonoModem::ManualSelect, "/phonesim", this);
-	QCOMPARE(m->modem()->isValid(), true);	
-
-	if (!m->modem()->powered()) {
-  	    m->modem()->setPowered(true);
-            QTest::qWait(5000);
-        }
-        if (!m->modem()->online()) {
-  	    m->modem()->setOnline(true);
-            QTest::qWait(5000);
-        }
-	QCOMPARE(m->isValid(), true);    
+        m = new QOfonoMessageWaiting(this);
+        m->setModemPath("/phonesim");
+        QCOMPARE(m->isValid(), true);
     }
 
-    void testOfonoMessageWaiting()
+    void testQOfonoMessageWaiting()
     {
-        QSignalSpy waiting(m, SIGNAL(voicemailWaitingChanged(bool)));    
+        QOfonoModem modem;
+        modem.setModemPath(m->modemPath());
+        QSignalSpy waiting(m, SIGNAL(voicemailWaitingChanged(bool)));
         QSignalSpy messageCount(m, SIGNAL(voicemailMessageCountChanged(int)));
         QSignalSpy mailboxNumber(m, SIGNAL(voicemailMailboxNumberChanged(QString)));
         QSignalSpy setNumberFailed(m, SIGNAL(setVoicemailMailboxNumberFailed()));
 
-	QCOMPARE(m->voicemailWaiting(), true);
-	QCOMPARE(m->voicemailMessageCount(), 1);
-	QCOMPARE(m->voicemailMailboxNumber(), QString("6789"));
+        QCOMPARE(m->voicemailWaiting(), true);
+        QCOMPARE(m->voicemailMessageCount(), 1);
+        QCOMPARE(m->voicemailMailboxNumber(), QString("6789"));
 
-	m->modem()->setOnline(false);
-	QTest::qWait(5000);
+        modem.setOnline(false);
+        QTest::qWait(5000);
         QCOMPARE(waiting.count(), 0);
         QCOMPARE(messageCount.count(), 0);
         QCOMPARE(mailboxNumber.count(), 0);
         QCOMPARE(setNumberFailed.count(), 0);
 
-	m->modem()->setOnline(true);
-	QTest::qWait(5000);
+        modem.setOnline(true);
+        QTest::qWait(5000);
         QCOMPARE(waiting.count(), 1);
         QCOMPARE(waiting.takeFirst().at(0).toBool(), true);
         QCOMPARE(messageCount.count(), 1);
@@ -79,17 +73,17 @@ private slots:
         QCOMPARE(setNumberFailed.count(), 0);
     }
 
-    void testOfonoMessageWaitingSet()
+    void testQOfonoMessageWaitingSet()
     {
-        QSignalSpy waiting(m, SIGNAL(voicemailWaitingChanged(bool)));    
+        QSignalSpy waiting(m, SIGNAL(voicemailWaitingChanged(bool)));
         QSignalSpy messageCount(m, SIGNAL(voicemailMessageCountChanged(int)));
         QSignalSpy mailboxNumber(m, SIGNAL(voicemailMailboxNumberChanged(QString)));
         QSignalSpy setNumberFailed(m, SIGNAL(setVoicemailMailboxNumberFailed()));
 
-	QString number = m->voicemailMailboxNumber();
-	
+        QString number = m->voicemailMailboxNumber();
+
         m->setVoicemailMailboxNumber("");
-	QTest::qWait(1000);
+        QTest::qWait(1000);
         QCOMPARE(waiting.count(), 0);
         QCOMPARE(messageCount.count(), 0);
         QCOMPARE(mailboxNumber.count(), 0);
@@ -97,7 +91,7 @@ private slots:
         setNumberFailed.takeFirst();
 
         m->setVoicemailMailboxNumber("1234");
-	QTest::qWait(1000);
+        QTest::qWait(1000);
         QCOMPARE(waiting.count(), 0);
         QCOMPARE(messageCount.count(), 0);
         QCOMPARE(mailboxNumber.count(), 1);
@@ -105,7 +99,7 @@ private slots:
         QCOMPARE(setNumberFailed.count(), 0);
 
         m->setVoicemailMailboxNumber(number);
-	QTest::qWait(1000);
+        QTest::qWait(1000);
         QCOMPARE(waiting.count(), 0);
         QCOMPARE(messageCount.count(), 0);
         QCOMPARE(mailboxNumber.count(), 1);
@@ -121,8 +115,8 @@ private slots:
 
 
 private:
-    OfonoMessageWaiting *m;
+    QOfonoMessageWaiting *m;
 };
 
-QTEST_MAIN(TestOfonoMessageWaiting)
-#include "test_ofonomessagewaiting.moc"
+QTEST_MAIN(TestQOfonoMessageWaiting)
+#include "tst_qofonomessagewaiting.moc"

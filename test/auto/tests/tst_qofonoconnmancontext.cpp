@@ -24,8 +24,8 @@
 #include <QtTest/QtTest>
 #include <QtCore/QObject>
 
-#include <qofono/qofonoconnectionmanager.h>
-#include <qofono/qofonoconnectioncontext.h>
+#include "../../../src/qofonoconnectionmanager.h"
+#include "../../../src/qofonoconnectioncontext.h"
 
 #include <QtDebug>
 

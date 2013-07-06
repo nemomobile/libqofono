@@ -25,13 +25,13 @@
 #include <QtCore/QObject>
 #include <QDBusObjectPath>
 
-#include <ofonomessagemanager.h>
-#include <ofonomessage.h>
+#include "../../../src/qofonomessagemanager.h"
+#include "../../../src/qofonomessage.h"
 
 #include <QtDebug>
 
 
-class TestOfonoMessageManager : public QObject
+class TestQOfonoMessageManager : public QObject
 {
     Q_OBJECT
 
@@ -39,21 +39,12 @@ private slots:
 
     void initTestCase()
     {
-	m = new OfonoMessageManager(OfonoModem::ManualSelect, "/phonesim", this);
-	QCOMPARE(m->modem()->isValid(), true);	
-
-	if (!m->modem()->powered()) {
-  	    m->modem()->setPowered(true);
-            QTest::qWait(5000);
-        }
-        if (!m->modem()->online()) {
-  	    m->modem()->setOnline(true);
-            QTest::qWait(5000);
-        }
-	QCOMPARE(m->isValid(), true);    
+    m = new QOfonoMessageManager(this);
+    m->setModemPath("/phonesim");
+    QCOMPARE(m->isValid(), true);
     }
 
-    void testOfonoMessageManager()
+    void testQOfonoMessageManager()
     {
         QSignalSpy sendMessage(m, SIGNAL(sendMessageComplete(bool, QString)));
         QSignalSpy messageAdded(m, SIGNAL(messageAdded(QString)));
@@ -62,7 +53,7 @@ private slots:
         QSignalSpy incomingMessage(m, SIGNAL(incomingMessage(QString, QVariantMap)));
 
 
-        QStringList messages = m->getMessages();
+        QStringList messages = m->messages();
         QVERIFY(messages.count() == 0);
 
         m->sendMessage("99999", "success");
@@ -80,7 +71,8 @@ private slots:
         QCOMPARE(messageRemoved.count(), 1);
 
         QString messageId = messageAdded.takeFirst().at(0).toString();
-        OfonoMessage* message = new OfonoMessage(messageId);
+        QOfonoMessage* message = new QOfonoMessage();
+        message->setMessagePath(messageId);
         QSignalSpy state(message, SIGNAL(stateChanged(const QString)));
         qDebug() << message->state();
 
@@ -95,10 +87,10 @@ private slots:
         QVERIFY(objectPath.length() == 0);
     }
 
-    void testOfonoMessageManagerSca()
+    void testQOfonoMessageManagerSca()
     {
         QSignalSpy scaComplete(m, SIGNAL(serviceCenterAddressComplete(bool, QString)));
-        m->requestServiceCenterAddress();
+        m->serviceCenterAddress();
         for (int i=0; i<30; i++) {
             if (scaComplete.count() > 0)
                 break;
@@ -111,49 +103,49 @@ private slots:
         QVERIFY(sca.length() > 0);
         qDebug() << sca;
 
-        QSignalSpy setScaFailed(m, SIGNAL(setServiceCenterAddressFailed()));
+//        QSignalSpy setScaFailed(m, SIGNAL(setServiceCenterAddressFailed()));
         QSignalSpy scaChanged(m, SIGNAL(serviceCenterAddressChanged(QString)));
 
         m->setServiceCenterAddress("+12345678");
-        for (int i=0; i<30; i++) {
-            if (setScaFailed.count() > 0 || scaChanged.count() > 0)
-                break;
-            QTest::qWait(1000);
-        }
-	QCOMPARE(setScaFailed.count(), 0);
+//        for (int i=0; i<30; i++) {
+//            if (setScaFailed.count() > 0 || scaChanged.count() > 0)
+//                break;
+//            QTest::qWait(1000);
+//        }
+//	QCOMPARE(setScaFailed.count(), 0);
 	QCOMPARE(scaChanged.count(), 1);
 	QCOMPARE(scaChanged.takeFirst().at(0).toString(), QString("+12345678"));
 
-        m->setServiceCenterAddress("");
-        for (int i=0; i<30; i++) {
-            if (setScaFailed.count() > 0 || scaChanged.count() > 0)
-                break;
-            QTest::qWait(1000);
-        }
-	QCOMPARE(setScaFailed.count(), 1);
-	setScaFailed.takeFirst();
-	QCOMPARE(scaChanged.count(), 0);
-	QCOMPARE(m->errorName(), QString("org.ofono.Error.InvalidFormat"));
-	QCOMPARE(m->errorMessage(), QString("Argument format is not recognized"));
+//        m->setServiceCenterAddress("");
+//        for (int i=0; i<30; i++) {
+//            if (setScaFailed.count() > 0 || scaChanged.count() > 0)
+//                break;
+//            QTest::qWait(1000);
+//        }
+//	QCOMPARE(setScaFailed.count(), 1);
+//	setScaFailed.takeFirst();
+//	QCOMPARE(scaChanged.count(), 0);
+//	QCOMPARE(m->errorName(), QString("org.ofono.Error.InvalidFormat"));
+//	QCOMPARE(m->errorMessage(), QString("Argument format is not recognized"));
 	
 	m->setServiceCenterAddress(sca);
-        for (int i=0; i<30; i++) {
-            if (setScaFailed.count() > 0 || scaChanged.count() > 0)
-                break;
-            QTest::qWait(1000);
-        }
-	QCOMPARE(setScaFailed.count(), 0);
+//        for (int i=0; i<30; i++) {
+//            if (setScaFailed.count() > 0 || scaChanged.count() > 0)
+//                break;
+//            QTest::qWait(1000);
+//        }
+//	QCOMPARE(setScaFailed.count(), 0);
 	QCOMPARE(scaChanged.count(), 1);
 	QCOMPARE(scaChanged.takeFirst().at(0).toString(), sca);
     }
 
-    void testOfonoMessageManagerUseDeliveryReports()
+    void testQOfonoMessageManagerUseDeliveryReports()
     {
         QSignalSpy useDeliveryReportsComplete(m, SIGNAL(useDeliveryReportsComplete(bool, bool)));
         QSignalSpy setUseDeliveryReportsFailed(m, SIGNAL(setUseDeliveryReportsFailed()));
         QSignalSpy useDeliveryReportsChanged(m, SIGNAL(useDeliveryReportsChanged(bool)));
 
-        m->requestUseDeliveryReports();
+        m->useDeliveryReports();
         for (int i=0; i<30; i++) {
             if (useDeliveryReportsComplete.count() > 0)
                 break;
@@ -185,13 +177,13 @@ private slots:
          QCOMPARE(useDeliveryReportsChanged.takeFirst().at(0).toBool(), false);
     }
 
-    void testOfonoMessageManagerAlphabet()
+    void testQOfonoMessageManagerAlphabet()
     {
         QSignalSpy alphabetComplete(m, SIGNAL(alphabetComplete(bool, QString)));
         QSignalSpy setAlphabetFailed(m, SIGNAL(setAlphabetFailed()));
         QSignalSpy alphabetChanged(m, SIGNAL(alphabetChanged(QString)));
 
-        m->requestAlphabet();
+        m->alphabet();
         for (int i=0; i<30; i++) {
             if (alphabetComplete.count() > 0)
                 break;
@@ -229,13 +221,13 @@ private slots:
         QCOMPARE(alphabetChanged.takeFirst().at(0).toString(), alphabet);
     }
 
-    void testOfonoMessageManagerBearer()
+    void testQOfonoMessageManagerBearer()
     {
         QSignalSpy bearerComplete(m, SIGNAL(bearerComplete(bool, QString)));
         QSignalSpy setBearerFailed(m, SIGNAL(setBearerFailed()));
         QSignalSpy bearerChanged(m, SIGNAL(bearerChanged(QString)));
 
-        m->requestBearer();
+        m->bearer();
         for (int i=0; i<30; i++) {
             if (bearerComplete.count() > 0)
                 break;
@@ -280,8 +272,8 @@ private slots:
 
 
 private:
-    OfonoMessageManager *m;
+    QOfonoMessageManager *m;
 };
 
-QTEST_MAIN(TestOfonoMessageManager)
-#include "test_ofonomessagemanager.moc"
+QTEST_MAIN(TestQOfonoMessageManager)
+#include "tst_qofonomessagemanager.moc"

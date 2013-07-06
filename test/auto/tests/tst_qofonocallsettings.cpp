@@ -24,33 +24,24 @@
 #include <QtTest/QtTest>
 #include <QtCore/QObject>
 
-#include <ofonocallsettings.h>
+#include "../../../src/qofonocallsettings.h"
 
 #include <QtDebug>
 
 
-class TestOfonoCallSettings : public QObject
+class TestQOfonoCallSettings : public QObject
 {
     Q_OBJECT
 
 private slots:
     void initTestCase()
     {
-	m = new OfonoCallSettings(OfonoModem::ManualSelect, "/phonesim", this);
-	QCOMPARE(m->modem()->isValid(), true);	
-
-	if (!m->modem()->powered()) {
-  	    m->modem()->setPowered(true);
-            QTest::qWait(5000);
-        }
-        if (!m->modem()->online()) {
-  	    m->modem()->setOnline(true);
-            QTest::qWait(5000);
-        }
+    m = new QOfonoCallSettings(this);
+    m->setModemPath("/phonesim");
 	QCOMPARE(m->isValid(), true);
     }
 
-    void testOfonoCallSettings()
+    void testQOfonoCallSettings()
     {
         QSignalSpy callingLinePresentationComplete(m, SIGNAL(callingLinePresentationComplete(bool, QString)));
         QSignalSpy calledLinePresentationComplete(m, SIGNAL(calledLinePresentationComplete(bool, QString)));
@@ -73,7 +64,7 @@ private slots:
         QSignalSpy setHideCallerIdFailed(m, SIGNAL(setHideCallerIdFailed()));
         QSignalSpy setVoiceCallWaitingFailed(m, SIGNAL(setVoiceCallWaitingFailed()));
 
-	m->requestCallingLinePresentation();
+    m->callingLinePresentation();
 	QTest::qWait(5000);
 	QCOMPARE(callingLinePresentationComplete.count(), 1);
 	QVariantList list = callingLinePresentationComplete.takeFirst();
@@ -81,7 +72,7 @@ private slots:
 	QCOMPARE(list.at(1).toString(), QString("enabled"));
 	QVERIFY(callingLinePresentationChanged.count() > 0);	
 	QCOMPARE(callingLinePresentationChanged.takeFirst().at(0).toString(), QString("enabled"));	
-	m->requestCalledLinePresentation();
+    m->calledLinePresentation();
 	QTest::qWait(1000);
 	QCOMPARE(calledLinePresentationComplete.count(), 1);
 	list = calledLinePresentationComplete.takeFirst();
@@ -89,7 +80,7 @@ private slots:
 	QCOMPARE(list.at(1).toString(), QString("enabled"));
 	QVERIFY(calledLinePresentationChanged.count() > 0);	
 	QCOMPARE(calledLinePresentationChanged.takeFirst().at(0).toString(), QString("enabled"));	
-	m->requestCallingNamePresentation();
+    m->callingNamePresentation();
 	QTest::qWait(5000);
 	QCOMPARE(callingNamePresentationComplete.count(), 1);
 	list = callingNamePresentationComplete.takeFirst();
@@ -97,7 +88,7 @@ private slots:
 	QCOMPARE(list.at(1).toString(), QString("enabled"));
 	QVERIFY(callingNamePresentationChanged.count() > 0);	
 	QCOMPARE(callingNamePresentationChanged.takeFirst().at(0).toString(), QString("enabled"));	
-        m->requestConnectedLinePresentation();
+        m->connectedLinePresentation();
 	QTest::qWait(1000);
         QCOMPARE(connectedLinePresentationComplete.count(), 1);
         list = connectedLinePresentationComplete.takeFirst();
@@ -105,7 +96,7 @@ private slots:
 	QCOMPARE(list.at(1).toString(), QString("enabled"));
         QVERIFY(connectedLinePresentationChanged.count() > 0);
         QCOMPARE(connectedLinePresentationChanged.takeFirst().at(0).toString(), QString("enabled"));
-        m->requestConnectedLineRestriction();
+        m->connectedLineRestriction();
 	QTest::qWait(1000);
         QCOMPARE(connectedLineRestrictionComplete.count(), 1);
         list = connectedLineRestrictionComplete.takeFirst();
@@ -113,7 +104,7 @@ private slots:
 	QCOMPARE(list.at(1).toString(), QString("enabled"));
         QVERIFY(connectedLineRestrictionChanged.count() > 0);
         QCOMPARE(connectedLineRestrictionChanged.takeFirst().at(0).toString(), QString("enabled"));
-	m->requestCallingLineRestriction();
+    m->callingLineRestriction();
 	QTest::qWait(1000);
 	QCOMPARE(callingLineRestrictionComplete.count(), 1);
 	list = callingLineRestrictionComplete.takeFirst();
@@ -121,7 +112,7 @@ private slots:
 	QCOMPARE(list.at(1).toString(), QString("on"));
 	QVERIFY(callingLineRestrictionChanged.count() > 0);	
 	QCOMPARE(callingLineRestrictionChanged.takeFirst().at(0).toString(), QString("on"));	
-	m->requestHideCallerId();
+    m->hideCallerId();
 	QTest::qWait(1000);
 	QCOMPARE(hideCallerIdComplete.count(), 1);
 	list = hideCallerIdComplete.takeFirst();
@@ -129,7 +120,7 @@ private slots:
 	QCOMPARE(list.at(1).toString(), QString("default"));
 	QVERIFY(hideCallerIdChanged.count() > 0);	
 	QCOMPARE(hideCallerIdChanged.takeFirst().at(0).toString(), QString("default"));
-	m->requestVoiceCallWaiting();
+    m->voiceCallWaiting();
 	QTest::qWait(1000);
 	QCOMPARE(voiceCallWaitingComplete.count(), 1);
 	list = voiceCallWaitingComplete.takeFirst();
@@ -174,8 +165,8 @@ private slots:
 
 
 private:
-    OfonoCallSettings *m;
+    QOfonoCallSettings *m;
 };
 
-QTEST_MAIN(TestOfonoCallSettings)
-#include "test_ofonocallsettings.moc"
+QTEST_MAIN(TestQOfonoCallSettings)
+#include "tst_qofonocallsettings.moc"

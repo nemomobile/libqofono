@@ -25,11 +25,12 @@
 #include <QtTest/QtTest>
 #include <QtCore/QObject>
 
-#include <ofonocallvolume.h>
+#include "../../../src/qofonocallvolume.h"
+#include "../../../src/qofonomodem.h"
 
 #include <QtDebug>
 
-class TestOfonoCallVolume : public QObject
+class TestQOfonoCallVolume : public QObject
 {
     Q_OBJECT
 
@@ -37,21 +38,12 @@ private slots:
     void initTestCase()
     {
 
-        m = new OfonoCallVolume(OfonoModem::ManualSelect, "/phonesim", this);
-        QCOMPARE(m->modem()->isValid(), true);
-
-        if (!m->modem()->powered()) {
-            m->modem()->setPowered(true);
-            QTest::qWait(5000);
-        }
-        if (!m->modem()->online()) {
-            m->modem()->setOnline(true);
-            QTest::qWait(5000);
-        }
+        m = new QOfonoCallVolume(this);
+        m->setModemPath("/phonesim");
         QCOMPARE(m->isValid(), true);
     }
 
-    void testOfonoCallVolume()
+    void testQOfonoCallVolume()
     {
 
         QSignalSpy mutedChanged(m, SIGNAL(mutedChanged(const bool)));
@@ -60,11 +52,13 @@ private slots:
         QSignalSpy spfail(m, SIGNAL(setSpeakerVolumeFailed()));
         QSignalSpy mvfail(m, SIGNAL(setMicrophoneVolumeFailed()));
 
-        m->modem()->setPowered(false);
+        QOfonoModem modem;
+        modem.setModemPath(m->modemPath());
+        modem.setPowered(false);
         QTest::qWait(5000);
-        m->modem()->setPowered(true);
+        modem.setPowered(true);
         QTest::qWait(5000);
-        m->modem()->setOnline(true);
+        modem.setOnline(true);
         QTest::qWait(5000);
 
         m->setMuted(true);
@@ -102,8 +96,8 @@ private slots:
 
 
 private:
-    OfonoCallVolume *m;
+    QOfonoCallVolume *m;
 };
 
-QTEST_MAIN(TestOfonoCallVolume)
-#include "test_ofonocallvolume.moc"
+QTEST_MAIN(TestQOfonoCallVolume)
+#include "tst_qofonocallvolume.moc"

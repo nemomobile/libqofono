@@ -24,32 +24,25 @@
 #include <QtTest/QtTest>
 #include <QtCore/QObject>
 
-#include <ofonovoicecallmanager.h>
-#include <ofonovoicecall.h>
+#include  "../../../src/qofonovoicecallmanager.h"
+#include  "../../../src/qofonovoicecall.h"
 #include <QtDebug>
 
 
-class TestOfonoVoiceCall : public QObject
+class TestQOfonoVoiceCall : public QObject
 {
     Q_OBJECT
 
 private slots:
     void initTestCase()
     {
-        m = new OfonoVoiceCallManager(OfonoModem::ManualSelect, "/phonesim", this);
-        QCOMPARE(m->modem()->isValid(), true);
-        if (!m->modem()->powered()) {
-            m->modem()->setPowered(true);
-            QTest::qWait(5000);
-        }
-        if (!m->modem()->online()) {
-            m->modem()->setOnline(true);
-            QTest::qWait(5000);
-        }
+        m = new QOfonoVoiceCallManager( this);
+        m->setModemPath("/phonesim");
+
         QCOMPARE(m->isValid(), true);
     }
 
-    void testOfonoVoiceCall()
+    void testQOfonoVoiceCall()
     {
         QSignalSpy dialreg(m,SIGNAL(dialComplete(bool)));
         QSignalSpy dspy(m, SIGNAL(callAdded(QString)));
@@ -63,7 +56,8 @@ private slots:
         QCOMPARE(dspy.count(), 1);
         QString callid = dspy.takeFirst().at(0).toString();
 
-        OfonoVoiceCall* call = new OfonoVoiceCall(callid);
+        QOfonoVoiceCall* call = new QOfonoVoiceCall(this);
+        call->setVoiceCallPath(callid);
 
         QSignalSpy state(call, SIGNAL(stateChanged(const QString)));
         QSignalSpy discreason(call,SIGNAL(disconnectReason(const QString)));
@@ -104,7 +98,7 @@ private slots:
         delete call;
     }
 
-    void testOfonoVoiceCallStep2()
+    void testQOfonoVoiceCallStep2()
     {
         //Dial failure, incoming, answer and local hangup
         QSignalSpy callsignal(m, SIGNAL(callAdded(const QString)));
@@ -115,7 +109,8 @@ private slots:
         QCOMPARE(callsignal.count(),1);
         QString callid = callsignal.takeFirst().at(0).toString();
 
-        OfonoVoiceCall* call = new OfonoVoiceCall(callid);
+        QOfonoVoiceCall* call = new QOfonoVoiceCall(this);
+        call->setVoiceCallPath(callid);
         QSignalSpy state(call, SIGNAL(stateChanged(const QString)));
         QSignalSpy time(call,SIGNAL(startTimeChanged(const QString)));
         QSignalSpy discreason(call,SIGNAL(disconnectReason(const QString)));
@@ -156,7 +151,7 @@ private slots:
         delete call;
     }
 
-    void testOfonoVoiceCallStep3()
+    void testQOfonoVoiceCallStep3()
     {
         //Dial failed, incoming, no answer and state change to disconnect
         QSignalSpy callsignal(m, SIGNAL(callAdded(const QString)));
@@ -167,7 +162,8 @@ private slots:
         QCOMPARE(callsignal.count(),1);
         QString callid = callsignal.takeFirst().at(0).toString();
 
-        OfonoVoiceCall* call = new OfonoVoiceCall(callid);
+        QOfonoVoiceCall* call = new QOfonoVoiceCall(this);
+        call->setVoiceCallPath(callid);
         QSignalSpy state(call, SIGNAL(stateChanged(const QString)));
         QSignalSpy discreason(call,SIGNAL(disconnectReason(const QString)));
 
@@ -180,7 +176,7 @@ private slots:
         delete call;
 
     }
-    void testOfonoVoiceCallStep4()
+    void testQOfonoVoiceCallStep4()
     {
         //Deflect
         QSignalSpy callsignal(m, SIGNAL(callAdded(const QString)));
@@ -190,7 +186,8 @@ private slots:
         QCOMPARE(callsignal.count(),1);
         QString callid = callsignal.takeFirst().at(0).toString();
 
-        OfonoVoiceCall* call = new OfonoVoiceCall(callid);
+        QOfonoVoiceCall* call = new QOfonoVoiceCall(this);
+        call->setVoiceCallPath(callid);
         QSignalSpy dfspy(call, SIGNAL(deflectComplete(bool)));
 
         QTest::qWait(8000);
@@ -212,8 +209,8 @@ private slots:
 
 
 private:
-    OfonoVoiceCallManager *m;
+    QOfonoVoiceCallManager *m;
 };
 
-QTEST_MAIN(TestOfonoVoiceCall)
-#include "test_ofonovoicecall.moc"
+QTEST_MAIN(TestQOfonoVoiceCall)
+#include "tst_qofonovoicecall.moc"

@@ -24,12 +24,12 @@
 #include <QtTest/QtTest>
 #include <QtCore/QObject>
 
-#include <ofonosupplementaryservices.h>
+#include "../../../src/qofonosupplementaryservices.h"
 
 #include <QtDebug>
 
 
-class TestOfonoSupplementaryServices : public QObject
+class TestQOfonoSupplementaryServices : public QObject
 {
     Q_OBJECT
 
@@ -38,21 +38,12 @@ public slots:
 private slots:
     void initTestCase()
     {
-	m = new OfonoSupplementaryServices(OfonoModem::ManualSelect, "/phonesim", this);
-	QCOMPARE(m->modem()->isValid(), true);	
-
-	if (!m->modem()->powered()) {
-  	    m->modem()->setPowered(true);
-            QTest::qWait(5000);
-        }
-        if (!m->modem()->online()) {
-  	    m->modem()->setOnline(true);
-            QTest::qWait(5000);
-        }
-	QCOMPARE(m->isValid(), true);
+        m = new QOfonoSupplementaryServices( this);
+        m->setModemPath("/phonesim");
+        QCOMPARE(m->isValid(), true);
     }
 
-    void testOfonoSupplementaryServices()
+    void testQOfonoSupplementaryServices()
     {
         QSignalSpy notification(m, SIGNAL(notificationReceived(QString)));
         QSignalSpy request(m, SIGNAL(requestReceived(QString)));
@@ -71,91 +62,91 @@ private slots:
         QSignalSpy initiateFailed(m, SIGNAL(initiateFailed()));
         QSignalSpy respond(m, SIGNAL(respondComplete(bool, QString)));
         QSignalSpy cancel(m, SIGNAL(cancelComplete(bool)));
-    
+
         QCOMPARE(m->state(), QString("idle"));
 
-	m->initiate("*225#");
-	QTest::qWait(1000);
-	QCOMPARE(state.count(), 2);
-	QCOMPARE(state.takeFirst().at(0).toString(), QString("active"));
-	QCOMPARE(state.takeFirst().at(0).toString(), QString("idle"));
-	QCOMPARE(initiateUSSD.count(), 1);
-	QCOMPARE(initiateUSSD.takeFirst().at(0).toString(), QString("Thank you, your request is being processed. A message will be sent to your phone."));
-	
-	m->cancel();
-	QTest::qWait(1000);
-	QCOMPARE(cancel.count(), 1);
-	QCOMPARE(cancel.takeFirst().at(0).toBool(), false);
+        m->initiate("*225#");
+        QTest::qWait(1000);
+        QCOMPARE(state.count(), 2);
+        QCOMPARE(state.takeFirst().at(0).toString(), QString("active"));
+        QCOMPARE(state.takeFirst().at(0).toString(), QString("idle"));
+        QCOMPARE(initiateUSSD.count(), 1);
+        QCOMPARE(initiateUSSD.takeFirst().at(0).toString(), QString("Thank you, your request is being processed. A message will be sent to your phone."));
 
-	m->respond("*225#");
-	QTest::qWait(1000);
-	QCOMPARE(respond.count(), 1);
-	QCOMPARE(respond.takeFirst().at(0).toBool(), false);
+        m->cancel();
+        QTest::qWait(1000);
+        QCOMPARE(cancel.count(), 1);
+        QCOMPARE(cancel.takeFirst().at(0).toBool(), false);
 
-	m->initiate("*226#");
-	QTest::qWait(1000);
-	QCOMPARE(state.count(), 2);
-	QCOMPARE(state.takeFirst().at(0).toString(), QString("active"));
-	QCOMPARE(state.takeFirst().at(0).toString(), QString("idle"));
-	QCOMPARE(initiateFailed.count(), 1);
-	initiateFailed.takeFirst();
+        m->respond("*225#");
+        QTest::qWait(1000);
+        QCOMPARE(respond.count(), 1);
+        QCOMPARE(respond.takeFirst().at(0).toBool(), false);
 
-	m->initiate("*#331#");
-	QTest::qWait(1000);
-	QCOMPARE(barring.count(), 1);
-	QVariantList list = barring.takeFirst();
-	QCOMPARE(list.at(0).toString(), QString("interrogation"));
-	QCOMPARE(list.at(1).toString(), QString("InternationalOutgoing"));
-	QVariantMap map = list.at(2).toMap();
-	QCOMPARE(map.count(), 3);
-	QCOMPARE(map["DataInternationalOutgoing"].toString(), QString("disabled"));
-	
-	m->initiate("*#002**11#");
-	QTest::qWait(1000);
-	QCOMPARE(forwarding.count(), 1);
-	list = forwarding.takeFirst();
-	QCOMPARE(list.at(0).toString(), QString("interrogation"));
-	QCOMPARE(list.at(1).toString(), QString("All"));
-	map = list.at(2).toMap();
-	QCOMPARE(map.count(), 5);
-	QCOMPARE(map["VoiceNoReplyTimeout"].toUInt(), uint(20));
+        m->initiate("*226#");
+        QTest::qWait(1000);
+        QCOMPARE(state.count(), 2);
+        QCOMPARE(state.takeFirst().at(0).toString(), QString("active"));
+        QCOMPARE(state.takeFirst().at(0).toString(), QString("idle"));
+        QCOMPARE(initiateFailed.count(), 1);
+        initiateFailed.takeFirst();
 
-	m->initiate("*#43#");
-	QTest::qWait(5000);
-	QCOMPARE(waiting.count(), 1);
-	list = waiting.takeFirst();
-	QCOMPARE(list.at(0).toString(), QString("interrogation"));
-	map = list.at(1).toMap();
-	QCOMPARE(map.count(), 5);
-	QCOMPARE(map["DataAsyncCallWaiting"].toString(), QString("disabled"));
+        m->initiate("*#331#");
+        QTest::qWait(1000);
+        QCOMPARE(barring.count(), 1);
+        QVariantList list = barring.takeFirst();
+        QCOMPARE(list.at(0).toString(), QString("interrogation"));
+        QCOMPARE(list.at(1).toString(), QString("InternationalOutgoing"));
+        QVariantMap map = list.at(2).toMap();
+        QCOMPARE(map.count(), 3);
+        QCOMPARE(map["DataInternationalOutgoing"].toString(), QString("disabled"));
 
-	m->initiate("*#31#");
-	QTest::qWait(1000);
-	QCOMPARE(callingLineRestriction.count(), 1);
-	list = callingLineRestriction.takeFirst();
-	QCOMPARE(list.at(0).toString(), QString("interrogation"));
-	QCOMPARE(list.at(1).toString(), QString("disabled"));
+        m->initiate("*#002**11#");
+        QTest::qWait(1000);
+        QCOMPARE(forwarding.count(), 1);
+        list = forwarding.takeFirst();
+        QCOMPARE(list.at(0).toString(), QString("interrogation"));
+        QCOMPARE(list.at(1).toString(), QString("All"));
+        map = list.at(2).toMap();
+        QCOMPARE(map.count(), 5);
+        QCOMPARE(map["VoiceNoReplyTimeout"].toUInt(), uint(20));
 
-	m->initiate("*#30#");
-	QTest::qWait(1000);
-	QCOMPARE(callingLinePresentation.count(), 1);
-	list = callingLinePresentation.takeFirst();
-	QCOMPARE(list.at(0).toString(), QString("interrogation"));
-	QCOMPARE(list.at(1).toString(), QString("enabled"));
+        m->initiate("*#43#");
+        QTest::qWait(5000);
+        QCOMPARE(waiting.count(), 1);
+        list = waiting.takeFirst();
+        QCOMPARE(list.at(0).toString(), QString("interrogation"));
+        map = list.at(1).toMap();
+        QCOMPARE(map.count(), 5);
+        QCOMPARE(map["DataAsyncCallWaiting"].toString(), QString("disabled"));
 
-	m->initiate("*#76#");
-	QTest::qWait(1000);
-	QCOMPARE(connectedLinePresentation.count(), 1);
-	list = connectedLinePresentation.takeFirst();
-	QCOMPARE(list.at(0).toString(), QString("interrogation"));
-	QCOMPARE(list.at(1).toString(), QString("enabled"));
+        m->initiate("*#31#");
+        QTest::qWait(1000);
+        QCOMPARE(callingLineRestriction.count(), 1);
+        list = callingLineRestriction.takeFirst();
+        QCOMPARE(list.at(0).toString(), QString("interrogation"));
+        QCOMPARE(list.at(1).toString(), QString("disabled"));
 
-	m->initiate("*#77#");
-	QTest::qWait(1000);
-	QCOMPARE(connectedLineRestriction.count(), 1);
-	list = connectedLineRestriction.takeFirst();
-	QCOMPARE(list.at(0).toString(), QString("interrogation"));
-	QCOMPARE(list.at(1).toString(), QString("enabled"));
+        m->initiate("*#30#");
+        QTest::qWait(1000);
+        QCOMPARE(callingLinePresentation.count(), 1);
+        list = callingLinePresentation.takeFirst();
+        QCOMPARE(list.at(0).toString(), QString("interrogation"));
+        QCOMPARE(list.at(1).toString(), QString("enabled"));
+
+        m->initiate("*#76#");
+        QTest::qWait(1000);
+        QCOMPARE(connectedLinePresentation.count(), 1);
+        list = connectedLinePresentation.takeFirst();
+        QCOMPARE(list.at(0).toString(), QString("interrogation"));
+        QCOMPARE(list.at(1).toString(), QString("enabled"));
+
+        m->initiate("*#77#");
+        QTest::qWait(1000);
+        QCOMPARE(connectedLineRestriction.count(), 1);
+        list = connectedLineRestriction.takeFirst();
+        QCOMPARE(list.at(0).toString(), QString("interrogation"));
+        QCOMPARE(list.at(1).toString(), QString("enabled"));
     }
 
 
@@ -166,8 +157,8 @@ private slots:
 
 
 private:
-    OfonoSupplementaryServices *m;
+    QOfonoSupplementaryServices *m;
 };
 
-QTEST_MAIN(TestOfonoSupplementaryServices)
-#include "test_ofonosupplementaryservices.moc"
+QTEST_MAIN(TestQOfonoSupplementaryServices)
+#include "tst_qofonosupplementaryservices.moc"

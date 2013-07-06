@@ -22,9 +22,9 @@
  */
 
 #include <QtTest/QtTest>
-#include <QtCore/QObject>
+#include  <QtCore/QObject>
 
-#include <qofono/qofonoconnectionmanager.h>
+#include "../../../src/qofonoconnectionmanager.h"
 
 #include <QtDebug>
 

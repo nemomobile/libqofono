@@ -1,3 +1,3 @@
 include(testcase.pri)                     
-SOURCES += test_ofonomessagemanager.cpp
+SOURCES += tst_qofonomessagemanager.cpp
 

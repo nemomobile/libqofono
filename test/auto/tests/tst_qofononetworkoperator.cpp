@@ -24,8 +24,8 @@
 #include <QtTest/QtTest>
 #include <QtCore/QObject>
 
-#include <qofono/qofononetworkregistration.h>
-#include <qofono/qofononetworkoperator.h>
+#include "../../../src/qofononetworkregistration.h"
+#include "../../../src/qofononetworkoperator.h"
 
 #include <QtDebug>
 
@@ -40,82 +40,80 @@ private slots:
     m = new QOfonoNetworkRegistration(this);
     m->setModemPath("/phonesim");
 
-	QCOMPARE(m->isValid(), true);
+    QCOMPARE(m->isValid(), true);
     }
 
     void testQOfonoNetworkOperator()
     {
-    	QSignalSpy scan(m, SIGNAL(scanComplete(bool, QStringList)));
-    	m->scan();
-    	QTest::qWait(5000);
-    	QCOMPARE(scan.count(), 1);
-    	QVariantList scanList = scan.takeFirst();
-    	QCOMPARE(scanList.at(0).toBool(), true);
-    	QStringList opIdList = scanList.at(1).toStringList();
-    	QVERIFY(opIdList.count() > 0);
+        QSignalSpy scan(m, SIGNAL(scanComplete(bool, QStringList)));
+        m->scan();
+        QTest::qWait(5000);
+        QCOMPARE(scan.count(), 1);
+        QVariantList scanList = scan.takeFirst();
+        QCOMPARE(scanList.at(0).toBool(), true);
+        QStringList opIdList = scanList.at(1).toStringList();
+        QVERIFY(opIdList.count() > 0);
 
+        int op1 = -1;
+        int op2 = -1;
     QList<QOfonoNetworkOperator> opList;
     foreach(QString opId, opIdList)
     {
         QOfonoNetworkOperator op;
         op.setOperatorPath(opId);
         opList << op;
-    }
-
-    int op1 = -1;
-    int op2 = -1;
-    foreach(QOfonoNetworkOperator op, opList) {
         if (op1 == -1 && op.status() == "current")
-            op1 = opList.indexOf(op);
+            op1 = opIdList.indexOf(opId);
         if (op2 == -1 && op.status() == "available")
-            op2 = opList.indexOf(op);
+            op2 = opIdList.indexOf(opId);
     }
+
     QVERIFY(op1 != -1);
-	QVERIFY(op2 != -1);
-	QVERIFY(opList[op1].name().length() > 0);
-	QVERIFY(opList[op2].name().length() > 0);		
-	QVERIFY(opList[op1].mcc().length() > 0);
-	QVERIFY(opList[op2].mcc().length() > 0);		
-	QVERIFY(opList[op1].mnc().length() > 0);
-	QVERIFY(opList[op2].mnc().length() > 0);		
-	QVERIFY(opList[op1].technologies().count() > 0);
-	QVERIFY(opList[op2].technologies().count() > 0);		
+    QVERIFY(op2 != -1);
+    QVERIFY(opList[op1].name().length() > 0);
+    QVERIFY(opList[op2].name().length() > 0);
+    QVERIFY(opList[op1].mcc().length() > 0);
+    QVERIFY(opList[op2].mcc().length() > 0);
+    QVERIFY(opList[op1].mnc().length() > 0);
+    QVERIFY(opList[op2].mnc().length() > 0);
+    QVERIFY(opList[op1].technologies().count() > 0);
+    QVERIFY(opList[op2].technologies().count() > 0);
 
-	QSignalSpy op1Register(&opList[op1], SIGNAL(registerComplete(bool)));
-	QSignalSpy op2Register(&opList[op2], SIGNAL(registerComplete(bool)));
-	QSignalSpy op1Status(&opList[op1], SIGNAL(statusChanged(QString)));
-	QSignalSpy op2Status(&opList[op2], SIGNAL(statusChanged(QString)));
+    QSignalSpy op1Register(&opList[op1], SIGNAL(registerComplete(bool)));
+    QSignalSpy op2Register(&opList[op2], SIGNAL(registerComplete(bool)));
+    QSignalSpy op1Status(&opList[op1], SIGNAL(statusChanged(QString)));
+    QSignalSpy op2Status(&opList[op2], SIGNAL(statusChanged(QString)));
 
-	QSignalSpy mode(m, SIGNAL(modeChanged(QString)));
-	QSignalSpy status(m, SIGNAL(statusChanged(QString)));	
-	QSignalSpy lac(m, SIGNAL(locationAreaCodeChanged(uint)));	
-	QSignalSpy cellId(m, SIGNAL(cellIdChanged(uint)));	
-	QSignalSpy mcc(m, SIGNAL(mccChanged(QString)));	
-	QSignalSpy mnc(m, SIGNAL(mncChanged(QString)));	
-	QSignalSpy tech(m, SIGNAL(technologyChanged(QString)));	
-	QSignalSpy name(m, SIGNAL(nameChanged(QString)));	
-	QSignalSpy strength(m, SIGNAL(strengthChanged(uint)));	
-	QSignalSpy base(m, SIGNAL(baseStationChanged(QString)));	
-	
+    QSignalSpy mode(m, SIGNAL(modeChanged(QString)));
+    QSignalSpy status(m, SIGNAL(statusChanged(QString)));
+    QSignalSpy lac(m, SIGNAL(locationAreaCodeChanged(uint)));
+    QSignalSpy cellId(m, SIGNAL(cellIdChanged(uint)));
+    QSignalSpy mcc(m, SIGNAL(mccChanged(QString)));
+    QSignalSpy mnc(m, SIGNAL(mncChanged(QString)));
+    QSignalSpy tech(m, SIGNAL(technologyChanged(QString)));
+    QSignalSpy name(m, SIGNAL(nameChanged(QString)));
+    QSignalSpy strength(m, SIGNAL(strengthChanged(uint)));
+    QSignalSpy base(m, SIGNAL(baseStationChanged(QString)));
+
     opList[op2].registerOperator();
-	QTest::qWait(5000);
+    QTest::qWait(5000);
     opList[op1].registerOperator();
-	QTest::qWait(5000);
-	
-	QCOMPARE(op1Register.count(), 1);
-	QCOMPARE(op1Register.takeFirst().at(0).toBool(), true);
-	QCOMPARE(op2Register.count(), 1);
-	QCOMPARE(op2Register.takeFirst().at(0).toBool(), true);	
-	QCOMPARE(op1Status.count(), 2);
-	QCOMPARE(op1Status.takeFirst().at(0).toString(), QString("available"));	
-	QCOMPARE(op1Status.takeFirst().at(0).toString(), QString("current"));
-	QCOMPARE(op2Status.count(), 2);
-	QCOMPARE(op2Status.takeFirst().at(0).toString(), QString("current"));
-	QCOMPARE(op2Status.takeFirst().at(0).toString(), QString("available"));	
-	
-	QCOMPARE(mcc.count(), 2);
-	QCOMPARE(mnc.count(), 2);
-	QCOMPARE(name.count(), 2);
+    QTest::qWait(5000);
+
+    QCOMPARE(op1Register.count(), 1);
+    QCOMPARE(op1Register.takeFirst().at(0).toBool(), true);
+    QCOMPARE(op2Register.count(), 1);
+    QCOMPARE(op2Register.takeFirst().at(0).toBool(), true);
+    QCOMPARE(op1Status.count(), 2);
+    QCOMPARE(op1Status.takeFirst().at(0).toString(), QString("available"));
+    QCOMPARE(op1Status.takeFirst().at(0).toString(), QString("current"));
+    QCOMPARE(op2Status.count(), 2);
+    QCOMPARE(op2Status.takeFirst().at(0).toString(), QString("current"));
+    QCOMPARE(op2Status.takeFirst().at(0).toString(), QString("available"));
+
+    QCOMPARE(mcc.count(), 2);
+    QCOMPARE(mnc.count(), 2);
+    QCOMPARE(name.count(), 2);
     }
 
 

@@ -52,7 +52,11 @@ public:
     };
 
     explicit QOfonoNetworkOperator(QObject *parent = 0);
+    QOfonoNetworkOperator(const QOfonoNetworkOperator &op);
     ~QOfonoNetworkOperator();
+
+    QOfonoNetworkOperator operator=(const QOfonoNetworkOperator &op);
+    bool operator==(const QOfonoNetworkOperator &op);
 
     QString operatorPath() const;
     void setOperatorPath(const QString &path);

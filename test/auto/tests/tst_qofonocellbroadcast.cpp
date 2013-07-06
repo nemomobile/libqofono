@@ -26,46 +26,42 @@
 #include <QtTest/QtTest>
 #include <QtCore/QObject>
 
-#include <ofonocellbroadcast.h>
+#include "../../../src/qofonocellbroadcast.h"
+#include "../../../src/qofonomodem.h"
 
 #include <QtDebug>
 
-class TestOfonoCellBroadcast : public QObject
+class TestQOfonoCellBroadcast : public QObject
 {
     Q_OBJECT
 
 private slots:
     void initTestCase()
     {
-        m = new OfonoCellBroadcast(OfonoModem::ManualSelect, "/phonesim", this);
-        QCOMPARE(m->modem()->isValid(), true);
-        if (!m->modem()->powered()) {
-            m->modem()->setPowered(true);
-            QTest::qWait(5000);
-        }
-        if (!m->modem()->online()) {
-            m->modem()->setOnline(true);
-            QTest::qWait(5000);
-        }
+        m = new QOfonoCellBroadcast( this);
+        m->setModemPath("/phonesim");
+
         QCOMPARE(m->isValid(), true);
     }
-    void testOfonoCellBroadcast()
+    void testQOfonoCellBroadcast()
     {
         QSignalSpy cellPowered(m, SIGNAL(powerChanged(bool)));
         QSignalSpy inBroadcast(m, SIGNAL(incomingBroadcast( QString ,quint16)));
      //   QSignalSpy emBroadcast(m, SIGNAL(emergencyBroadcast( QString , QVariantMap)));
         QSignalSpy topicsSpy(m, SIGNAL(topicsChanged(QString)));
 
-        qDebug() << m->powered() << m->topics();
-        bool isPowered = m->powered();
-        m->setPowered(!isPowered);
+        QOfonoModem modem;
+        modem.setModemPath(m->modemPath());
+        qDebug() << modem.powered() << m->topics();
+        bool isPowered = modem.powered();
+        modem.setPowered(!isPowered);
         QTest::qWait(2000);
         QCOMPARE(cellPowered.count(), 1);
         QVariantList list = cellPowered.takeFirst();
         QCOMPARE(list.at(0).toBool(), !isPowered);
-        QCOMPARE(m->powered(),!isPowered);
+        QCOMPARE(modem.powered(),!isPowered);
 
-        m->setPowered(true);
+        modem.setPowered(true);
 
         qDebug() << "Please send CBM using phonesim";
         QTest::qWait(10000);
@@ -78,14 +74,14 @@ private slots:
         QString topicsList = "20,50-51,60";
         m->setTopics("");
         m->setTopics(topicsList);
-        qDebug() << m->powered() << m->topics();
+        qDebug() << modem.powered() << m->topics();
         QTest::qWait(4000);
         QCOMPARE(topicsSpy.count(), 1);
     }
 
 private:
-    OfonoCellBroadcast *m;
+    QOfonoCellBroadcast *m;
 };
 
-QTEST_MAIN(TestOfonoCellBroadcast)
-#include "test_ofonocellbroadcast.moc"
+QTEST_MAIN(TestQOfonoCellBroadcast)
+#include "tst_qofonocellbroadcast.moc"

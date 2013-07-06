@@ -20,16 +20,16 @@
  * 02110-1301 USA
  *
  */
- 
+
 #include <QtTest/QtTest>
 #include <QtCore/QObject>
 
-#include <ofonocallbarring.h>
+#include "../../../src/qofonocallbarring.h"
 
 #include <QtDebug>
 
 
-class TestOfonoCallBarring : public QObject
+class TestQOfonoCallBarring : public QObject
 {
     Q_OBJECT
 
@@ -37,26 +37,17 @@ private slots:
 
     void initTestCase()
     {
-	m = new OfonoCallBarring(OfonoModem::ManualSelect, "/phonesim", this);
-	QCOMPARE(m->modem()->isValid(), true);	
-
-	if (!m->modem()->powered()) {
-  	    m->modem()->setPowered(true);
-            QTest::qWait(5000);
-        }
-        if (!m->modem()->online()) {
-  	    m->modem()->setOnline(true);
-            QTest::qWait(5000);
-        }
-	QCOMPARE(m->isValid(), true);    
+        m = new QOfonoCallBarring(this);
+        m->setModemPath("/phonesim");
+        QCOMPARE(m->isValid(), true);
     }
 
-    void testOfonoCallbarring()
+    void testQOfonoCallBarring()
     {
         QSignalSpy voiceIncomingComplete(m, SIGNAL(voiceIncomingComplete(bool, QString)));
-        QSignalSpy voiceOutgoingComplete(m, SIGNAL(voiceOutgoingComplete(bool, QString)));        
+        QSignalSpy voiceOutgoingComplete(m, SIGNAL(voiceOutgoingComplete(bool, QString)));
         QSignalSpy voiceIncomingChanged(m, SIGNAL(voiceIncomingChanged(QString)));
-        QSignalSpy voiceOutgoingChanged(m, SIGNAL(voiceOutgoingChanged(QString)));        
+        QSignalSpy voiceOutgoingChanged(m, SIGNAL(voiceOutgoingChanged(QString)));
         QSignalSpy setVoiceIncomingFailed(m, SIGNAL(setVoiceIncomingFailed()));
         QSignalSpy setVoiceOutgoingFailed(m, SIGNAL(setVoiceOutgoingFailed()));
 
@@ -65,69 +56,69 @@ private slots:
         QSignalSpy disableAllIncomingComplete(m, SIGNAL(disableAllIncomingComplete(bool)));
         QSignalSpy disableAllOutgoingComplete(m, SIGNAL(disableAllOutgoingComplete(bool)));
         
-        m->requestVoiceIncoming();
-	QTest::qWait(1000);
-	QCOMPARE(voiceIncomingComplete.count(), 1);
-	QVariantList list = voiceIncomingComplete.takeFirst();
-	QCOMPARE(list.at(0).toBool(), true);
-	QCOMPARE(list.at(1).toString(), QString("disabled"));
-	QCOMPARE(voiceIncomingChanged.count(), 1);	
-	QCOMPARE(voiceIncomingChanged.takeFirst().at(0).toString(), QString("disabled"));
-        m->requestVoiceOutgoing();
-	QTest::qWait(1000);
-	QCOMPARE(voiceOutgoingComplete.count(), 1);
-	list = voiceOutgoingComplete.takeFirst();
-	QCOMPARE(list.at(0).toBool(), true);
-	QCOMPARE(list.at(1).toString(), QString("disabled"));
-	QCOMPARE(voiceOutgoingChanged.count(), 1);
-	QCOMPARE(voiceOutgoingChanged.takeFirst().at(0).toString(), QString("disabled"));
+        m->voiceIncoming();
+        QTest::qWait(1000);
+        QCOMPARE(voiceIncomingComplete.count(), 1);
+        QVariantList list = voiceIncomingComplete.takeFirst();
+        QCOMPARE(list.at(0).toBool(), true);
+        QCOMPARE(list.at(1).toString(), QString("disabled"));
+        QCOMPARE(voiceIncomingChanged.count(), 1);
+        QCOMPARE(voiceIncomingChanged.takeFirst().at(0).toString(), QString("disabled"));
+        m->voiceOutgoing();
+        QTest::qWait(1000);
+        QCOMPARE(voiceOutgoingComplete.count(), 1);
+        list = voiceOutgoingComplete.takeFirst();
+        QCOMPARE(list.at(0).toBool(), true);
+        QCOMPARE(list.at(1).toString(), QString("disabled"));
+        QCOMPARE(voiceOutgoingChanged.count(), 1);
+        QCOMPARE(voiceOutgoingChanged.takeFirst().at(0).toString(), QString("disabled"));
 
-	m->setVoiceIncoming("always", "0000");
-	QTest::qWait(1000);
-	QCOMPARE(setVoiceIncomingFailed.count(), 1);
-	setVoiceIncomingFailed.takeFirst();
-	m->setVoiceOutgoing("always", "0000");
-	QTest::qWait(1000);
-	QCOMPARE(setVoiceOutgoingFailed.count(), 1);
-	setVoiceOutgoingFailed.takeFirst();
+        m->setVoiceIncoming("always", "0000");
+        QTest::qWait(1000);
+        QCOMPARE(setVoiceIncomingFailed.count(), 1);
+        setVoiceIncomingFailed.takeFirst();
+        m->setVoiceOutgoing("always", "0000");
+        QTest::qWait(1000);
+        QCOMPARE(setVoiceOutgoingFailed.count(), 1);
+        setVoiceOutgoingFailed.takeFirst();
 
-	m->setVoiceIncoming("always", "3579");
-	QTest::qWait(1000);
-	QCOMPARE(voiceIncomingChanged.count(), 1);
-	QCOMPARE(voiceIncomingChanged.takeFirst().at(0).toString(), QString("always"));
-	m->setVoiceOutgoing("international", "3579");
-	QTest::qWait(1000);
-	QCOMPARE(voiceOutgoingChanged.count(), 1);
-	QCOMPARE(voiceOutgoingChanged.takeFirst().at(0).toString(), QString("international"));
+        m->setVoiceIncoming("always", "3579");
+        QTest::qWait(1000);
+        QCOMPARE(voiceIncomingChanged.count(), 1);
+        QCOMPARE(voiceIncomingChanged.takeFirst().at(0).toString(), QString("always"));
+        m->setVoiceOutgoing("international", "3579");
+        QTest::qWait(1000);
+        QCOMPARE(voiceOutgoingChanged.count(), 1);
+        QCOMPARE(voiceOutgoingChanged.takeFirst().at(0).toString(), QString("international"));
 
-        m->disableAllIncoming("3579");
-	QTest::qWait(1000);
-	QCOMPARE(disableAllIncomingComplete.count(), 1);
-	QCOMPARE(disableAllIncomingComplete.takeFirst().at(0).toBool(), false);
-	QCOMPARE(m->errorName(), QString("org.ofono.Error.Failed"));
-	QCOMPARE(m->errorMessage(), QString("Operation failed"));
-        m->disableAllOutgoing("3579");
-	QTest::qWait(1000);
-	QCOMPARE(disableAllOutgoingComplete.count(), 1);
-	QCOMPARE(disableAllOutgoingComplete.takeFirst().at(0).toBool(), false);
-	QCOMPARE(m->errorName(), QString("org.ofono.Error.Failed"));
-	QCOMPARE(m->errorMessage(), QString("Operation failed"));
-        m->disableAll("3579");
-	QTest::qWait(1000);
-	QCOMPARE(disableAllComplete.count(), 1);
-	QCOMPARE(disableAllComplete.takeFirst().at(0).toBool(), true);
-	QCOMPARE(voiceIncomingChanged.count(), 1);
-	QCOMPARE(voiceIncomingChanged.takeFirst().at(0).toString(), QString("disabled"));
-	QCOMPARE(voiceOutgoingChanged.count(), 1);
-	QCOMPARE(voiceOutgoingChanged.takeFirst().at(0).toString(), QString("disabled"));
-	
-	m->changePassword("3579", "1234");
-	QTest::qWait(1000);
-	m->changePassword("1234", "3579");
-	QTest::qWait(1000);
-	QCOMPARE(changePasswordComplete.count(), 2);	
-	QCOMPARE(changePasswordComplete.takeFirst().at(0).toBool(), true);
-	QCOMPARE(changePasswordComplete.takeFirst().at(0).toBool(), true);
+//        m->disableAllIncoming("3579");
+//        QTest::qWait(1000);
+//        QCOMPARE(disableAllIncomingComplete.count(), 1);
+//        QCOMPARE(disableAllIncomingComplete.takeFirst().at(0).toBool(), false);
+//        QCOMPARE(m->errorName(), QString("org.ofono.Error.Failed"));
+//        QCOMPARE(m->errorMessage(), QString("Operation failed"));
+//        m->disableAllOutgoing("3579");
+//        QTest::qWait(1000);
+//        QCOMPARE(disableAllOutgoingComplete.count(), 1);
+//        QCOMPARE(disableAllOutgoingComplete.takeFirst().at(0).toBool(), false);
+//        QCOMPARE(m->errorName(), QString("org.ofono.Error.Failed"));
+//        QCOMPARE(m->errorMessage(), QString("Operation failed"));
+//        m->disableAll("3579");
+//        QTest::qWait(1000);
+//        QCOMPARE(disableAllComplete.count(), 1);
+//        QCOMPARE(disableAllComplete.takeFirst().at(0).toBool(), true);
+//        QCOMPARE(voiceIncomingChanged.count(), 1);
+//        QCOMPARE(voiceIncomingChanged.takeFirst().at(0).toString(), QString("disabled"));
+//        QCOMPARE(voiceOutgoingChanged.count(), 1);
+//        QCOMPARE(voiceOutgoingChanged.takeFirst().at(0).toString(), QString("disabled"));
+
+        m->changePassword("3579", "1234");
+        QTest::qWait(1000);
+        m->changePassword("1234", "3579");
+        QTest::qWait(1000);
+        QCOMPARE(changePasswordComplete.count(), 2);
+        QCOMPARE(changePasswordComplete.takeFirst().at(0).toBool(), true);
+        QCOMPARE(changePasswordComplete.takeFirst().at(0).toBool(), true);
     }
 
 
@@ -138,8 +129,8 @@ private slots:
 
 
 private:
-    OfonoCallBarring *m;
+    QOfonoCallBarring *m;
 };
 
-QTEST_MAIN(TestOfonoCallBarring)
-#include "test_ofonocallbarring.moc"
+QTEST_MAIN(TestQOfonoCallBarring)
+#include "tst_qofonocallbarring.moc"

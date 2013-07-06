@@ -24,8 +24,8 @@
 #include <QtTest/QtTest>
 #include <QtCore/QObject>
 
-#include <qofono/qofonomanager.h>
-#include <qofono/qofonomodem.h>
+#include "../../../src/qofonomanager.h"
+#include "../../../src/qofonomodem.h"
 
 #include <QtDebug>
 

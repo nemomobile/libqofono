@@ -24,38 +24,29 @@
 #include <QtTest/QtTest>
 #include <QtCore/QObject>
 
-#include <ofonocallmeter.h>
+#include "../../../src/qofonocallmeter.h"
 
 #include <QtDebug>
 
 
-class TestOfonoCallMeter : public QObject
+class TestQOfonoCallMeter : public QObject
 {
     Q_OBJECT
 
 private slots:
     void initTestCase()
     {
-	m = new OfonoCallMeter(OfonoModem::ManualSelect, "/phonesim", this);
-	QCOMPARE(m->modem()->isValid(), true);	
-
-	if (!m->modem()->powered()) {
-  	    m->modem()->setPowered(true);
-            QTest::qWait(5000);
-        }
-        if (!m->modem()->online()) {
-  	    m->modem()->setOnline(true);
-            QTest::qWait(5000);
-        }
+    m = new QOfonoCallMeter(this);
+    m->setModemPath("/phonesim");
 	QCOMPARE(m->isValid(), true);
     }
 
-    void testOfonoCallMeter()
+    void testQOfonoCallMeter()
     {
     	QSignalSpy callMeterComplete(m, SIGNAL(callMeterComplete(bool, uint)));
     	QSignalSpy callMeterChanged(m, SIGNAL(callMeterChanged(uint)));
 
-	m->requestCallMeter();
+    m->callMeter();
 	QTest::qWait(1000);
 	QCOMPARE(callMeterComplete.count(), 1);
 	QVariantList list = callMeterComplete.takeFirst();
@@ -74,8 +65,8 @@ private slots:
 
 
 private:
-    OfonoCallMeter *m;
+    QOfonoCallMeter *m;
 };
 
-QTEST_MAIN(TestOfonoCallMeter)
-#include "test_ofonocallmeter.moc"
+QTEST_MAIN(TestQOfonoCallMeter)
+#include "tst_qofonocallmeter.moc"

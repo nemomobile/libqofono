@@ -1,2 +1,2 @@
 include(testcase.pri)
-SOURCES += test_ofonomultipartycall.cpp
+SOURCES += tst_qofonomultipartycall.cpp

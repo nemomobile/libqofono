@@ -1,3 +1,3 @@
 include(testcase.pri)                     
-SOURCES += test_ofonovoicecallmanager.cpp
+SOURCES += tst_qofonovoicecallmanager.cpp
 

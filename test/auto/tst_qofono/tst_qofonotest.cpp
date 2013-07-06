@@ -292,7 +292,7 @@ void Tst_qofonoTest::testContextConnection()
         QVERIFY(connContext.accessPointName().isEmpty());
         QSignalSpy spy1(&connContext, SIGNAL(accessPointNameChanged(QString)));
         connContext.setAccessPointName("Jolla");
-        ::waitForSignal(&connman,SIGNAL(accessPointNameChanged(QString)),2000);
+        ::waitForSignal(&connContext,SIGNAL(accessPointNameChanged(QString)),2000);
 
         QCOMPARE(spy1.count(),1);
 
@@ -302,7 +302,7 @@ void Tst_qofonoTest::testContextConnection()
 
         QSignalSpy spy_name(&connContext, SIGNAL(nameChanged(QString)));
         connContext.setName("Test AP");
-        ::waitForSignal(&connman,SIGNAL(nameChanged(QString)),2000);
+        ::waitForSignal(&connContext,SIGNAL(nameChanged(QString)),2000);
 
         QTest::qWait(2000);
         QCOMPARE(spy_name.count(),1);
@@ -313,10 +313,13 @@ void Tst_qofonoTest::testContextConnection()
         connman.removeContext(path);
     }
 
+    qDebug() << "context" << connContext.contextPath();
     QVERIFY(!connContext.active());
+    QVERIFY(connContext.isValid());
+
     QSignalSpy spy_active(&connContext, SIGNAL(activeChanged(bool)));
     connContext.setActive(true);
-    ::waitForSignal(&connman,SIGNAL(activeChanged(bool)),3000);
+    ::waitForSignal(&connContext,SIGNAL(activeChanged(bool)),3000);
 
     QCOMPARE(spy_active.count(),1);
 
@@ -331,6 +334,20 @@ void Tst_qofonoTest::testNetworkRegistration()
     QStringList modems = manager.modems();
 
     QOfonoNetworkRegistration netreg;
+    netreg.setModemPath(modems.at(0));
+//    qDebug() << Q_FUNC_INFO
+//             <<"stat:"<< netreg.status()
+//            << "lac:"<< netreg.locationAreaCode()
+//            <<"cell id:"<< netreg.cellId()
+//           <<"mcc:"<< netreg.mcc()
+//          <<"mnc:"<< netreg.mnc()
+//         <<"netreg"<< netreg.name()
+//        <<"base:"<< netreg.baseStation();
+//    QOfonoNetworkOperator netop;
+//    netop.setOperatorPath(netreg.currentOperatorPath());
+//    qDebug() << Q_FUNC_INFO
+//             << netop.name();
+
 
     QVERIFY(netreg.modemPath().isEmpty());
     netreg.setModemPath(modems.at(0));

@@ -24,34 +24,25 @@
 #include <QtTest/QtTest>
 #include <QtCore/QObject>
 
-#include <ofonoradiosettings.h>
+#include "../../../src/qofonoradiosettings.h"
 
 #include <QtDebug>
 
 
-class TestOfonoRadioSettings : public QObject
+class TestQOfonoRadioSettings : public QObject
 {
     Q_OBJECT
 
 private slots:
     void initTestCase()
     {
-	m = new OfonoRadioSettings(OfonoModem::ManualSelect, "/phonesim", this);
-	QCOMPARE(m->modem()->isValid(), true);	
-
-	if (!m->modem()->powered()) {
-  	    m->modem()->setPowered(true);
-            QTest::qWait(5000);
-        }
-        if (!m->modem()->online()) {
-  	    m->modem()->setOnline(true);
-            QTest::qWait(5000);
-        }
-        qDebug() << "FIXME: radio settings interface is not supported by AT modems, and consequently, phonesim";
+    m = new QOfonoRadioSettings(this);
+    m->setModemPath("/phonesim");
+    qDebug() << "FIXME: radio settings interface is not supported by AT modems, and consequently, phonesim";
 	QCOMPARE(m->isValid(), true);    
     }
 
-    void testOfonoRadioSettings()
+    void testQOfonoRadioSettings()
     {
         QSignalSpy preference(m, SIGNAL(technologyPreferenceChanged(QString)));
         QSignalSpy setPreferenceFailed(m, SIGNAL(setTechnologyPreferenceFailed()));
@@ -67,8 +58,8 @@ private slots:
 
 
 private:
-    OfonoRadioSettings *m;
+    QOfonoRadioSettings *m;
 };
 
-QTEST_MAIN(TestOfonoRadioSettings)
-#include "test_ofonoradiosettings.moc"
+QTEST_MAIN(TestQOfonoRadioSettings)
+#include "tst_qofonoradiosettings.moc"

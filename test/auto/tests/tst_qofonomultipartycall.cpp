@@ -27,8 +27,8 @@
 #include <QtTest/QtTest>
 #include <QtCore/QObject>
 
-#include <ofonovoicecallmanager.h>
-#include <ofonovoicecall.h>
+#include "../../../src/qofonovoicecallmanager.h"
+#include "../../../src/qofonovoicecall.h"
 #include <QtDebug>
 
 class TestOfonoMultipartyCall : public QObject
@@ -38,16 +38,9 @@ class TestOfonoMultipartyCall : public QObject
 private slots:
     void initTestCase()
     {
-        m = new OfonoVoiceCallManager(OfonoModem::ManualSelect, "/phonesim", this);
-        QCOMPARE(m->modem()->isValid(), true);
-        if (!m->modem()->powered()) {
-            m->modem()->setPowered(true);
-            QTest::qWait(5000);
-        }
-        if (!m->modem()->online()) {
-            m->modem()->setOnline(true);
-            QTest::qWait(5000);
-        }
+        m = new QOfonoVoiceCallManager(this);
+        m->setModemPath("/phonesim");
+
         QCOMPARE(m->isValid(), true);
     }
 
@@ -67,7 +60,7 @@ private slots:
         // 11. Verify hangupMultiparty() works as expected
         // 12. Hangup all calls
 
-	QVariantList variantList;
+        QVariantList variantList;
 
         // VoiceCallManager Spy's
         QSignalSpy dialreg(m,SIGNAL(dialComplete(bool)));
@@ -89,7 +82,8 @@ private slots:
         QCOMPARE(dspy.count(), 1);
         QString c1id = dspy.takeFirst().at(0).toString();
 
-        OfonoVoiceCall* c1 = new OfonoVoiceCall(c1id);
+        QOfonoVoiceCall* c1 = new QOfonoVoiceCall();
+        c1->setVoiceCallPath(c1id);
 
         QSignalSpy c1state(c1, SIGNAL(stateChanged(const QString)));
         QSignalSpy c1discreason(c1,SIGNAL(disconnectReason(const QString)));
@@ -101,7 +95,7 @@ private slots:
         QSignalSpy c1st (c1, SIGNAL(startTimeChanged(QString)));
         QSignalSpy c1ic (c1, SIGNAL(iconChanged(quint8)));
 
-	qDebug() << "Please find a call in 'Dialing' state in phonesim window and press 'Active' button";
+        qDebug() << "Please find a call in 'Dialing' state in phonesim window and press 'Active' button";
         QTest::qWait(15000);
         //    - new call should have a state change, and be in "active" state
         QVERIFY(c1state.count()>0);
@@ -130,7 +124,8 @@ private slots:
         QCOMPARE(dspy.count(),1);
         QString c2id = dspy.takeFirst().at(0).toString();
 
-        OfonoVoiceCall* c2 = new OfonoVoiceCall(c2id);
+        QOfonoVoiceCall* c2 = new QOfonoVoiceCall();
+        c2->setVoiceCallPath(c2id);
         QSignalSpy c2state(c2, SIGNAL(stateChanged(const QString)));
         QSignalSpy c2time(c2,SIGNAL(startTimeChanged(const QString)));
         QSignalSpy c2discreason(c2,SIGNAL(disconnectReason(const QString)));
@@ -174,9 +169,9 @@ private slots:
         m->createMultiparty();
         QTest::qWait(1000);
         QCOMPARE(cmspy.count(),1);
-	variantList = cmspy.takeFirst();
+        variantList = cmspy.takeFirst();
         QCOMPARE(variantList.at(0).toBool(),true);
-	QVERIFY(variantList.at(1).toStringList().length() > 0);
+        QVERIFY(variantList.at(1).toStringList().length() > 0);
 
         QTest::qWait(3000);
         // 4. Verify createMultiparty() works as expected
@@ -215,7 +210,8 @@ private slots:
         QCOMPARE(dspy.count(), 1);
         QString c3id = dspy.takeFirst().at(0).toString();
 
-        OfonoVoiceCall* c3 = new OfonoVoiceCall(c3id);
+        QOfonoVoiceCall* c3 = new QOfonoVoiceCall();
+        c3->setVoiceCallPath(c3id);
 
         QSignalSpy c3state(c3, SIGNAL(stateChanged(const QString)));
         QSignalSpy c3discreason(c3,SIGNAL(disconnectReason(const QString)));
@@ -227,7 +223,7 @@ private slots:
         QSignalSpy c3st (c3, SIGNAL(startTimeChanged(QString)));
         QSignalSpy c3ic (c3, SIGNAL(iconChanged(quint8)));
 
-	qDebug() << "Please find a call in 'Dialing' state in phonesim window and press 'Active' button";
+        qDebug() << "Please find a call in 'Dialing' state in phonesim window and press 'Active' button";
         QTest::qWait(15000);
         //    - 3rd call should have a state change, and be in "active" state
         QVERIFY(c3state.count()>0);
@@ -251,9 +247,9 @@ private slots:
         QTest::qWait(1000);
 
         QCOMPARE(cmspy.count(),1);
-	variantList = cmspy.takeFirst();
+        variantList = cmspy.takeFirst();
         QCOMPARE(variantList.at(0).toBool(),true);
-	QVERIFY(variantList.at(1).toStringList().length() > 0);
+        QVERIFY(variantList.at(1).toStringList().length() > 0);
 
         QTest::qWait(3000);
         //    - calls #1 and #2 should have a stateChanged signal triggered
@@ -276,9 +272,9 @@ private slots:
         QTest::qWait(1000);
 
         QCOMPARE(pcspy.count(),1);
-	variantList = pcspy.takeFirst();
+        variantList = pcspy.takeFirst();
         QCOMPARE(variantList.at(0).toBool(),true);
-	QVERIFY(variantList.at(1).toStringList().length() > 0);
+        QVERIFY(variantList.at(1).toStringList().length() > 0);
 
         QTest::qWait(3000);
         // 9.  Verify privateChat() works as expected
@@ -344,8 +340,8 @@ private slots:
 
 
 private:
-    OfonoVoiceCallManager *m;
+    QOfonoVoiceCallManager *m;
 };
 
 QTEST_MAIN(TestOfonoMultipartyCall)
-#include "test_ofonomultipartycall.moc"
+#include "tst_qofonomultipartycall.moc"

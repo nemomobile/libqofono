@@ -1,3 +1,3 @@
 include(testcase.pri)                     
-SOURCES += test_ofonomessagewaiting.cpp
+SOURCES += tst_qofonomessagewaiting.cpp
 

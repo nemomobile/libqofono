@@ -1,3 +1,3 @@
 include(testcase.pri)                     
-SOURCES += test_ofonosimmanager.cpp
+SOURCES += tst_qofonosimmanager.cpp
 

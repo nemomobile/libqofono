@@ -24,7 +24,7 @@
 #include <QtTest/QtTest>
 #include <QtCore/QObject>
 
-#include <qofono/qofonophonebook.h>
+#include "../../../src/qofonophonebook.h"
 
 #include <QtDebug>
 
@@ -43,7 +43,7 @@ private slots:
     void testQOfonoPhonebook()
     {
         QSignalSpy import(m, SIGNAL(importComplete(bool, QString)));
-        m->import();
+        m->importing();
 
         for (int i = 0; i < 30; i++) {
             if (import.count() > 0)

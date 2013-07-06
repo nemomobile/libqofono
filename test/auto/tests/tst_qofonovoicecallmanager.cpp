@@ -24,48 +24,43 @@
 #include <QtTest/QtTest>
 #include <QtCore/QObject>
 
-#include <ofonovoicecallmanager.h>
+#include "../../../src/qofonovoicecallmanager.h"
+#include "../../../src/qofonomodem.h"
 
 #include <QtDebug>
 
 
-class TestOfonoVoiceCallManager : public QObject
+class TestQOfonoVoiceCallManager : public QObject
 {
     Q_OBJECT
 
 private slots:
     void initTestCase()
     {
-	m = new OfonoVoiceCallManager(OfonoModem::ManualSelect, "/phonesim", this);
-	QCOMPARE(m->modem()->isValid(), true);	
+        m = new QOfonoVoiceCallManager(this);
+        m->setModemPath("/phonesim");
 
-	if (!m->modem()->powered()) {
-  	    m->modem()->setPowered(true);
-            QTest::qWait(5000);
-        }
-        if (!m->modem()->online()) {
-  	    m->modem()->setOnline(true);
-            QTest::qWait(5000);
-        }
-	QCOMPARE(m->isValid(), true);
+        QCOMPARE(m->isValid(), true);
     }
 
-    void testOfonoVoiceCallManager()
+    void testQOfonoVoiceCallManager()
     {
-    	QVERIFY(m->emergencyNumbers().count() > 0);
+        QVERIFY(m->emergencyNumbers().count() > 0);
 
-	QSignalSpy emergencyNumbers(m, SIGNAL(emergencyNumbersChanged(QStringList)));
+        QSignalSpy emergencyNumbers(m, SIGNAL(emergencyNumbersChanged(QStringList)));
         QSignalSpy dialreg(m,SIGNAL(dialComplete(bool)));
         QSignalSpy dspy(m, SIGNAL(callAdded(QString)));
         QSignalSpy hupreg(m,SIGNAL(hangupAllComplete(bool)));
         QSignalSpy tonereg(m,SIGNAL(sendTonesComplete(bool)));
         QSignalSpy hspy(m, SIGNAL(callRemoved(QString)));
 
-        m->modem()->setPowered(false);
+        QOfonoModem modem;
+        modem.setModemPath(m->modemPath());
+        modem.setPowered(false);
         QTest::qWait(5000);
-        m->modem()->setPowered(true);
+        modem.setPowered(true);
         QTest::qWait(5000);
-  	m->modem()->setOnline(true);
+        modem.setOnline(true);
         QTest::qWait(5000);
 
         QCOMPARE(emergencyNumbers.count(), 1);
@@ -95,7 +90,7 @@ private slots:
 
     }
 
-    void testoFonoVoiceCallManagerStep2()
+    void testQOfonoVoiceCallManagerStep2()
     {
         // test dial failure and hangup of incoming alerting call
         QSignalSpy dialreg(m,SIGNAL(dialComplete(bool)));
@@ -129,8 +124,8 @@ private slots:
 
 
 private:
-    OfonoVoiceCallManager *m;
+    QOfonoVoiceCallManager *m;
 };
 
-QTEST_MAIN(TestOfonoVoiceCallManager)
-#include "test_ofonovoicecallmanager.moc"
+QTEST_MAIN(TestQOfonoVoiceCallManager)
+#include "tst_qofonovoicecallmanager.moc"
