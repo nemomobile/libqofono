@@ -61,10 +61,10 @@ void QOfonoCallSettings::setModemPath(const QString &path)
             d_ptr->modemPath = path;
             connect(d_ptr->callSettings,SIGNAL(PropertyChanged(QString,QDBusVariant)),
                     this,SLOT(propertyChanged(QString,QDBusVariant)));
-            QDBusPendingReply<QVariantMap> reply;
-            reply = d_ptr->callSettings->GetProperties();
-            reply.waitForFinished();
-            d_ptr->properties = reply.value();
+            QDBusPendingReply<QVariantMap> reply = d_ptr->callSettings->GetProperties();
+            QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(reply, this);
+            connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
+                    SLOT(getPropertiesComplete(QDBusPendingCallWatcher*)));
             Q_EMIT modemPathChanged(path);
         }
     }
@@ -151,32 +151,83 @@ QString QOfonoCallSettings::callingLineRestriction()
 QString QOfonoCallSettings::hideCallerId()
 {
     if (d_ptr->callSettings)
-        return d_ptr->properties["Currency"].value<QString>();
+        return d_ptr->properties["HideCallerId"].value<QString>();
     else
         return QString();
 }
 
 void QOfonoCallSettings::setHideCallerId(const QString &setting)
 {
-    if (d_ptr->callSettings)
-        d_ptr->callSettings->setProperty("HideCallerId", setting);
+    if (d_ptr->callSettings) {
+        QDBusPendingReply<> reply = d_ptr->callSettings->SetProperty("HideCallerId", QDBusVariant(setting));
+        QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(reply, this);
+        connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
+                SLOT(setHideCallerIdComplete(QDBusPendingCallWatcher*)));
+    }
 }
 
 QString QOfonoCallSettings::voiceCallWaiting()
 {
     if (d_ptr->callSettings)
-        return d_ptr->properties["Currency"].value<QString>();
+        return d_ptr->properties["VoiceCallWaiting"].value<QString>();
     else
         return QString();
 }
 
 void QOfonoCallSettings::setVoiceCallWaiting(const QString &setting)
 {
-    if (d_ptr->callSettings)
-        d_ptr->callSettings->setProperty("VoiceCallWaiting", setting);
+    if (d_ptr->callSettings) {
+        QDBusPendingReply<> reply = d_ptr->callSettings->SetProperty("VoiceCallWaiting", QDBusVariant(setting));
+        QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(reply, this);
+        connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
+                SLOT(setVoiceCallWaitingComplete(QDBusPendingCallWatcher*)));
+    }
 }
 
 bool QOfonoCallSettings::isValid() const
 {
     return d_ptr->callSettings->isValid();
+}
+
+bool QOfonoCallSettings::isReady() const
+{
+    return !d_ptr->properties.isEmpty();
+}
+
+void QOfonoCallSettings::getPropertiesComplete(QDBusPendingCallWatcher *call)
+{
+    QDBusPendingReply<QVariantMap> reply = *call;
+    if (!reply.isError()) {
+        d_ptr->properties = reply.value();
+        Q_EMIT callingLinePresentationChanged(callingLinePresentation());
+        Q_EMIT calledLinePresentationChanged(calledLinePresentation());
+        Q_EMIT callingNamePresentationChanged(callingNamePresentation());
+        Q_EMIT connectedLinePresentationChanged(connectedLinePresentation());
+        Q_EMIT connectedLineRestrictionChanged(connectedLineRestriction());
+        Q_EMIT callingLineRestrictionChanged(callingLineRestriction());
+        Q_EMIT hideCallerIdChanged(hideCallerId());
+        Q_EMIT voiceCallWaitingChanged(voiceCallWaiting());
+        Q_EMIT readyChanged();
+    } else {
+        Q_EMIT getPropertiesFailed();
+    }
+    call->deleteLater();
+}
+
+void QOfonoCallSettings::setHideCallerIdComplete(QDBusPendingCallWatcher *call)
+{
+    QDBusPendingReply<> reply = *call;
+    if (reply.isError()) {
+        Q_EMIT setHideCallerIdFailed();
+    }
+    call->deleteLater();
+}
+
+void QOfonoCallSettings::setVoiceCallWaitingComplete(QDBusPendingCallWatcher *call)
+{
+    QDBusPendingReply<> reply = *call;
+    if (reply.isError()) {
+        Q_EMIT setVoiceCallWaitingFailed();
+    }
+    call->deleteLater();
 }

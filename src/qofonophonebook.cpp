@@ -94,6 +94,7 @@ void QOfonoPhonebook::importComplete(QDBusPendingCallWatcher *call)
         emit importFailed();
     }
     d_ptr->importing = false;
+    call->deleteLater();
     emit importingChanged();
 }
 

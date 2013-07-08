@@ -52,7 +52,7 @@ void QOfonoCallForwarding::setModemPath(const QString &path)
         if (d_ptr->callForward) {
             delete d_ptr->callForward;
             d_ptr->callForward = 0;
-            d_ptr->properties .clear();
+            d_ptr->properties.clear();
         }
         d_ptr->callForward = new OfonoCallForwarding("org.ofono", path, QDBusConnection::systemBus(),this);
 
@@ -61,10 +61,10 @@ void QOfonoCallForwarding::setModemPath(const QString &path)
             connect(d_ptr->callForward,SIGNAL(PropertyChanged(QString,QDBusVariant)),
                     this,SLOT(propertyChanged(QString,QDBusVariant)));
 
-            QDBusPendingReply<QVariantMap> reply;
-            reply = d_ptr->callForward->GetProperties();
-            reply.waitForFinished();
-            d_ptr->properties = reply.value();
+            QDBusPendingReply<QVariantMap> reply = d_ptr->callForward->GetProperties();
+            QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(reply, this);
+            connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
+                    SLOT(getPropertiesComplete(QDBusPendingCallWatcher*)));
             Q_EMIT modemPathChanged(path);
         }
     }
@@ -106,8 +106,12 @@ QString QOfonoCallForwarding::voiceUnconditional()
 
 void QOfonoCallForwarding::setVoiceUnconditional(const QString &property)
 {
-    if (d_ptr->callForward)
-        d_ptr->callForward->SetProperty("VoiceUnconditional",QDBusVariant(property));
+    if (d_ptr->callForward) {
+        QDBusPendingReply<> reply = d_ptr->callForward->SetProperty("VoiceUnconditional",QDBusVariant(property));
+        QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(reply, this);
+        connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
+                SLOT(setVoiceUnconditionalComplete(QDBusPendingCallWatcher*)));
+    }
 }
 
 QString QOfonoCallForwarding::voiceBusy()
@@ -120,8 +124,12 @@ QString QOfonoCallForwarding::voiceBusy()
 
 void QOfonoCallForwarding::setVoiceBusy(const QString &property)
 {
-    if (d_ptr->callForward)
-        d_ptr->callForward->SetProperty("VoiceBusy",QDBusVariant(property));
+    if (d_ptr->callForward) {
+        QDBusPendingReply<> reply = d_ptr->callForward->SetProperty("VoiceBusy",QDBusVariant(property));
+        QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(reply, this);
+        connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
+                SLOT(setVoiceBusyComplete(QDBusPendingCallWatcher*)));
+    }
 }
 
 QString QOfonoCallForwarding::voiceNoReply()
@@ -134,8 +142,12 @@ QString QOfonoCallForwarding::voiceNoReply()
 
 void QOfonoCallForwarding::setVoiceNoReply(const QString &property)
 {
-    if (d_ptr->callForward)
-        d_ptr->callForward->SetProperty("VoiceNoReply",QDBusVariant(property));
+    if (d_ptr->callForward) {
+        QDBusPendingReply<> reply = d_ptr->callForward->SetProperty("VoiceNoReply",QDBusVariant(property));
+        QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(reply, this);
+        connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
+                SLOT(setVoiceNoReplyComplete(QDBusPendingCallWatcher*)));
+    }
 }
 
 quint16 QOfonoCallForwarding::voiceNoReplyTimeout()
@@ -148,8 +160,12 @@ quint16 QOfonoCallForwarding::voiceNoReplyTimeout()
 
 void QOfonoCallForwarding::setVoiceNoReplyTimeout(ushort timeout)
 {
-    if (d_ptr->callForward)
-        d_ptr->callForward->SetProperty("VoiceNoReplyTimeout",QDBusVariant(timeout));
+    if (d_ptr->callForward) {
+        QDBusPendingReply<> reply = d_ptr->callForward->SetProperty("VoiceNoReplyTimeout",QDBusVariant(timeout));
+        QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(reply, this);
+        connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
+                SLOT(setVoiceNoReplyTimeoutComplete(QDBusPendingCallWatcher*)));
+    }
 }
 
 
@@ -163,8 +179,12 @@ QString QOfonoCallForwarding::voiceNotReachable()
 
 void QOfonoCallForwarding::setVoiceNotReachable(const QString &property)
 {
-    if (d_ptr->callForward)
-        d_ptr->callForward->SetProperty("VoiceNotReachable",QDBusVariant(property));
+    if (d_ptr->callForward) {
+        QDBusPendingReply<> reply = d_ptr->callForward->SetProperty("VoiceNotReachable",QDBusVariant(property));
+        QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(reply, this);
+        connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
+                SLOT(setVoiceNotReachableComplete(QDBusPendingCallWatcher*)));
+    }
 }
 
 
@@ -186,4 +206,67 @@ void QOfonoCallForwarding::disableAll(const QString &type)
 bool QOfonoCallForwarding::isValid() const
 {
     return d_ptr->callForward->isValid();
+}
+
+bool QOfonoCallForwarding::isReady() const
+{
+    return !d_ptr->properties.isEmpty();
+}
+
+void QOfonoCallForwarding::getPropertiesComplete(QDBusPendingCallWatcher *call)
+{
+    QDBusPendingReply<QVariantMap> reply = *call;
+    if (!reply.isError()) {
+        d_ptr->properties = reply.value();
+        Q_EMIT voiceUnconditionalChanged(voiceUnconditional());
+        Q_EMIT voiceBusyChanged(voiceBusy());
+        Q_EMIT voiceNoReplyChanged(voiceNoReply());
+        Q_EMIT voiceNoReplyTimeoutChanged(voiceNoReplyTimeout());
+        Q_EMIT voiceNotReachableChanged(voiceNotReachable());
+        Q_EMIT forwardingFlagOnSimChanged(forwardingFlagOnSim());
+        Q_EMIT readyChanged();
+    } else {
+        Q_EMIT getPropertiesFailed();
+    }
+    call->deleteLater();
+}
+
+void QOfonoCallForwarding::setVoiceUnconditionalComplete(QDBusPendingCallWatcher *call)
+{
+    QDBusPendingReply<> reply = *call;
+    if (reply.isError())
+        Q_EMIT setVoiceUnconditionalFailed();
+    call->deleteLater();
+}
+
+void QOfonoCallForwarding::setVoiceBusyComplete(QDBusPendingCallWatcher *call)
+{
+    QDBusPendingReply<> reply = *call;
+    if (reply.isError())
+        Q_EMIT setVoiceBusyFailed();
+    call->deleteLater();
+}
+
+void QOfonoCallForwarding::setVoiceNoReplyComplete(QDBusPendingCallWatcher *call)
+{
+    QDBusPendingReply<> reply = *call;
+    if (reply.isError())
+        Q_EMIT setVoiceNoReplyFailed();
+    call->deleteLater();
+}
+
+void QOfonoCallForwarding::setVoiceNoReplyTimeoutComplete(QDBusPendingCallWatcher *call)
+{
+    QDBusPendingReply<> reply = *call;
+    if (reply.isError())
+        Q_EMIT setVoiceNoReplyTimeoutFailed();
+    call->deleteLater();
+}
+
+void QOfonoCallForwarding::setVoiceNotReachableComplete(QDBusPendingCallWatcher *call)
+{
+    QDBusPendingReply<> reply = *call;
+    if (reply.isError())
+        Q_EMIT setVoiceNotReachableFailed();
+    call->deleteLater();
 }
