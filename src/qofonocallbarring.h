@@ -34,7 +34,7 @@ class QOFONOSHARED_EXPORT QOfonoCallBarring : public QObject
 
     Q_PROPERTY(QString voiceIncoming READ voiceIncoming NOTIFY voiceIncomingChanged)
     Q_PROPERTY(QString voiceOutgoing READ voiceOutgoing NOTIFY voiceOutgoingChanged)
-
+    Q_PROPERTY(bool ready READ isReady NOTIFY readyChanged)
 
 public:
     explicit QOfonoCallBarring(QObject *parent = 0);
@@ -50,10 +50,16 @@ public:
      Q_INVOKABLE void setVoiceOutgoing(const QString &barrings, const QString &password);
 
      bool isValid() const;
+     bool isReady() const;
+
 Q_SIGNALS:
      void voiceIncomingChanged(const QString &barrings);
      void voiceOutgoingChanged(const QString &barrings);
+     void voiceIncomingComplete(bool success);
+     void voiceOutgoingComplete(bool success);
      void modemPathChanged(const QString &path);
+     void getPropertiesFailed();
+     void readyChanged();
 
 //     void changePasswordComplete(bool success);
 //     void disableAllComplete(bool success);
@@ -70,6 +76,9 @@ private:
     QOfonoCallBarringPrivate *d_ptr;
 private slots:
     void propertyChanged(const QString &property,const QDBusVariant &value);
+    void getPropertiesComplete(QDBusPendingCallWatcher *);
+    void setVoiceIncomingComplete(QDBusPendingCallWatcher *);
+    void setVoiceOutgoingComplete(QDBusPendingCallWatcher *);
 };
 
 #endif // QOFONOCALLBARRING_H
