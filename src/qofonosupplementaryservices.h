@@ -30,7 +30,7 @@ class QOFONOSHARED_EXPORT QOfonoSupplementaryServices : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(QString modemPath READ modemPath WRITE setModemPath NOTIFY modemPathChanged)
-   Q_PROPERTY(QString state READ state)
+    Q_PROPERTY(QString state READ state)
 
 public:
     explicit QOfonoSupplementaryServices(QObject *parent = 0);
@@ -42,9 +42,25 @@ public:
     QString state() const;
 
     bool isValid() const;
+
+    Q_INVOKABLE void initiate(const QString &command);
+    Q_INVOKABLE void respond(const QString &reply);
+    Q_INVOKABLE void cancel();
+
 Q_SIGNALS:
     void notificationReceived(const QString &message);
     void requestReceived(const QString &message);
+    void ussdResponse(const QString &response);
+    void callBarringResponse(const QString &ssOp, const QString &cbService, const QVariantMap &cbMap);
+    void callForwardingResponse(const QString &ssOp, const QString &cfService, const QVariantMap &cfMap);
+    void callWaitingResponse(const QString &ssOp, const QVariantMap &cwMap);
+    void callingLinePresentationResponse(const QString &ssOp, const QString &status);
+    void connectedLinePresentationResponse(const QString &ssOp, const QString &status);
+    void callingLineRestrictionResponse(const QString &ssOp, const QString &status);
+    void connectedLineRestrictionResponse(const QString &ssOp, const QString &status);
+    void initiateFailed();
+    void respondComplete(bool success, const QString &message);
+    void cancelComplete(bool success);
 
     void stateChanged(const QString &state);
     void modemPathChanged(const QString &path);
@@ -55,6 +71,9 @@ private:
     QOfonoSupplementaryServicesPrivate *d_ptr;
 private slots:
     void propertyChanged(const QString &property,const QDBusVariant &value);
+    void initiateResponseReceived(QDBusPendingCallWatcher*);
+    void respondResponseReceived(QDBusPendingCallWatcher*);
+    void cancelResponseReceived(QDBusPendingCallWatcher*);
 };
 
 #endif // QOFONOSupplimentaryServices_H

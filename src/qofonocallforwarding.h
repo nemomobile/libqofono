@@ -37,7 +37,7 @@ class QOFONOSHARED_EXPORT QOfonoCallForwarding : public QObject
     Q_PROPERTY(quint16 voiceNoReplyTimeout READ voiceNoReplyTimeout WRITE setVoiceNoReplyTimeout NOTIFY voiceNoReplyTimeoutChanged)
     Q_PROPERTY(QString voiceNotReachable READ voiceNotReachable WRITE setVoiceNotReachable NOTIFY voiceNotReachableChanged)
     Q_PROPERTY(QString forwardingFlagOnSim READ forwardingFlagOnSim NOTIFY forwardingFlagOnSimChanged)
-
+    Q_PROPERTY(bool ready READ isReady NOTIFY readyChanged)
 
 public:
     explicit QOfonoCallForwarding(QObject *parent = 0);
@@ -63,9 +63,11 @@ public:
 
     bool forwardingFlagOnSim();
 
-    void disableAll(const QString &type);
+    Q_INVOKABLE void disableAll(const QString &type);
 
     bool isValid() const;
+    bool isReady() const;
+
 Q_SIGNALS:
     void voiceUnconditionalChanged(const QString &property);
     void voiceBusyChanged(const QString &property);
@@ -74,14 +76,25 @@ Q_SIGNALS:
     void voiceNotReachableChanged(const QString &property);
     void forwardingFlagOnSimChanged(bool property);
     void modemPathChanged(const QString &path);
+    void readyChanged();
+    void getPropertiesFailed();
+    void setVoiceUnconditionalFailed();
+    void setVoiceBusyFailed();
+    void setVoiceNoReplyFailed();
+    void setVoiceNoReplyTimeoutFailed();
+    void setVoiceNotReachableFailed();
 
-
-public slots:
-    
 private:
     QOfonoCallForwardingPrivate *d_ptr;
+
 private slots:
     void propertyChanged(const QString &property,const QDBusVariant &value);
+    void getPropertiesComplete(QDBusPendingCallWatcher *call);
+    void setVoiceUnconditionalComplete(QDBusPendingCallWatcher *call);
+    void setVoiceBusyComplete(QDBusPendingCallWatcher *call);
+    void setVoiceNoReplyComplete(QDBusPendingCallWatcher *call);
+    void setVoiceNoReplyTimeoutComplete(QDBusPendingCallWatcher *call);
+    void setVoiceNotReachableComplete(QDBusPendingCallWatcher *call);
 };
 
 #endif // QOFONOCallForwarding_H
