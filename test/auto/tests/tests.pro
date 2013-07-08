@@ -15,7 +15,7 @@ SUBDIRS += \
     tst_qofonocallforwarding.pro \
     tst_qofonocallmeter.pro \
     tst_qofonocallsettings.pro \
-#    tst_qofonosupplementaryservices.pro \ //missing parts
+    tst_qofonosupplementaryservices.pro \
     tst_qofonovoicecallmanager.pro \
     tst_qofonovoicecall.pro \
     tst_qofonocallvolume.pro \
