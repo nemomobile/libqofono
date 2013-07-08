@@ -31,7 +31,9 @@ class QOFONOSHARED_EXPORT QOfonoCallSettings : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(QString modemPath READ modemPath WRITE setModemPath NOTIFY modemPathChanged)
-
+    Q_PROPERTY(QString hideCallerId READ hideCallerId WRITE setHideCallerId NOTIFY hideCallerIdChanged)
+    Q_PROPERTY(QString voiceCallWaiting READ voiceCallWaiting WRITE setVoiceCallWaiting NOTIFY voiceCallWaitingChanged)
+    Q_PROPERTY(bool ready READ isReady NOTIFY readyChanged)
 
 public:
     explicit QOfonoCallSettings(QObject *parent = 0);
@@ -54,8 +56,9 @@ public:
     void setVoiceCallWaiting(const QString &setting);
 
     bool isValid() const;
-Q_SIGNALS:
+    bool isReady() const;
 
+Q_SIGNALS:
     void callingLinePresentationChanged(const QString &setting);
     void calledLinePresentationChanged(const QString &setting);
     void callingNamePresentationChanged(const QString &setting);
@@ -65,13 +68,19 @@ Q_SIGNALS:
     void hideCallerIdChanged(const QString &setting);
     void voiceCallWaitingChanged(const QString &setting);
     void modemPathChanged(const QString &path);
-
-public slots:
+    void readyChanged();
+    void getPropertiesFailed();
+    void setHideCallerIdFailed();
+    void setVoiceCallWaitingFailed();
     
 private:
     QOfonoCallSettingsPrivate *d_ptr;
+
 private slots:
     void propertyChanged(const QString &property,const QDBusVariant &value);
+    void getPropertiesComplete(QDBusPendingCallWatcher*);
+    void setHideCallerIdComplete(QDBusPendingCallWatcher *call);
+    void setVoiceCallWaitingComplete(QDBusPendingCallWatcher *call);
 };
 
 #endif // QOFONOCallSettings_H
