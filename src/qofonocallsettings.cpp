@@ -217,17 +217,13 @@ void QOfonoCallSettings::getPropertiesComplete(QDBusPendingCallWatcher *call)
 void QOfonoCallSettings::setHideCallerIdComplete(QDBusPendingCallWatcher *call)
 {
     QDBusPendingReply<> reply = *call;
-    if (reply.isError()) {
-        Q_EMIT setHideCallerIdFailed();
-    }
+    Q_EMIT hideCallerIdComplete(!reply.isError());
     call->deleteLater();
 }
 
 void QOfonoCallSettings::setVoiceCallWaitingComplete(QDBusPendingCallWatcher *call)
 {
     QDBusPendingReply<> reply = *call;
-    if (reply.isError()) {
-        Q_EMIT setVoiceCallWaitingFailed();
-    }
+    Q_EMIT voiceCallWaitingComplete(!reply.isError());
     call->deleteLater();
 }

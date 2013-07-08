@@ -234,39 +234,34 @@ void QOfonoCallForwarding::getPropertiesComplete(QDBusPendingCallWatcher *call)
 void QOfonoCallForwarding::setVoiceUnconditionalComplete(QDBusPendingCallWatcher *call)
 {
     QDBusPendingReply<> reply = *call;
-    if (reply.isError())
-        Q_EMIT setVoiceUnconditionalFailed();
+    Q_EMIT voiceUnconditionalComplete(!reply.isError());
     call->deleteLater();
 }
 
 void QOfonoCallForwarding::setVoiceBusyComplete(QDBusPendingCallWatcher *call)
 {
     QDBusPendingReply<> reply = *call;
-    if (reply.isError())
-        Q_EMIT setVoiceBusyFailed();
+    Q_EMIT voiceBusyComplete(!reply.isError());
     call->deleteLater();
 }
 
 void QOfonoCallForwarding::setVoiceNoReplyComplete(QDBusPendingCallWatcher *call)
 {
     QDBusPendingReply<> reply = *call;
-    if (reply.isError())
-        Q_EMIT setVoiceNoReplyFailed();
+    Q_EMIT voiceNoReplyComplete(!reply.isError());
     call->deleteLater();
 }
 
 void QOfonoCallForwarding::setVoiceNoReplyTimeoutComplete(QDBusPendingCallWatcher *call)
 {
     QDBusPendingReply<> reply = *call;
-    if (reply.isError())
-        Q_EMIT setVoiceNoReplyTimeoutFailed();
+    Q_EMIT voiceNoReplyTimeoutComplete(!reply.isError());
     call->deleteLater();
 }
 
 void QOfonoCallForwarding::setVoiceNotReachableComplete(QDBusPendingCallWatcher *call)
 {
     QDBusPendingReply<> reply = *call;
-    if (reply.isError())
-        Q_EMIT setVoiceNotReachableFailed();
+    Q_EMIT voiceNotReachableComplete(!reply.isError());
     call->deleteLater();
 }
