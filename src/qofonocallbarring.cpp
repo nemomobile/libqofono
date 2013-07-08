@@ -61,10 +61,10 @@ void QOfonoCallBarring::setModemPath(const QString &path)
             connect(d_ptr->callBarring,SIGNAL(PropertyChanged(QString,QDBusVariant)),
                     this,SLOT(propertyChanged(QString,QDBusVariant)));
 
-            QDBusPendingReply<QVariantMap> reply;
-            reply = d_ptr->callBarring->GetProperties();
-            reply.waitForFinished();
-            d_ptr->properties = reply.value();
+            QDBusPendingReply<QVariantMap> reply = d_ptr->callBarring->GetProperties();
+            QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(reply, this);
+            connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
+                    SLOT(getPropertiesComplete(QDBusPendingCallWatcher*)));
             Q_EMIT modemPathChanged(path);
         }
     }
@@ -103,8 +103,10 @@ void QOfonoCallBarring::setVoiceIncoming(const QString &barrings, const QString 
         arguments << QVariant(barrings);
         if (!password.isNull())
             arguments << QVariant(password);
-        d_ptr->callBarring->SetProperty("VoiceIncoming",QDBusVariant(arguments), password);
-
+        QDBusPendingReply<> reply = d_ptr->callBarring->SetProperty("VoiceIncoming",QDBusVariant(arguments), password);
+        QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(reply, this);
+        connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
+                SLOT(setVoiceIncomingComplete(QDBusPendingCallWatcher*)));
     }
 }
 
@@ -124,8 +126,10 @@ void QOfonoCallBarring::setVoiceOutgoing(const QString &barrings, const QString 
         arguments << QVariant(barrings);
         if (!password.isNull())
             arguments << QVariant(password);
-        d_ptr->callBarring->SetProperty("VoiceOutgoing",QDBusVariant(arguments),password);
-
+        QDBusPendingReply<> reply = d_ptr->callBarring->SetProperty("VoiceOutgoing",QDBusVariant(arguments),password);
+        QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(reply, this);
+        connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
+                SLOT(setVoiceOutgoingComplete(QDBusPendingCallWatcher*)));
     }
 }
 
@@ -157,4 +161,37 @@ void QOfonoCallBarring::disableAllOutgoing(const QString &password)
 bool QOfonoCallBarring::isValid() const
 {
     return d_ptr->callBarring->isValid();
+}
+
+bool QOfonoCallBarring::isReady() const
+{
+    return !d_ptr->properties.isEmpty();
+}
+
+void QOfonoCallBarring::getPropertiesComplete(QDBusPendingCallWatcher *call)
+{
+    QDBusPendingReply<QVariantMap> reply = *call;
+    if (!reply.isError()) {
+        d_ptr->properties = reply.value();
+        Q_EMIT voiceIncomingChanged(voiceIncoming());
+        Q_EMIT voiceOutgoingChanged(voiceOutgoing());
+        Q_EMIT readyChanged();
+    } else {
+        Q_EMIT getPropertiesFailed();
+    }
+    call->deleteLater();
+}
+
+void QOfonoCallBarring::setVoiceIncomingComplete(QDBusPendingCallWatcher *call)
+{
+    QDBusPendingReply<> reply = *call;
+    Q_EMIT voiceIncomingComplete(!reply.isError());
+    call->deleteLater();
+}
+
+void QOfonoCallBarring::setVoiceOutgoingComplete(QDBusPendingCallWatcher *call)
+{
+    QDBusPendingReply<> reply = *call;
+    Q_EMIT voiceOutgoingComplete(!reply.isError());
+    call->deleteLater();
 }

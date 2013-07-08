@@ -70,8 +70,8 @@ Q_SIGNALS:
     void modemPathChanged(const QString &path);
     void readyChanged();
     void getPropertiesFailed();
-    void setHideCallerIdFailed();
-    void setVoiceCallWaitingFailed();
+    void hideCallerIdComplete(bool success);
+    void voiceCallWaitingComplete(bool success);
     
 private:
     QOfonoCallSettingsPrivate *d_ptr;

@@ -78,11 +78,11 @@ Q_SIGNALS:
     void modemPathChanged(const QString &path);
     void readyChanged();
     void getPropertiesFailed();
-    void setVoiceUnconditionalFailed();
-    void setVoiceBusyFailed();
-    void setVoiceNoReplyFailed();
-    void setVoiceNoReplyTimeoutFailed();
-    void setVoiceNotReachableFailed();
+    void voiceUnconditionalComplete(bool success);
+    void voiceBusyComplete(bool success);
+    void voiceNoReplyComplete(bool success);
+    void voiceNoReplyTimeoutComplete(bool success);
+    void voiceNotReachableComplete(bool success);
 
 private:
     QOfonoCallForwardingPrivate *d_ptr;
