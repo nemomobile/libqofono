@@ -61,4 +61,4 @@ SubPackages:
       Group: Development/Tools
       Description: This package contains qml test for ofono Qt bindings.
       Files:
-          - "%{_libdir}/%{name}/tests/tst_qofonotest-qt5"
+          - "%{_libdir}/%{name}/tests/*"

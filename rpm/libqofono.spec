@@ -112,6 +112,6 @@ rm -rf %{buildroot}
 %defattr(-,root,root,-)
 /opt/ofonotest/bin/ofonotest
 /opt/ofonotest/qml/ofonotest/*.qml
-%{_libdir}/%{name}/tests/tst_qofonotest
+%{_libdir}/%{name}/tests/*
 # >> files tests
 # << files tests
