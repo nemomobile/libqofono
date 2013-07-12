@@ -30,7 +30,7 @@ class QOFONOSHARED_EXPORT QOfonoSupplementaryServices : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(QString modemPath READ modemPath WRITE setModemPath NOTIFY modemPathChanged)
-    Q_PROPERTY(QString state READ state)
+    Q_PROPERTY(QString state READ state NOTIFY stateChanged)
 
 public:
     explicit QOfonoSupplementaryServices(QObject *parent = 0);
@@ -64,11 +64,10 @@ Q_SIGNALS:
 
     void stateChanged(const QString &state);
     void modemPathChanged(const QString &path);
-
-public slots:
     
 private:
     QOfonoSupplementaryServicesPrivate *d_ptr;
+
 private slots:
     void propertyChanged(const QString &property,const QDBusVariant &value);
     void initiateResponseReceived(QDBusPendingCallWatcher*);
