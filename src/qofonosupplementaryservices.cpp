@@ -140,7 +140,7 @@ void QOfonoSupplementaryServices::initiateResponseReceived(QDBusPendingCallWatch
 
     QString type = reply.value();
     if (type == QLatin1String("USSD")) {
-        QString resp = reply.argumentAt(1).toString();
+        QString resp = qvariant_cast<QDBusVariant>(reply.argumentAt(1)).variant().toString();
         emit ussdResponse(resp);
     } else {
         QVariant val = qvariant_cast<QDBusVariant>(reply.argumentAt(1)).variant();
