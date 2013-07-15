@@ -65,33 +65,35 @@ void QOfonoConnectionManager::setModemPath(const QString &path)
             path.isEmpty())
         return;
 
-    if (path != modemPath()) {
-        if (d_ptr->connman) {
-            delete d_ptr->connman;
-            d_ptr->connman = 0;
-            d_ptr->properties.clear();
+    QStringList removedProperties = d_ptr->properties.keys();
+
+    delete d_ptr->connman;
+    d_ptr->connman = new OfonoConnectionManager("org.ofono", path, QDBusConnection::systemBus(),this);
+
+    if (d_ptr->connman->isValid()) {
+        d_ptr->modemPath = path;
+
+        connect(d_ptr->connman,SIGNAL(PropertyChanged(QString,QDBusVariant)),
+                this,SLOT(propertyChanged(QString,QDBusVariant)));
+        connect(d_ptr->connman,SIGNAL(ContextAdded(QDBusObjectPath,QVariantMap)),
+                this,SLOT(onContextAdd(QDBusObjectPath,QVariantMap)));
+        connect(d_ptr->connman,SIGNAL(ContextRemoved(QDBusObjectPath)),
+                this,SLOT(onContextRemove(QDBusObjectPath)));
+
+        QVariantMap properties = d_ptr->connman->GetProperties().value();
+        for (QVariantMap::ConstIterator it = properties.constBegin();
+             it != properties.constEnd(); ++it) {
+            updateProperty(it.key(), it.value());
+            removedProperties.removeOne(it.key());
         }
-        d_ptr->connman = new OfonoConnectionManager("org.ofono", path, QDBusConnection::systemBus(),this);
 
-        if (d_ptr->connman->isValid()) {
-            d_ptr->modemPath = path;
-
-            connect(d_ptr->connman,SIGNAL(PropertyChanged(QString,QDBusVariant)),
-                    this,SLOT(propertyChanged(QString,QDBusVariant)));
-            connect(d_ptr->connman,SIGNAL(ContextAdded(QDBusObjectPath,QVariantMap)),
-                    this,SLOT(onContextAdd(QDBusObjectPath,QVariantMap)));
-            connect(d_ptr->connman,SIGNAL(ContextRemoved(QDBusObjectPath)),
-                    this,SLOT(onContextRemove(QDBusObjectPath)));
-
-            QDBusPendingReply<QVariantMap> reply;
-            reply = d_ptr->connman->GetProperties();
-            reply.waitForFinished();
-            d_ptr->properties = reply.value();
-            d_ptr->getContexts();
-            Q_EMIT modemPathChanged(path);
-            Q_EMIT contextsChanged(d_ptr->contexts);
-        }
+        d_ptr->getContexts();
+        Q_EMIT modemPathChanged(path);
+        Q_EMIT contextsChanged(d_ptr->contexts);
     }
+
+    foreach (const QString &p, removedProperties)
+        updateProperty(p, QVariant());
 }
 
 QString QOfonoConnectionManager::modemPath() const
@@ -194,8 +196,19 @@ void QOfonoConnectionManager::setPowered(bool value)
 
 void QOfonoConnectionManager::propertyChanged(const QString& property, const QDBusVariant& dbusvalue)
 {
-    QVariant value = dbusvalue.variant();
-    d_ptr->properties.insert(property,value);
+    updateProperty(property, dbusvalue.variant());
+}
+
+void QOfonoConnectionManager::updateProperty(const QString &property, const QVariant &value)
+{
+    if (d_ptr->properties.value(property) == value)
+        return;
+
+    if (value.isValid())
+        d_ptr->properties.insert(property, value);
+    else
+        d_ptr->properties.remove(property);
+
     if (property == QLatin1String("Attached")) {
         if (value.value<bool>()) {
             if (d_ptr->contexts.isEmpty()) {
