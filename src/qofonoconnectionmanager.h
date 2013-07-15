@@ -91,6 +91,8 @@ private slots:
     void onContextRemove(const QDBusObjectPath &path);
 
 private:
+    void updateProperty(const QString &property, const QVariant &value);
+
     QOfonoConnectionManagerPrivate *d_ptr;
 };
 

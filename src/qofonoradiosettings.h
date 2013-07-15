@@ -67,6 +67,8 @@ Q_SIGNALS:
 public slots:
     
 private:
+    void updateProperty(const QString &property, const QVariant &value);
+
     QOfonoRadioSettingsPrivate *d_ptr;
 private slots:
     void propertyChanged(const QString &property,const QDBusVariant &value);

@@ -104,6 +104,8 @@ Q_SIGNALS:
 public slots:
 
 private:
+    void updateProperty(const QString &property, const QVariant &value);
+
     QOfonoNetworkRegistrationPrivate *d_ptr;
 
 private slots:

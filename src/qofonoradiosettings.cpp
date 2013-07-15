@@ -49,27 +49,29 @@ void QOfonoRadioSettings::setModemPath(const QString &path)
             path.isEmpty())
         return;
 
-    if (path != modemPath()) {
-        if (d_ptr->radioSettings) {
-            delete d_ptr->radioSettings;
-            d_ptr->radioSettings = 0;
-            d_ptr->properties.clear();
+    QStringList removedProperties = d_ptr->properties.keys();
+
+    delete d_ptr->radioSettings;
+    d_ptr->radioSettings = new OfonoRadioSettings("org.ofono", path, QDBusConnection::systemBus(),this);
+
+    if (d_ptr->radioSettings->isValid()) {
+        d_ptr->modemPath = path;
+
+        connect(d_ptr->radioSettings,SIGNAL(PropertyChanged(QString,QDBusVariant)),
+                this,SLOT(propertyChanged(QString,QDBusVariant)));
+
+        QVariantMap properties = d_ptr->radioSettings->GetProperties().value();
+        for (QVariantMap::ConstIterator it = properties.constBegin();
+             it != properties.constEnd(); ++it) {
+            updateProperty(it.key(), it.value());
+            removedProperties.removeOne(it.key());
         }
-        d_ptr->radioSettings = new OfonoRadioSettings("org.ofono", path, QDBusConnection::systemBus(),this);
 
-        if (d_ptr->radioSettings->isValid()) {
-            d_ptr->modemPath = path;
-
-            connect(d_ptr->radioSettings,SIGNAL(PropertyChanged(QString,QDBusVariant)),
-                    this,SLOT(propertyChanged(QString,QDBusVariant)));
-
-            QDBusPendingReply<QVariantMap> reply;
-            reply = d_ptr->radioSettings->GetProperties();
-            reply.waitForFinished();
-            d_ptr->properties = reply.value();
-            Q_EMIT modemPathChanged(path);
-        }
+        Q_EMIT modemPathChanged(path);
     }
+
+    foreach (const QString &p, removedProperties)
+        updateProperty(p, QVariant());
 }
 
 QString QOfonoRadioSettings::modemPath() const
@@ -80,8 +82,18 @@ QString QOfonoRadioSettings::modemPath() const
 
 void QOfonoRadioSettings::propertyChanged(const QString& property, const QDBusVariant& dbusvalue)
 {
-    QVariant value = dbusvalue.variant();
-    d_ptr->properties.insert(property,value);
+    updateProperty(property, dbusvalue.variant());
+}
+
+void QOfonoRadioSettings::updateProperty(const QString &property, const QVariant &value)
+{
+    if (d_ptr->properties.value(property) == value)
+        return;
+
+    if (value.isValid())
+        d_ptr->properties.insert(property, value);
+    else
+        d_ptr->properties.remove(property);
 
     if (property == QLatin1String("TechnologyPreference")) {
         Q_EMIT technologyPreferenceChanged(value.value<QString>());
