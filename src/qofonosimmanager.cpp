@@ -90,47 +90,51 @@ void QOfonoSimManager::setModemPath(const QString &path)
             path.isEmpty())
         return;
 
-    d_ptr->properties.clear();
+    QStringList removedProperties = d_ptr->properties.keys();
+
     d_ptr->pendingOpPinType.clear();
 
-    if (!d_ptr->simManager) {
-        d_ptr->simManager = new OfonoSimManager("org.ofono", path, QDBusConnection::systemBus(),this);
+    delete d_ptr->simManager;
+    d_ptr->simManager = new OfonoSimManager("org.ofono", path, QDBusConnection::systemBus(), this);
 
-        if (d_ptr->simManager->isValid()) {
-            d_ptr->modemPath = path;
+    if (d_ptr->simManager->isValid()) {
+        d_ptr->modemPath = path;
 
-            connect(d_ptr->simManager,SIGNAL(PropertyChanged(QString,QDBusVariant)),
-                    this,SLOT(propertyChanged(QString,QDBusVariant)));
+        connect(d_ptr->simManager,SIGNAL(PropertyChanged(QString,QDBusVariant)),
+                this,SLOT(propertyChanged(QString,QDBusVariant)));
 
-            QDBusReply<QVariantMap> reply;
-            reply = d_ptr->simManager->GetProperties();
 
-            QVariantMap properties = reply.value();
-            Q_FOREACH(QString property, properties.keys())
-                updateProperty(property, properties[property]);
+        QVariantMap properties = d_ptr->simManager->GetProperties().value();
+        for (QVariantMap::ConstIterator it = properties.constBegin();
+             it != properties.constEnd(); ++it) {
+            updateProperty(it.key(), it.value());
+            removedProperties.removeOne(it.key());
+        }
 
-            if (properties.value("Retries").toMap().isEmpty()
-                    && !d_ptr->properties.value("CardIdentifier").toString().isEmpty()) {
-                QVariantMap retries;
+        if (properties.value("Retries").toMap().isEmpty()
+                && !d_ptr->properties.value("CardIdentifier").toString().isEmpty()) {
+            QVariantMap retries;
 #ifdef HAS_MLITE
-                Q_FOREACH(PinType type, QOfonoSimManagerPrivate::allPinTypes.keys()) {
-                    MGConfItem retryCountConf(pinRetryConfPath(type));
-                    if (!retryCountConf.key().isEmpty()) {
-                        QVariant value = retryCountConf.value();
-                        if (!value.isNull())
-                            retries[QString::number(type)] = value;
-                    }
-                }
-#endif
-                if (!retries.isEmpty()) {
-                    d_ptr->properties["Retries"] = retries;
-                    Q_EMIT pinRetriesChanged(retries);
+            Q_FOREACH(PinType type, QOfonoSimManagerPrivate::allPinTypes.keys()) {
+                MGConfItem retryCountConf(pinRetryConfPath(type));
+                if (!retryCountConf.key().isEmpty()) {
+                    QVariant value = retryCountConf.value();
+                    if (!value.isNull())
+                        retries[QString::number(type)] = value;
                 }
             }
-
-            Q_EMIT modemPathChanged(path);
+#endif
+            if (!retries.isEmpty()) {
+                d_ptr->properties["Retries"] = retries;
+                Q_EMIT pinRetriesChanged(retries);
+            }
         }
+
+        Q_EMIT modemPathChanged(path);
     }
+
+    foreach (const QString &p, removedProperties)
+        updateProperty(p, QVariant());
 }
 
 QString QOfonoSimManager::modemPath() const
@@ -148,7 +152,10 @@ void QOfonoSimManager::updateProperty(const QString& property, const QVariant& v
     if (d_ptr->properties.value(property) == value)
         return;
 
-    d_ptr->properties.insert(property,value);
+    if (value.isValid())
+        d_ptr->properties.insert(property, value);
+    else
+        d_ptr->properties.remove(property);
 
     if (property == QLatin1String("Present")) {
         Q_EMIT presenceChanged(value.value<bool>());
@@ -162,32 +169,38 @@ void QOfonoSimManager::updateProperty(const QString& property, const QVariant& v
         Q_EMIT subscriberNumbersChanged(value.value<QStringList>());
     } else if (property == QLatin1String("ServiceNumbers")) {
         QVariantMap map;
-        value.value<QDBusArgument>() >> map;
+        if (value.userType() == qMetaTypeId<QDBusArgument>())
+            value.value<QDBusArgument>() >> map;
         Q_EMIT serviceNumbersChanged(map);
     } else if (property == QLatin1String("PinRequired")) {
         PinType pinType = (PinType)pinTypeFromString(value.value<QString>());
         updateSavedPinRetryCount(pinType, false);
         Q_EMIT pinRequiredChanged(pinType);
     } else if (property == QLatin1String("LockedPins")) {
-        QStringList pins = value.value<QStringList>();
         QVariantList convertedPins;
-        Q_FOREACH(QString type, pins) {
-            convertedPins << (PinType)pinTypeFromString(type);
+        if (value.userType() == qMetaTypeId<QStringList>()) {
+            QStringList pins = value.value<QStringList>();
+            Q_FOREACH(QString type, pins) {
+                convertedPins << (PinType)pinTypeFromString(type);
+            }
+            d_ptr->properties["LockedPins"] = convertedPins;
         }
-        d_ptr->properties["LockedPins"] = convertedPins;
         Q_EMIT lockedPinsChanged(convertedPins);
     } else if (property == QLatin1String("CardIdentifier")) {
         Q_EMIT cardIdentifierChanged(value.value<QString>());
     } else if (property == QLatin1String("PreferredLanguages")) {
         Q_EMIT preferredLanguagesChanged(value.value<QStringList>());
     } else if (property == QLatin1String("Retries")) {
-        QVariantMap retries;
-        value.value<QDBusArgument>() >> retries;
         QVariantMap convertedRetries;
-        Q_FOREACH(QString type, retries.keys()) {
-            convertedRetries[QString::number((PinType)pinTypeFromString(type))] = retries[type];
+        if (value.userType() == qMetaTypeId<QDBusArgument>()) {
+            QVariantMap retries;
+            value.value<QDBusArgument>() >> retries;
+
+            Q_FOREACH(QString type, retries.keys()) {
+                convertedRetries[QString::number((PinType)pinTypeFromString(type))] = retries[type];
+            }
+            d_ptr->properties["Retries"] = convertedRetries;
         }
-        d_ptr->properties["Retries"] = convertedRetries;
         Q_EMIT pinRetriesChanged(convertedRetries);
     } else if (property == QLatin1String("FixedDialing")) {
         Q_EMIT fixedDialingChanged(value.value<bool>());

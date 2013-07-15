@@ -72,31 +72,30 @@ void QOfonoNetworkRegistration::setModemPath(const QString &path)
             path.isEmpty())
         return;
 
-    if (path != modemPath()) {
-        if(d_ptr->networkRegistration) {
-            delete d_ptr->networkRegistration;
-            d_ptr->networkRegistration = 0;
-            d_ptr->properties.clear();
+    QStringList removedProperties = d_ptr->properties.keys();
+
+    delete d_ptr->networkRegistration;
+    d_ptr->networkRegistration = new OfonoNetworkRegistration("org.ofono", path, QDBusConnection::systemBus(),this);
+
+    if (d_ptr->networkRegistration->isValid()) {
+        d_ptr->modemPath = path;
+        d_ptr->networkRegistration->setTimeout(1000 * 120); //increase dbus timeout as scanning can take a long time
+
+        connect(d_ptr->networkRegistration,SIGNAL(PropertyChanged(QString,QDBusVariant)),
+                this,SLOT(propertyChanged(QString,QDBusVariant)));
+
+        QVariantMap properties = d_ptr->networkRegistration->GetProperties().value();
+        for (QVariantMap::ConstIterator it = properties.constBegin();
+             it != properties.constEnd(); ++it) {
+            updateProperty(it.key(), it.value());
+            removedProperties.removeOne(it.key());
         }
 
-        d_ptr->networkRegistration = new OfonoNetworkRegistration("org.ofono", path, QDBusConnection::systemBus(),this);
-
-        if (d_ptr->networkRegistration->isValid()) {
-            d_ptr->modemPath = path;
-            d_ptr->networkRegistration->setTimeout(1000 * 120); //increase dbus timeout as scanning can take a long time
-
-            connect(d_ptr->networkRegistration,SIGNAL(PropertyChanged(QString,QDBusVariant)),
-                    this,SLOT(propertyChanged(QString,QDBusVariant)));
-
-            QDBusPendingReply<QVariantMap> reply;
-            reply = d_ptr->networkRegistration->GetProperties();
-            reply.waitForFinished();
-            d_ptr->properties = reply.value();
-            Q_EMIT modemPathChanged(path);
-            Q_EMIT nameChanged(name());
-            Q_EMIT modeChanged(mode());
-        }
+        Q_EMIT modemPathChanged(path);
     }
+
+    foreach (const QString &p, removedProperties)
+        updateProperty(p, QVariant());
 }
 
 QString QOfonoNetworkRegistration::modemPath() const
@@ -223,8 +222,18 @@ QString QOfonoNetworkRegistration::baseStation() const
 
 void QOfonoNetworkRegistration::propertyChanged(const QString &property, const QDBusVariant &dbusvalue)
 {
-    QVariant value = dbusvalue.variant();
-     d_ptr->properties.insert(property, value);
+    updateProperty(property, dbusvalue.variant());
+}
+
+void QOfonoNetworkRegistration::updateProperty(const QString &property, const QVariant &value)
+{
+    if (d_ptr->properties.value(property) == value)
+        return;
+
+    if (value.isValid())
+        d_ptr->properties.insert(property, value);
+    else
+        d_ptr->properties.remove(property);
 
     if (property == QLatin1String("Mode")) {
         Q_EMIT modeChanged(value.value<QString>());
@@ -247,7 +256,6 @@ void QOfonoNetworkRegistration::propertyChanged(const QString &property, const Q
     } else if (property == QLatin1String("BaseStation")) {
         Q_EMIT baseStationChanged(value.value<QString>());
     }
-
 }
 
 void QOfonoNetworkRegistration::scanFinish(const QArrayOfPathProps &list)
