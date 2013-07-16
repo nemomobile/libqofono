@@ -127,7 +127,10 @@ void QOfonoManager::connectToOfono(const QString &)
         foreach(ObjectPathProperties modem, reply.value()) {
             QString modemPath = modem.path.path();
             oModem.setModemPath(modemPath);
-            if (oModem.type() == "hardware") {
+            if (oModem.type() == "hardware"
+                    && !modemPath.contains("phonesim")) {
+                // running phonesim from desktop
+                // presents phonesim as hardware
                 d_ptr->modems.prepend(modemPath);
             } else {
                 d_ptr->modems.append(modemPath);
