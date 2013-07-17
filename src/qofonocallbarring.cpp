@@ -99,11 +99,7 @@ QString QOfonoCallBarring::voiceIncoming()
 void QOfonoCallBarring::setVoiceIncoming(const QString &barrings, const QString &password)
 {
     if (d_ptr->callBarring) {
-        QVariantList arguments;
-        arguments << QVariant(barrings);
-        if (!password.isNull())
-            arguments << QVariant(password);
-        QDBusPendingReply<> reply = d_ptr->callBarring->SetProperty("VoiceIncoming",QDBusVariant(arguments), password);
+        QDBusPendingReply<> reply = d_ptr->callBarring->SetProperty("VoiceIncoming",QDBusVariant(barrings), password);
         QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(reply, this);
         connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
                 SLOT(setVoiceIncomingComplete(QDBusPendingCallWatcher*)));
@@ -122,11 +118,7 @@ void QOfonoCallBarring::setVoiceOutgoing(const QString &barrings, const QString 
 {
 
     if (d_ptr->callBarring) {
-        QVariantList arguments;
-        arguments << QVariant(barrings);
-        if (!password.isNull())
-            arguments << QVariant(password);
-        QDBusPendingReply<> reply = d_ptr->callBarring->SetProperty("VoiceOutgoing",QDBusVariant(arguments),password);
+        QDBusPendingReply<> reply = d_ptr->callBarring->SetProperty("VoiceOutgoing",QDBusVariant(barrings),password);
         QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(reply, this);
         connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
                 SLOT(setVoiceOutgoingComplete(QDBusPendingCallWatcher*)));
@@ -136,8 +128,12 @@ void QOfonoCallBarring::setVoiceOutgoing(const QString &barrings, const QString 
 void QOfonoCallBarring::changePassword(const QString &oldPassword, const QString &newPassword)
 {
 
-    if (d_ptr->callBarring)
-        d_ptr->callBarring->ChangePassword(oldPassword, newPassword);
+    if (d_ptr->callBarring) {
+        QDBusPendingReply<> reply = d_ptr->callBarring->ChangePassword(oldPassword, newPassword);
+        QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(reply, this);
+        connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
+                SLOT(changePasswordCallComplete(QDBusPendingCallWatcher*)));
+    }
 }
 
 void QOfonoCallBarring::disableAll(const QString &password)
@@ -193,5 +189,12 @@ void QOfonoCallBarring::setVoiceOutgoingComplete(QDBusPendingCallWatcher *call)
 {
     QDBusPendingReply<> reply = *call;
     Q_EMIT voiceOutgoingComplete(!reply.isError());
+    call->deleteLater();
+}
+
+void QOfonoCallBarring::changePasswordCallComplete(QDBusPendingCallWatcher *call)
+{
+    QDBusPendingReply<> reply = *call;
+    Q_EMIT changePasswordComplete(!reply.isError());
     call->deleteLater();
 }
