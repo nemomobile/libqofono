@@ -61,7 +61,7 @@ Q_SIGNALS:
      void getPropertiesFailed();
      void readyChanged();
 
-//     void changePasswordComplete(bool success);
+     void changePasswordComplete(bool success);
 //     void disableAllComplete(bool success);
 //     void disableAllIncomingComplete(bool success);
 //     void disableAllOutgoingComplete(bool success);
@@ -79,6 +79,7 @@ private slots:
     void getPropertiesComplete(QDBusPendingCallWatcher *);
     void setVoiceIncomingComplete(QDBusPendingCallWatcher *);
     void setVoiceOutgoingComplete(QDBusPendingCallWatcher *);
+    void changePasswordCallComplete(QDBusPendingCallWatcher *);
 };
 
 #endif // QOFONOCALLBARRING_H
