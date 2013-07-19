@@ -31,10 +31,10 @@ class QOFONOSHARED_EXPORT QOfonoMessageManager : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(QString modemPath READ modemPath WRITE setModemPath NOTIFY modemPathChanged)
-    Q_PROPERTY(QString serviceCenterAddress READ serviceCenterAddress)
-    Q_PROPERTY(bool useDeliveryReports READ useDeliveryReports)
-    Q_PROPERTY(QString bearer READ bearer)
-    Q_PROPERTY(QString alphabet READ alphabet)
+    Q_PROPERTY(QString serviceCenterAddress READ serviceCenterAddress WRITE setServiceCenterAddress NOTIFY serviceCenterAddressChanged)
+    Q_PROPERTY(bool useDeliveryReports READ useDeliveryReports WRITE setUseDeliveryReports NOTIFY useDeliveryReportsChanged)
+    Q_PROPERTY(QString bearer READ bearer WRITE setBearer NOTIFY bearerChanged)
+    Q_PROPERTY(QString alphabet READ alphabet WRITE setAlphabet NOTIFY alphabetChanged)
 
 public:
     explicit QOfonoMessageManager(QObject *parent = 0);
@@ -75,6 +75,10 @@ Q_SIGNALS:
     void messagesFinished();
 
     void sendMessageComplete(bool success, const QString& path);
+    void setServiceCenterAddressComplete(bool success);
+    void setUseDeliveryReportsComplete(bool success);
+    void setBearerComplete(bool success);
+    void setAlphabetComplete(bool success);
 
 public slots:
     void onMessageAdded(const QString &message);
@@ -88,6 +92,10 @@ private slots:
     void messagesError(const QDBusError &error);
 
     void sendMessageFinished(QDBusPendingCallWatcher *call);
+    void setServiceCenterAddressFinished(QDBusPendingCallWatcher*);
+    void setUseDeliveryReportsFinished(QDBusPendingCallWatcher*);
+    void setBearerFinished(QDBusPendingCallWatcher*);
+    void setAlphabetFinished(QDBusPendingCallWatcher*);
 };
 
 #endif // QOFONOMessageManager_H
