@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += testlib dbus
+QT       += testlib dbus xmlpatterns
 QT -= gui
 
 equals(QT_MAJOR_VERSION, 4): {

@@ -13,8 +13,13 @@
 **
 ****************************************************************************/
 
+#include <QtXmlPatterns/QXmlQuery>
+
 #include "qofonoconnectioncontext.h"
 #include "dbus/ofonoconnectioncontext.h"
+
+#include "qofonomanager.h"
+#include "qofononetworkregistration.h"
 
 class QOfonoConnectionContextPrivate
 {
@@ -57,18 +62,25 @@ void QOfonoConnectionContext::setContextPath(const QString &idPath)
             d_ptr->context = 0;
             d_ptr->properties.clear();
         }
+
         d_ptr->context = new OfonoConnectionContext("org.ofono", idPath, QDBusConnection::systemBus(),this);
 
         if (d_ptr->context->isValid()) {
             d_ptr->contextPath = idPath;
             connect(d_ptr->context,SIGNAL(PropertyChanged(QString,QDBusVariant)),
                     this,SLOT(propertyChanged(QString,QDBusVariant)));
-
             QDBusPendingReply<QVariantMap> reply;
             reply = d_ptr->context->GetProperties();
-            reply.waitForFinished();
+            //            reply.waitForFinished();
+            if (reply.isError())
+                Q_EMIT reportError(reply.error().message());
+
             d_ptr->properties = reply.value();
-            Q_EMIT contextPathChanged(idPath);
+           Q_EMIT contextPathChanged(idPath);
+
+        } else {
+            Q_EMIT reportError("Context is not valid");
+            qDebug() << Q_FUNC_INFO << "error Context is not valid";
         }
     }
 }
@@ -206,10 +218,12 @@ void QOfonoConnectionContext::setActive(const bool value)
 void QOfonoConnectionContext::setAccessPointName(const QString &value)
 {
     if (!active()) {
-        d_ptr->context->SetProperty(QLatin1String("AccessPointName"),QDBusVariant(value));
         QString str("AccessPointName");
         QDBusVariant var(value);
         setOneProperty(str,var);
+    } else {
+     qDebug() << Q_FUNC_INFO  << "is active cannot set APN";
+     Q_EMIT reportError("Context active");
     }
 }
 
@@ -280,9 +294,235 @@ void QOfonoConnectionContext::setOneProperty(const QString &prop, const QDBusVar
 void QOfonoConnectionContext::setPropertyFinished(QDBusPendingCallWatcher *watch)
 {
     QDBusPendingReply<> reply = *watch;
+
     if(reply.isError()) {
         qDebug() << Q_FUNC_INFO  << reply.error().message();
         Q_EMIT reportError(reply.error().message());
     }
+    Q_EMIT setPropertyFinished();
+
+}
+
+//check provision against mbpi
+bool QOfonoConnectionContext::validateProvisioning()
+{
+    QString provider;
+    QString mcc;
+    QString mnc;
+
+    QOfonoManager manager;
+    QOfonoNetworkRegistration netReg;
+    if (manager.modems().count() > 0) {
+        netReg.setModemPath(manager.modems().at(0));
+        validateProvisioning(netReg.name(),netReg.mcc(),netReg.mnc());
+    }
+}
+
+//check provision against mbpi
+bool QOfonoConnectionContext::validateProvisioning(const QString &providerString, const QString &mcc, const QString &mnc)
+{
+    QXmlQuery query;
+    QString provider = providerString;
+
+    query.setFocus(QUrl("/usr/share/mobile-broadband-provider-info/serviceproviders.xml"));
+
+    if (provider.contains("\'")) {
+        provider = provider.replace("\'", "&apos;");
+    }
+
+    //provider
+    query.setQuery("/serviceproviders/country/provider[ name =  '"+provider+"']/string()");
+    QString providerName;
+    query.evaluateTo(&providerName);
+    providerName = providerName.simplified();
+
+    if (providerName.isEmpty() && provider.at(1).isLower() ) {
+        //try with uppercase
+        QString upperProvider = provider.at(0).toUpper() + provider.right(provider.length() - 1);
+
+        query.setQuery("/serviceproviders/country/provider[ name =  '"+upperProvider+"']/string()");
+        query.evaluateTo(&providerName);
+        providerName = providerName.simplified();
+        provider = providerName;
+    }
+
+    // apn
+    query.setQuery("/serviceproviders/country/provider[ name =  '"+provider+"']/gsm[ network-id [ @mcc = '"+mcc+"' and @mnc = '"+mnc+"' ] ]/apn/@value/string()");
+    QStringList accessPointNameList;
+    query.evaluateTo(&accessPointNameList);
+
+    if (accessPointNameList.isEmpty()) {
+        qDebug() << "APN not found";
+        return false;
+    }
+
+    QString apn = accessPointName();
+    if (!accessPointNameList.contains(apn)) {
+        qDebug() << "APN not valid"<< accessPointName();
+        return false;
+    }
+
+
+    QString queryString("/serviceproviders/country/provider[ name =  '"+provider+"']//gsm[ network-id[@mcc = '"+mcc+"' and @mnc = '"+mnc+"']]/apn [ @value = '"+apn+ "']/");
+
+    //type
+    query.setQuery(queryString+"usage/@type/string()");
+    QString typeStr;
+    query.evaluateTo(&typeStr);
+    typeStr = typeStr.simplified();
+    if (!typeStr.isEmpty() && !typeStr.contains(type())) {
+        qDebug() << "type is not the same"
+                 << typeStr << type();
+
+        return false;
+    }
+
+    //dns
+    // ofono dns properties are read only
+
+    //username
+    query.setQuery(queryString+"username/string()");
+    QString usernameStr;
+    query.evaluateTo(&usernameStr);
+    if (!usernameStr.contains(username())) {
+        qDebug() << "username is not the same";
+        return false;
+    }
+
+    //password
+    query.setQuery(queryString+"password/string()");
+    QString passwordStr;
+    query.evaluateTo(&passwordStr);
+    if (!passwordStr.contains(password())) {
+        qDebug() << "password is not the same";
+        return false;
+    }
+
+    //we got here, must be ok
+    return true;
+}
+
+void QOfonoConnectionContext::provisionForCurrentNetwork(const QString &type)
+{
+    QOfonoManager manager;
+    QOfonoNetworkRegistration netReg;
+    if (manager.modems().count() > 0) {
+        netReg.setModemPath(manager.modems().at(0));
+
+        provision(netReg.name(), netReg.mcc(),netReg.mnc(), type);
+    }
+}
+
+// provision context against mbpi
+void QOfonoConnectionContext::provision(const QString &provider, const QString &mcc, const QString &mnc, const QString &type)
+{
+    QXmlQuery query;
+    query.setFocus(QUrl("/usr/share/mobile-broadband-provider-info/serviceproviders.xml"));
+
+    QString providerStr = provider;
+    if (providerStr.contains("\'")) {
+        providerStr.replace("\'", "&apos;");
+    }
+
+    //provider
+    query.setQuery("/serviceproviders/country/provider[ name =  '"+providerStr+"']/string()");
+    QString providerName;
+    query.evaluateTo(&providerName);
+    providerName = providerName.simplified();
+
+    if (providerName.isEmpty() && providerStr.at(0).isLower() ) {
+        //try with uppercase first letter
+        QString upperProvider = providerStr.at(0).toUpper() + providerStr.right(providerStr.length() - 1);
+
+        query.setQuery("/serviceproviders/country/provider  [ name =  '"+upperProvider+"']/string()");
+        query.evaluateTo(&providerName);
+        providerName = providerName.simplified();
+        providerStr = providerName;
+    }
+
+    // apn
+    query.setQuery("/serviceproviders/country/provider[ name =  '"+providerStr+"']/gsm[ network-id [ @mcc = '"+mcc+"' and @mnc = '"+mnc+"' ] ]/apn/@value/string()");
+    QStringList accessPointNameList;
+    query.evaluateTo(&accessPointNameList);
+
+    if (accessPointNameList.isEmpty()) {
+        Q_EMIT provisioningFinished();
+        return;
+    }
+
+    bool ok = false;
+    Q_FOREACH( const QString &apn, accessPointNameList) {
+
+//        qDebug() << "For APN" << apn;
+
+        QString queryString("/serviceproviders/country/provider[ name =  '"+providerStr+"']//gsm[ network-id[@mcc = '"+mcc+"' and @mnc = '"+mnc+"']]/apn [ @value = '"+apn+ "']/");
+
+        //type
+        query.setQuery(queryString+"usage/@type/string()");
+        QString typeStr;
+        query.evaluateTo(&typeStr);
+        typeStr = typeStr.simplified();
+        if (!typeStr.isEmpty()) {
+            typeStr = "internet";
+            if (typeStr != type) {
+                qDebug() << typeStr <<  "continue";
+                continue;
+            }
+        }
+
+        //name
+            query.setQuery(queryString+"name/string()");
+        QString nameStr;
+        query.evaluateTo(&nameStr);
+        nameStr = nameStr.simplified();
+        if (nameStr.isEmpty())
+            nameStr = providerStr;
+
+        //username
+        query.setQuery(queryString+"username/string()");
+        QString usernameStr;
+        query.evaluateTo(&usernameStr);
+        usernameStr = usernameStr.simplified();
+
+        //password
+        query.setQuery(queryString+"password/string()");
+        QString passwordStr;
+        query.evaluateTo(&passwordStr);
+
+        passwordStr = passwordStr.simplified();
+
+        if (!nameStr.isEmpty()) {
+             QDBusPendingReply <> reply = d_ptr->context->SetProperty("Name",QDBusVariant(nameStr));
+             reply.waitForFinished();
+             d_ptr->properties["Name"] = nameStr;
+        }
+
+        if (!type.isEmpty()) {
+            QDBusPendingReply <> reply = d_ptr->context->SetProperty("Type",QDBusVariant(type));
+            reply.waitForFinished();
+            d_ptr->properties["Type"] = type;
+        }
+
+        if (!apn.isEmpty()) {
+            QDBusPendingReply <> reply = d_ptr->context->SetProperty("AccessPointName",QDBusVariant(apn));
+            reply.waitForFinished();
+            d_ptr->properties["AccessPointName"] = apn;
+        }
+
+        if (!passwordStr.isEmpty()) {
+            QDBusPendingReply <> reply = d_ptr->context->SetProperty("Password",QDBusVariant(passwordStr));
+            reply.waitForFinished();
+            d_ptr->properties["Password"] = passwordStr;
+        }
+        if (!usernameStr.isEmpty()) {
+            QDBusPendingReply <> reply = d_ptr->context->SetProperty("Username",QDBusVariant(usernameStr));
+            reply.waitForFinished();
+            d_ptr->properties["Username"] = usernameStr;
+        }
+        break;
+    }
+//    qDebug() << "Provisioning Finished";
+    Q_EMIT setPropertyFinished();
+    Q_EMIT provisioningFinished();
 }
 

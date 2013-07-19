@@ -83,6 +83,11 @@ public:
 
     bool isValid() const;
 
+    Q_INVOKABLE bool validateProvisioning(); //check provision against mbpi
+    Q_INVOKABLE bool validateProvisioning(const QString &provider, const QString &mcc, const QString &mnc); //check provision against mbpi
+    Q_INVOKABLE void provision(const QString &provider, const QString &mcc, const QString &mnc, const QString &type=QStringLiteral("internet")); // provision context against mbpi
+    Q_INVOKABLE void provisionForCurrentNetwork(const QString &type);
+
 Q_SIGNALS:
     void activeChanged(const bool);
     void accessPointNameChanged(const QString &apn);
@@ -99,6 +104,8 @@ Q_SIGNALS:
     void contextPathChanged(const QString &);
 
     void reportError(const QString &);
+    void setPropertyFinished();
+    void provisioningFinished();
 
 public slots:
 

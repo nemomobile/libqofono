@@ -16,11 +16,13 @@ License:    LGPLv2.1
 URL:        https://github.com/nemomobile/libqofono
 Source0:    libqofono-%{version}.tar.bz2
 Source100:  libqofono.yaml
+Requires:   mobile-broadband-provider-info
 Requires(post): /sbin/ldconfig
 Requires(postun): /sbin/ldconfig
 BuildRequires:  pkgconfig(QtCore)
 BuildRequires:  pkgconfig(QtDBus)
 BuildRequires:  pkgconfig(mlite)
+BuildRequires:  pkgconfig(QtXmlPatterns)
 
 %description
 This package contains Qt bindings for ofono cellular service

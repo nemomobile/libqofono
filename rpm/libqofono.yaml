@@ -14,6 +14,7 @@ PkgConfigBR:
     - QtCore
     - QtDBus
     - mlite
+    - QtXmlPatterns
 Configure: none
 Builder: qmake
 QMakeOptions: CONFIG+=mlite
@@ -29,6 +30,8 @@ SubPackages:
       Description: This package contains declarative plugin for libofono.
       Requires:
           - "%{name} = %{version}"
+          - mobile-broadband-provider-info
+
       Files:
           - "%{_libdir}/qt4/imports/MeeGo/QOfono/*"
 
