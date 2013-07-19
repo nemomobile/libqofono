@@ -119,9 +119,12 @@ QString QOfonoMessageManager::serviceCenterAddress()
 
 void QOfonoMessageManager::setServiceCenterAddress(const QString &address)
 {
-    if (d_ptr->messageManager)
-        d_ptr->messageManager->SetProperty("ServiceCenterAddress",QDBusVariant(address));
-
+    if (d_ptr->messageManager) {
+        QDBusPendingReply<> result = d_ptr->messageManager->SetProperty("ServiceCenterAddress",QDBusVariant(address));
+        QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(result, this);
+        connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
+                SLOT(setServiceCenterAddressFinished(QDBusPendingCallWatcher*)));
+    }
 }
 
 bool QOfonoMessageManager::useDeliveryReports()
@@ -134,8 +137,12 @@ bool QOfonoMessageManager::useDeliveryReports()
 
 void QOfonoMessageManager::setUseDeliveryReports(bool useDeliveryReports)
 {
-    if (d_ptr->messageManager)
-        d_ptr->messageManager->SetProperty("UseDeliveryReports",QDBusVariant(useDeliveryReports));
+    if (d_ptr->messageManager) {
+        QDBusPendingReply<> result = d_ptr->messageManager->SetProperty("UseDeliveryReports",QDBusVariant(useDeliveryReports));
+        QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(result, this);
+        connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
+                SLOT(setUseDeliveryReportsFinished(QDBusPendingCallWatcher*)));
+    }
 }
 
 QString QOfonoMessageManager::bearer()
@@ -148,8 +155,12 @@ QString QOfonoMessageManager::bearer()
 
 void QOfonoMessageManager::setBearer(const QString &bearer)
 {
-    if (d_ptr->messageManager)
-        d_ptr->messageManager->SetProperty("Bearer",QDBusVariant(bearer));
+    if (d_ptr->messageManager) {
+        QDBusPendingReply<> result = d_ptr->messageManager->SetProperty("Bearer",QDBusVariant(bearer));
+        QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(result, this);
+        connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
+                SLOT(setBearerFinished(QDBusPendingCallWatcher*)));
+    }
 }
 
 QString QOfonoMessageManager::alphabet()
@@ -162,9 +173,12 @@ QString QOfonoMessageManager::alphabet()
 
 void QOfonoMessageManager::setAlphabet(const QString &alphabet)
 {
-    if (d_ptr->messageManager)
-        d_ptr->messageManager->SetProperty("Alphabet",QDBusVariant(alphabet));
-
+    if (d_ptr->messageManager) {
+        QDBusPendingReply<> result = d_ptr->messageManager->SetProperty("Alphabet",QDBusVariant(alphabet));
+        QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(result, this);
+        connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
+                SLOT(setAlphabetFinished(QDBusPendingCallWatcher*)));
+    }
 }
 
 void QOfonoMessageManager::sendMessage(const QString &numberTo, const QString &message)
@@ -233,5 +247,33 @@ void QOfonoMessageManager::sendMessageFinished(QDBusPendingCallWatcher *call)
          ok = false;
     }
     Q_EMIT sendMessageComplete(ok, reply.value().path());
+}
+
+void QOfonoMessageManager::setServiceCenterAddressFinished(QDBusPendingCallWatcher *call)
+{
+    QDBusPendingReply<> reply = *call;
+    Q_EMIT setServiceCenterAddressComplete(!reply.isError());
+    call->deleteLater();
+}
+
+void QOfonoMessageManager::setUseDeliveryReportsFinished(QDBusPendingCallWatcher *call)
+{
+    QDBusPendingReply<> reply = *call;
+    Q_EMIT setUseDeliveryReportsComplete(!reply.isError());
+    call->deleteLater();
+}
+
+void QOfonoMessageManager::setBearerFinished(QDBusPendingCallWatcher *call)
+{
+    QDBusPendingReply<> reply = *call;
+    Q_EMIT setBearerComplete(!reply.isError());
+    call->deleteLater();
+}
+
+void QOfonoMessageManager::setAlphabetFinished(QDBusPendingCallWatcher *call)
+{
+    QDBusPendingReply<> reply = *call;
+    Q_EMIT setAlphabetComplete(!reply.isError());
+    call->deleteLater();
 }
 
