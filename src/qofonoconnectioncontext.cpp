@@ -19,6 +19,7 @@
 #include "dbus/ofonoconnectioncontext.h"
 
 #include "qofonomanager.h"
+#include "qofonoconnectionmanager.h"
 #include "qofononetworkregistration.h"
 
 class QOfonoConnectionContextPrivate
@@ -28,6 +29,7 @@ public:
     OfonoConnectionContext *context;
     QString contextPath;
     QVariantMap properties;
+    QString modemPath;
 
 };
 
@@ -54,6 +56,11 @@ QString QOfonoConnectionContext::contextPath() const
     return d_ptr->contextPath;
 }
 
+QString QOfonoConnectionContext::modemPath() const
+{
+    return d_ptr->modemPath;
+}
+
 void QOfonoConnectionContext::setContextPath(const QString &idPath)
 {
     if (idPath != contextPath()) {
@@ -63,6 +70,7 @@ void QOfonoConnectionContext::setContextPath(const QString &idPath)
             d_ptr->properties.clear();
         }
 
+
         d_ptr->context = new OfonoConnectionContext("org.ofono", idPath, QDBusConnection::systemBus(),this);
 
         if (d_ptr->context->isValid()) {
@@ -71,7 +79,7 @@ void QOfonoConnectionContext::setContextPath(const QString &idPath)
                     this,SLOT(propertyChanged(QString,QDBusVariant)));
             QDBusPendingReply<QVariantMap> reply;
             reply = d_ptr->context->GetProperties();
-            //            reply.waitForFinished();
+            reply.waitForFinished();
             if (reply.isError())
                 Q_EMIT reportError(reply.error().message());
 
@@ -81,6 +89,18 @@ void QOfonoConnectionContext::setContextPath(const QString &idPath)
         } else {
             Q_EMIT reportError("Context is not valid");
             qDebug() << Q_FUNC_INFO << "error Context is not valid";
+        }
+        QOfonoManager manager;
+        if (manager.modems().count() > 0) {
+            QOfonoConnectionManager connManager;
+            Q_FOREACH (const QString &path, manager.modems()) {
+                connManager.setModemPath(path);
+                if (connManager.contexts().contains(idPath)) {
+                    d_ptr->modemPath = path;
+                    Q_EMIT modemPathChanged(path);
+                    break;
+                }
+            }
         }
     }
 }
@@ -303,6 +323,15 @@ void QOfonoConnectionContext::setPropertyFinished(QDBusPendingCallWatcher *watch
 
 }
 
+/*
+ * These provisioning functions use the mobile broadband provider info database available from this url:
+ * https://git.gnome.org/browse/mobile-broadband-provider-info/
+ *
+ **/
+
+/*
+ * Tries to validate the context against the current registered network
+ **/
 //check provision against mbpi
 bool QOfonoConnectionContext::validateProvisioning()
 {
@@ -310,14 +339,16 @@ bool QOfonoConnectionContext::validateProvisioning()
     QString mcc;
     QString mnc;
 
-    QOfonoManager manager;
     QOfonoNetworkRegistration netReg;
-    if (manager.modems().count() > 0) {
-        netReg.setModemPath(manager.modems().at(0));
-        validateProvisioning(netReg.name(),netReg.mcc(),netReg.mnc());
-    }
+    netReg.setModemPath(d_ptr->modemPath);
+    if (netReg.status() == "registered")
+        return validateProvisioning(netReg.name(),netReg.mcc(),netReg.mnc());
+    return false;
 }
 
+/*
+ * Tries to validate the context using the provider, mcc and mnc arguments
+ **/
 //check provision against mbpi
 bool QOfonoConnectionContext::validateProvisioning(const QString &providerString, const QString &mcc, const QString &mnc)
 {
@@ -338,12 +369,14 @@ bool QOfonoConnectionContext::validateProvisioning(const QString &providerString
 
     if (providerName.isEmpty() && provider.at(1).isLower() ) {
         //try with uppercase
-        QString upperProvider = provider.at(0).toUpper() + provider.right(provider.length() - 1);
+        provider[0] = provider.at(0).toUpper();
 
-        query.setQuery("/serviceproviders/country/provider[ name =  '"+upperProvider+"']/string()");
+        query.setQuery("/serviceproviders/country/provider[ name =  '"+provider+"']/string()");
         query.evaluateTo(&providerName);
-        providerName = providerName.simplified();
-        provider = providerName;
+        if (providerName.isEmpty()) {
+            qDebug() << "provider not found";
+            return false;
+        }
     }
 
     // apn
@@ -413,6 +446,15 @@ void QOfonoConnectionContext::provisionForCurrentNetwork(const QString &type)
     }
 }
 
+/*
+ * Tries to provision the context using the provider, mcc and mnc given.
+ *
+ * In the case of multiple apn's for given provider and type, this will provision the context
+ * using the first available apn.
+ *
+ * The only way to see if this is a working context is to try to activate the context.
+ *
+ **/
 // provision context against mbpi
 void QOfonoConnectionContext::provision(const QString &provider, const QString &mcc, const QString &mnc, const QString &type)
 {
@@ -432,12 +474,14 @@ void QOfonoConnectionContext::provision(const QString &provider, const QString &
 
     if (providerName.isEmpty() && providerStr.at(0).isLower() ) {
         //try with uppercase first letter
-        QString upperProvider = providerStr.at(0).toUpper() + providerStr.right(providerStr.length() - 1);
+        providerStr[0] = providerStr.at(0).toUpper();
 
-        query.setQuery("/serviceproviders/country/provider  [ name =  '"+upperProvider+"']/string()");
+        query.setQuery("/serviceproviders/country/provider  [ name =  '"+providerStr+"']/string()");
         query.evaluateTo(&providerName);
-        providerName = providerName.simplified();
-        providerStr = providerName;
+        if (providerName.isEmpty()) {
+            Q_EMIT reportError("Provider not found");
+            return;
+        }
     }
 
     // apn
@@ -446,11 +490,10 @@ void QOfonoConnectionContext::provision(const QString &provider, const QString &
     query.evaluateTo(&accessPointNameList);
 
     if (accessPointNameList.isEmpty()) {
-        Q_EMIT provisioningFinished();
+        Q_EMIT reportError("APN not found");
         return;
     }
 
-    bool ok = false;
     Q_FOREACH( const QString &apn, accessPointNameList) {
 
 //        qDebug() << "For APN" << apn;
@@ -462,12 +505,12 @@ void QOfonoConnectionContext::provision(const QString &provider, const QString &
         QString typeStr;
         query.evaluateTo(&typeStr);
         typeStr = typeStr.simplified();
-        if (!typeStr.isEmpty()) {
+        if (typeStr.isEmpty()) {
             typeStr = "internet";
-            if (typeStr != type) {
-                qDebug() << typeStr <<  "continue";
-                continue;
-            }
+        }
+        if (typeStr != type) {
+            qDebug() << typeStr <<  "continue";
+            continue;
         }
 
         //name
@@ -521,7 +564,6 @@ void QOfonoConnectionContext::provision(const QString &provider, const QString &
         }
         break;
     }
-//    qDebug() << "Provisioning Finished";
     Q_EMIT setPropertyFinished();
     Q_EMIT provisioningFinished();
 }

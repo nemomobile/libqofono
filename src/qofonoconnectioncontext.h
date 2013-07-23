@@ -43,6 +43,7 @@ class QOFONOSHARED_EXPORT QOfonoConnectionContext : public QObject
     Q_PROPERTY(QVariantMap IPv6Settings READ IPv6Settings NOTIFY IPv6SettingsChanged)
 
     Q_PROPERTY(QString contextPath READ contextPath WRITE setContextPath NOTIFY contextPathChanged)
+    Q_PROPERTY(QString modemPath READ modemPath NOTIFY modemPathChanged)
 
 public:
     explicit QOfonoConnectionContext(QObject *parent = 0);
@@ -83,6 +84,8 @@ public:
 
     bool isValid() const;
 
+    QString modemPath() const;
+
     Q_INVOKABLE bool validateProvisioning(); //check provision against mbpi
     Q_INVOKABLE bool validateProvisioning(const QString &provider, const QString &mcc, const QString &mnc); //check provision against mbpi
     Q_INVOKABLE void provision(const QString &provider, const QString &mcc, const QString &mnc, const QString &type=QStringLiteral("internet")); // provision context against mbpi
@@ -106,6 +109,7 @@ Q_SIGNALS:
     void reportError(const QString &);
     void setPropertyFinished();
     void provisioningFinished();
+    void modemPathChanged(const QString &path);
 
 public slots:
 
