@@ -43,6 +43,7 @@ QOfonoConnectionContext::QOfonoConnectionContext(QObject *parent) :
     QObject(parent),
     d_ptr(new QOfonoConnectionContextPrivate)
 {
+    qDebug() << Q_FUNC_INFO;
 }
 
 QOfonoConnectionContext::~QOfonoConnectionContext()
@@ -63,6 +64,7 @@ QString QOfonoConnectionContext::modemPath() const
 
 void QOfonoConnectionContext::setContextPath(const QString &idPath)
 {
+
     if (idPath != contextPath()) {
         if(d_ptr->context) {
             delete d_ptr->context;
@@ -72,7 +74,6 @@ void QOfonoConnectionContext::setContextPath(const QString &idPath)
 
 
         d_ptr->context = new OfonoConnectionContext("org.ofono", idPath, QDBusConnection::systemBus(),this);
-
         if (d_ptr->context->isValid()) {
             d_ptr->contextPath = idPath;
             connect(d_ptr->context,SIGNAL(PropertyChanged(QString,QDBusVariant)),
@@ -335,6 +336,9 @@ void QOfonoConnectionContext::setPropertyFinished(QDBusPendingCallWatcher *watch
 //check provision against mbpi
 bool QOfonoConnectionContext::validateProvisioning()
 {
+    if (d_ptr->modemPath.isEmpty())
+        return false;
+
     QString provider;
     QString mcc;
     QString mnc;
@@ -437,13 +441,14 @@ bool QOfonoConnectionContext::validateProvisioning(const QString &providerString
 
 void QOfonoConnectionContext::provisionForCurrentNetwork(const QString &type)
 {
-    QOfonoManager manager;
-    QOfonoNetworkRegistration netReg;
-    if (manager.modems().count() > 0) {
-        netReg.setModemPath(manager.modems().at(0));
+    if (d_ptr->modemPath.isEmpty())
+        return;
 
+    QOfonoNetworkRegistration netReg;
+    netReg.setModemPath(d_ptr->modemPath);
+
+    if (netReg.status() == "registered")
         provision(netReg.name(), netReg.mcc(),netReg.mnc(), type);
-    }
 }
 
 /*
