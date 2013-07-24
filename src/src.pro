@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += dbus
+QT       += dbus xmlpatterns
 
 include(version.pri)
 

@@ -53,7 +53,7 @@ private slots:
 	for (int i=0; i<30; i++) {
 	    if (add.count() > 0 && remove.count() > 0)
 	        break;
-	    QTest::qWait(1000);
+        QTest::qWait(1000);
 	}
         QVERIFY(mm->modems().contains("/phonesim") == true);
         QOfonoModem *m = new QOfonoModem(this);
