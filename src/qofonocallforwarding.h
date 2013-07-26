@@ -36,7 +36,7 @@ class QOFONOSHARED_EXPORT QOfonoCallForwarding : public QObject
     Q_PROPERTY(QString voiceNoReply READ voiceNoReply WRITE setVoiceNoReply NOTIFY voiceNoReplyChanged)
     Q_PROPERTY(quint16 voiceNoReplyTimeout READ voiceNoReplyTimeout WRITE setVoiceNoReplyTimeout NOTIFY voiceNoReplyTimeoutChanged)
     Q_PROPERTY(QString voiceNotReachable READ voiceNotReachable WRITE setVoiceNotReachable NOTIFY voiceNotReachableChanged)
-    Q_PROPERTY(QString forwardingFlagOnSim READ forwardingFlagOnSim NOTIFY forwardingFlagOnSimChanged)
+    Q_PROPERTY(bool forwardingFlagOnSim READ forwardingFlagOnSim NOTIFY forwardingFlagOnSimChanged)
     Q_PROPERTY(bool ready READ isReady NOTIFY readyChanged)
 
 public:
