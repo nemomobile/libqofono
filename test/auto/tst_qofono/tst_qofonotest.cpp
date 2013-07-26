@@ -65,6 +65,7 @@ private Q_SLOTS:
     void testModem();
     void testScan();
 
+
     void testContextConnection();
     void testConnectionManager();
 
@@ -78,6 +79,8 @@ private Q_SLOTS:
 
     void testVoiceCallManager();
 
+    void testprovisioning_data();
+    void testprovisioning();
 };
 
 Tst_qofonoTest::Tst_qofonoTest()
@@ -90,7 +93,7 @@ void Tst_qofonoTest::testManager()
     QStringList modems = manager.modems();
     QVERIFY(!modems.isEmpty());
     //TODO modemAdded, modemRemoved signals ?
-
+//testprovisioning();
 }
 
 void Tst_qofonoTest::testModem()
@@ -227,10 +230,10 @@ void Tst_qofonoTest::testContextConnection()
 {
     QOfonoManager manager;
     QOfonoModem modem;
+
     QStringList modems = manager.modems();
 
     modem.setModemPath(manager.modems()[0]);
-    qDebug() << Q_FUNC_INFO << manager.modems()[0] << modem.online();
 
     if (!modem.online()) {
         QSignalSpy spy_bogusContext(&modem, SIGNAL(onlineChanged(bool)));
@@ -276,7 +279,7 @@ void Tst_qofonoTest::testContextConnection()
     QCOMPARE(spy_realContext.count(),1);
 
     contextList = connman.contexts();
-    QVERIFY(!contextList.isEmpty());    
+    QVERIFY(!contextList.isEmpty());
     QVERIFY(contextList.count() == contextCount + 1);
 
 
@@ -289,7 +292,6 @@ void Tst_qofonoTest::testContextConnection()
         QCOMPARE(spy2.count(),1);
         QVERIFY(!connContext.contextPath().isEmpty());
 
-        QVERIFY(connContext.accessPointName().isEmpty());
         QSignalSpy spy1(&connContext, SIGNAL(accessPointNameChanged(QString)));
         connContext.setAccessPointName("Jolla");
         ::waitForSignal(&connContext,SIGNAL(accessPointNameChanged(QString)),2000);
@@ -299,6 +301,7 @@ void Tst_qofonoTest::testContextConnection()
         QList<QVariant> arguments1;
         arguments1 = spy1.takeFirst();
         QCOMPARE(arguments1[0].toString(),QString("Jolla"));
+        QVERIFY(!connContext.accessPointName().isEmpty());
 
         QSignalSpy spy_name(&connContext, SIGNAL(nameChanged(QString)));
         connContext.setName("Test AP");
@@ -310,12 +313,15 @@ void Tst_qofonoTest::testContextConnection()
         arguments = spy_name.takeFirst();
         QCOMPARE(arguments[0].toString(), QString("Test AP"));
 
-        connman.removeContext(path);
     }
 
-    qDebug() << "context" << connContext.contextPath();
     QVERIFY(!connContext.active());
     QVERIFY(connContext.isValid());
+
+    if(!connContext.validateProvisioning()) {
+        connContext.provisionForCurrentNetwork("internet");
+        ::waitForSignal(&connContext,SIGNAL(provisioningFinished()),3000);
+    }
 
     QSignalSpy spy_active(&connContext, SIGNAL(activeChanged(bool)));
     connContext.setActive(true);
@@ -349,9 +355,6 @@ void Tst_qofonoTest::testNetworkRegistration()
 //             << netop.name();
 
 
-    QVERIFY(netreg.modemPath().isEmpty());
-    netreg.setModemPath(modems.at(0));
-
     QVERIFY(!netreg.name().isEmpty());
     QVERIFY(!netreg.mode().isEmpty());
     QVERIFY(!netreg.status().isEmpty());
@@ -363,12 +366,16 @@ void Tst_qofonoTest::testNetworkRegistration()
 
     QVERIFY(netreg.baseStation().isEmpty());
     QVERIFY(netreg.cellId() > 0);
+
+    netreg.scan();
+    ::waitForSignal(&netreg,SIGNAL(scanFinished()), 1000 * 500);
+
     QVERIFY(!netreg.currentOperatorPath().isEmpty());
     QVERIFY(netreg.status() == "registered");
     QVERIFY(netreg.locationAreaCode() == 0);
-    QVERIFY(netreg.mcc() == "234");
-    QVERIFY(netreg.mnc() == "01");
-    QVERIFY(netreg.technology().isEmpty());
+    QVERIFY(!netreg.mcc().isEmpty());
+    QVERIFY(!netreg.mnc().isEmpty());
+    QVERIFY(!netreg.technology().isEmpty());
     QVERIFY(!netreg.networkOperators().isEmpty());
 }
 
@@ -449,6 +456,71 @@ void Tst_qofonoTest::testVoiceCallManager()
 
 }
 
+void Tst_qofonoTest::testprovisioning_data()
+{
+    QTest::addColumn<QString>("op");
+    QTest::addColumn<QString>("mcc");
+    QTest::addColumn<QString>("mnc");
+    QTest::addColumn<QStringList>("apns");
+
+
+    QTest::newRow("Optus") << "Optus" << "505" <<"02" << (QStringList() << "internet" << "yesinternet" << "connect" << "connectcap");
+    QTest::newRow("Amaysim") << "amaysim" << "505" <<"02"<< (QStringList() << "internet");
+    QTest::newRow("Crazy") << "Crazy John's" << "505" <<"03"<< (QStringList() << "purtona.net");
+    QTest::newRow("Sonera") << "Sonera" << "244" <<"91"<< (QStringList() << "internet" << "prointernet");
+
+}
+
+void Tst_qofonoTest::testprovisioning()
+{
+    QOfonoManager manager;
+    QOfonoConnectionManager connman;
+
+    connman.setModemPath(manager.modems().at(0));
+    QStringList contextList = connman.contexts();
+
+    Q_FOREACH (const QString con, contextList) {
+     connman.removeContext(con);
+    }
+
+    QSignalSpy spy(&connman, SIGNAL(contextAdded(QString)));
+    connman.addContext("internet");
+
+    ::waitForSignal(&connman, SIGNAL(contextAdded(QString)), 1000 * 50);
+    QCOMPARE(spy.count(),1);
+
+    QList<QVariant> arguments ;
+    arguments = spy.takeFirst();
+
+    QString contextid = arguments[0].toString();
+
+    QOfonoConnectionContext* context = new QOfonoConnectionContext(this);
+    context->setContextPath(contextid);
+
+    QSignalSpy provisionspy(context, SIGNAL(provisioningFinished()));
+
+    QFETCH(QString, op);
+    QFETCH(QString, mcc);
+    QFETCH(QString, mnc);
+    QFETCH(QStringList, apns);
+
+    context->provision(op,mcc,mnc,"internet");
+    QCOMPARE(provisionspy.count(),1);
+
+    QCOMPARE(context->validateProvisioning(op, mcc, mnc),true);
+
+    Q_FOREACH (const QString &apn, apns) {
+        context->setAccessPointName(apn);
+        ::waitForSignal(context, SIGNAL(setPropertyFinished()), 1000 * 50);
+        QCOMPARE(context->validateProvisioning(op, mcc, mnc),true);
+    }
+
+    context->setAccessPointName("test");
+    ::waitForSignal(context, SIGNAL(setPropertyFinished()), 1000 * 50);
+    QCOMPARE(context->validateProvisioning(op, mcc, mnc),false);
+
+    connman.removeContext(contextid);
+}
 
 QTEST_MAIN(Tst_qofonoTest)
 

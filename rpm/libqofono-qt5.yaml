@@ -11,6 +11,7 @@ Sources:
 
 Requires:
     - qt5-qtcore
+    - mobile-broadband-provider-info
 
 Description: |
     This package contains Qt bindings for ofono cellular service
@@ -22,6 +23,7 @@ PkgConfigBR:
     - Qt5Quick
     - Qt5Test
     - mlite5
+    - Qt5XmlPatterns
 
 Configure: none
 Builder: qmake5
@@ -38,6 +40,7 @@ SubPackages:
       Description: This package contains declarative plugin for libofono.
       Requires:
           - "%{name} = %{version}"
+          - mobile-broadband-provider-info
       Files:
           - "%{_libdir}/qt5/qml/MeeGo/QOfono/*"
 

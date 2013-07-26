@@ -24,6 +24,7 @@
 #include <QtTest/QtTest>
 #include <QtCore/QObject>
 
+#include "../../../src/qofonomanager.h"
 #include "../../../src/qofonoconnectionmanager.h"
 #include "../../../src/qofonoconnectioncontext.h"
 
@@ -37,6 +38,7 @@ class TestQOfonoConnectionManagerContext : public QObject
 private slots:
     void initTestCase()
     {
+        QOfonoManager manager;
         m = new QOfonoConnectionManager(this);
         m->setModemPath("/phonesim");
         QCOMPARE(m->isValid(), true);
@@ -120,6 +122,44 @@ private slots:
 
     void cleanupTestCase()
     {
+
+    }
+
+    void tst_provisioning()
+    {
+        Q_FOREACH (const QString con, m->contexts()) {
+         m->removeContext(con);
+        }
+
+        m->addContext("internet");
+
+        QString contextid = m->contexts().at(0);
+        //QCOMPARE(contextid, m->contexts().at(1));
+
+        QOfonoConnectionContext* context = new QOfonoConnectionContext(this);
+        context->setContextPath(contextid);
+
+        context->setAccessPointName("internet");
+
+        QString operatorString = "Optus";
+        QString mcc = "505";
+        QString mnc = "02";
+
+        QCOMPARE(context->validateProvisioning(operatorString, mcc, mnc),true);
+
+        context->setAccessPointName("yesinternet");
+        QCOMPARE(context->validateProvisioning(operatorString, mcc, mnc),true);
+
+        context->setAccessPointName("connect");
+        QCOMPARE(context->validateProvisioning(operatorString, mcc, mnc),true);
+
+        context->setAccessPointName("connectcap");
+        QCOMPARE(context->validateProvisioning(operatorString, mcc, mnc),true);
+
+        context->setAccessPointName("test");
+        QCOMPARE(context->validateProvisioning(operatorString, mcc, mnc),false);
+
+
 
     }
 

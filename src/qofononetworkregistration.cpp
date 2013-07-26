@@ -13,6 +13,8 @@
 **
 ****************************************************************************/
 
+#include <QtDBus/QDBusPendingReply>
+
 #include "qofononetworkregistration.h"
 #include "dbus/ofononetworkregistration.h"
 
@@ -83,12 +85,16 @@ void QOfonoNetworkRegistration::setModemPath(const QString &path)
 
         connect(d_ptr->networkRegistration,SIGNAL(PropertyChanged(QString,QDBusVariant)),
                 this,SLOT(propertyChanged(QString,QDBusVariant)));
-
-        QVariantMap properties = d_ptr->networkRegistration->GetProperties().value();
-        for (QVariantMap::ConstIterator it = properties.constBegin();
-             it != properties.constEnd(); ++it) {
-            updateProperty(it.key(), it.value());
-            removedProperties.removeOne(it.key());
+        QDBusPendingReply<QVariantMap> reply;
+        reply = d_ptr->networkRegistration->GetProperties();
+        reply.waitForFinished();
+        if (!reply.isError()) {
+            QVariantMap properties = reply.value();
+            for (QVariantMap::ConstIterator it = properties.constBegin();
+                 it != properties.constEnd(); ++it) {
+                updateProperty(it.key(), it.value());
+                removedProperties.removeOne(it.key());
+            }
         }
 
         Q_EMIT modemPathChanged(path);
@@ -265,14 +271,14 @@ void QOfonoNetworkRegistration::scanFinish(const QArrayOfPathProps &list)
     QString current;
     foreach(OfonoPathProps netop, list) {
         // don't add forbidden operators
-      //  if (netop.properties["Status"].toString() != QLatin1String("forbidden"))
-            if (!d_ptr->networkOperators.contains(netop.path.path())) {
-                d_ptr->networkOperators.append(netop.path.path());
-                 if (netop.properties["Status"].toString() == QLatin1String("current")) {
-                 current == netop.path.path();
-                 }
-                changed = true;
+        //  if (netop.properties["Status"].toString() != QLatin1String("forbidden"))
+        if (!d_ptr->networkOperators.contains(netop.path.path())) {
+            d_ptr->networkOperators.append(netop.path.path());
+            if (netop.properties["Status"].toString() == QLatin1String("current")) {
+                current == netop.path.path();
             }
+            changed = true;
+        }
     }
     if (changed) {
         Q_EMIT networkOperatorsChanged(d_ptr->networkOperators);
@@ -283,11 +289,14 @@ void QOfonoNetworkRegistration::scanFinish(const QArrayOfPathProps &list)
 
 void QOfonoNetworkRegistration::scanError(QDBusError error)
 {
+    qDebug() << Q_FUNC_INFO << error.message();
     Q_EMIT scanError(error.message());
+    Q_EMIT scanFinished();
 }
 
 QString QOfonoNetworkRegistration::currentOperatorPath()
 {
+
     foreach(OfonoPathProps netop, d_ptr->operatorArray) {
         if (netop.properties["Status"].toString() == QLatin1String("current")) {
             return netop.path.path();
