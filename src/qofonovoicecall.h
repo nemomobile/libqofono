@@ -40,6 +40,7 @@ class QOFONOSHARED_EXPORT QOfonoVoiceCall : public QObject
     Q_PROPERTY(QString information READ information NOTIFY informationChanged)
     Q_PROPERTY(bool multiparty READ multiparty NOTIFY multipartyChanged)
     Q_PROPERTY(bool emergency READ emergency NOTIFY emergencyChanged)
+    Q_PROPERTY(bool remoteHeld READ remoteHeld NOTIFY remoteHeldChanged)
     Q_PROPERTY(quint8 icon READ icon NOTIFY iconChanged)
 
 public:
