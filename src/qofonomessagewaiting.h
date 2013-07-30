@@ -47,19 +47,22 @@ public:
     void setVoicemailMailboxNumber(const QString &mailboxnumber);
 
     bool isValid() const;
-Q_SIGNALS:
 
+Q_SIGNALS:
     void voicemailWaitingChanged(bool waiting);
     void voicemailMessageCountChanged(int count);
     void voicemailMailboxNumberChanged(const QString &mailboxnumber);
     void modemPathChanged(const QString &path);
 
-public slots:
+    void voicemailMailboxComplete(bool success);
+    void getPropertiesFailed();
     
 private:
     QOfonoMessageWaitingPrivate *d_ptr;
+
 private slots:
     void propertyChanged(const QString &property,const QDBusVariant &value);
+    void setVoicemailMailboxNumberComplete(QDBusPendingCallWatcher*);
 };
 
 #endif // QOFONOMessageWaiting_H
