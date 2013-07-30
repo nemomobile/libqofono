@@ -65,7 +65,10 @@ void QOfonoMessageWaiting::setModemPath(const QString &path)
             QDBusPendingReply<QVariantMap> reply;
             reply = d_ptr->messageWaiting->GetProperties();
             reply.waitForFinished();
-            d_ptr->properties = reply.value();
+            if (reply.isError())
+                Q_EMIT getPropertiesFailed();
+            else
+                d_ptr->properties = reply.value();
             Q_EMIT modemPathChanged(path);
         }
     }
@@ -86,7 +89,7 @@ void QOfonoMessageWaiting::propertyChanged(const QString& property, const QDBusV
         Q_EMIT voicemailWaitingChanged(value.value<bool>());
     } else if (property == QLatin1String("VoicemailMessageCount")) {
         Q_EMIT voicemailMessageCountChanged(value.value<int>());
-    } else if (property == QLatin1String("VoiceMailboxNumber")) {
+    } else if (property == QLatin1String("VoicemailMailboxNumber")) {
         Q_EMIT voicemailMailboxNumberChanged(value.value<QString>());
     }
 }
@@ -111,19 +114,29 @@ int QOfonoMessageWaiting::voicemailMessageCount() const
 QString QOfonoMessageWaiting::voicemailMailboxNumber() const
 {
     if (d_ptr->messageWaiting)
-        return d_ptr->properties["VoiceMailboxNumber"].value<QString>();
+        return d_ptr->properties["VoicemailMailboxNumber"].value<QString>();
     else
         return QString();
 }
 
 void QOfonoMessageWaiting::setVoicemailMailboxNumber(const QString &mailboxnumber)
 {
-    if (d_ptr->messageWaiting)
-        d_ptr->messageWaiting->SetProperty(QLatin1String("VoiceMailboxNumber"),QDBusVariant(mailboxnumber));
-
+    if (d_ptr->messageWaiting) {
+        QDBusPendingReply<> reply = d_ptr->messageWaiting->SetProperty(QLatin1String("VoicemailMailboxNumber"),QDBusVariant(mailboxnumber));
+        QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(reply, this);
+        connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
+                SLOT(setVoicemailMailboxNumberComplete(QDBusPendingCallWatcher*)));
+    }
 }
 
 bool QOfonoMessageWaiting::isValid() const
 {
     return d_ptr->messageWaiting->isValid();
+}
+
+void QOfonoMessageWaiting::setVoicemailMailboxNumberComplete(QDBusPendingCallWatcher *call)
+{
+    QDBusPendingReply<> reply = *call;
+    Q_EMIT voicemailMailboxComplete(!reply.isError());
+    call->deleteLater();
 }
