@@ -72,7 +72,7 @@ void QOfonoConnectionContext::setContextPath(const QString &idPath)
             d_ptr->properties.clear();
         }
 
-
+qDebug() << Q_FUNC_INFO;
         d_ptr->context = new OfonoConnectionContext("org.ofono", idPath, QDBusConnection::systemBus(),this);
         if (d_ptr->context->isValid()) {
             d_ptr->contextPath = idPath;
@@ -103,6 +103,13 @@ void QOfonoConnectionContext::setContextPath(const QString &idPath)
                 }
             }
         }
+/*        if (!validateProvisioning()) {
+            provisionForCurrentNetwork(this->type());
+        } else {
+            Q_EMIT reportError("Context provision is not valid");
+            qDebug() << Q_FUNC_INFO << "error Context provision is not valid";
+        }
+*/
     }
 }
 
@@ -336,6 +343,7 @@ void QOfonoConnectionContext::setPropertyFinished(QDBusPendingCallWatcher *watch
 //check provision against mbpi
 bool QOfonoConnectionContext::validateProvisioning()
 {
+    qDebug() << Q_FUNC_INFO << d_ptr->modemPath;
     if (d_ptr->modemPath.isEmpty())
         return false;
 
@@ -346,7 +354,7 @@ bool QOfonoConnectionContext::validateProvisioning()
     QOfonoNetworkRegistration netReg;
     netReg.setModemPath(d_ptr->modemPath);
     if (netReg.status() == "registered")
-        return validateProvisioning(netReg.name(),netReg.mcc(),netReg.mnc());
+        return validateProvisioning(netReg.networkOperators().at(0),netReg.mcc(),netReg.mnc());
     return false;
 }
 
@@ -356,6 +364,7 @@ bool QOfonoConnectionContext::validateProvisioning()
 //check provision against mbpi
 bool QOfonoConnectionContext::validateProvisioning(const QString &providerString, const QString &mcc, const QString &mnc)
 {
+    qDebug() << Q_FUNC_INFO << providerString;
     QXmlQuery query;
     QString provider = providerString;
 
