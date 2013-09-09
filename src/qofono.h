@@ -40,10 +40,12 @@
 #include "dbus/ofonovoicecall.h"
 #include "dbus/ofonovoicecallmanager.h"
 
-class QOFONOSHARED_EXPORT Qofono
+class QOFONOSHARED_EXPORT QOfono
 {
 public:
-    Qofono();
+    QOfono();
+
+    static QString mobileCountryCodeToAlpha2CountryCode(int mcc);
 };
 
 #endif // QOFONO_H
