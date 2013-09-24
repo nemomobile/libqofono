@@ -238,6 +238,9 @@ QVariantMap QOfonoConnectionContext::IPv6Settings() const
 
 void QOfonoConnectionContext::setActive(const bool value)
 {
+    // need someway to tell ui that someone wants to disconnect
+    if (!value)
+        Q_EMIT disconnectRequested();
     QString str("Active");
     QDBusVariant var(value);
     setOneProperty(str,var);

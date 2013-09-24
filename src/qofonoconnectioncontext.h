@@ -92,6 +92,7 @@ public:
     Q_INVOKABLE void provisionForCurrentNetwork(const QString &type);
 
 Q_SIGNALS:
+    void disconnectRequested();
     void activeChanged(const bool);
     void accessPointNameChanged(const QString &apn);
     void nameChanged(const QString &name);
@@ -111,7 +112,6 @@ Q_SIGNALS:
     void provisioningFinished();
     void modemPathChanged(const QString &path);
 
-public slots:
 
 protected:
     void setOneProperty(const QString &prop,const QDBusVariant &var);
