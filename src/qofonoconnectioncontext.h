@@ -102,12 +102,12 @@ Q_SIGNALS:
     void protocolChanged(const QString &proto);
     void messageProxyChanged(const QString &proxy);
     void messageCenterChanged(const QString &msc);
-    void settingsChanged(const QVariantMap&);
-    void IPv6SettingsChanged(const QVariantMap&);
+    void settingsChanged(const QVariantMap &settingsMap);
+    void IPv6SettingsChanged(const QVariantMap &ipv6SettingsMap);
 
-    void contextPathChanged(const QString &);
+    void contextPathChanged(const QString &contextPath);
 
-    void reportError(const QString &);
+    void reportError(const QString &errorString);
     void setPropertyFinished();
     void provisioningFinished();
     void modemPathChanged(const QString &path);
