@@ -270,13 +270,9 @@ void QOfonoNetworkRegistration::scanFinish(const QArrayOfPathProps &list)
     d_ptr->operatorArray = list;
     QString current;
     foreach(OfonoPathProps netop, list) {
-        // don't add forbidden operators
-        //  if (netop.properties["Status"].toString() != QLatin1String("forbidden"))
         if (!d_ptr->networkOperators.contains(netop.path.path())) {
             d_ptr->networkOperators.append(netop.path.path());
-            if (netop.properties["Status"].toString() == QLatin1String("current")) {
-                current == netop.path.path();
-            }
+            current == netop.path.path();
             changed = true;
         }
     }
