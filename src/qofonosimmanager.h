@@ -140,9 +140,6 @@ public slots:
 
 private:
       void updateProperty(const QString& property, const QVariant& value);
-      QString pinRetryConfPath(QOfonoSimManager::PinType pinType) const;
-      void updateSavedPinRetryCount(QOfonoSimManager::PinType pinType, bool hadWrongAttempt);
-      void processPinOperationReply(QOfonoSimManager::Error error, int opType);
       Error errorNameToEnum(const QString &errorName);
 
     QOfonoSimManagerPrivate *d_ptr;

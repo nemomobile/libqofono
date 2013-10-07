@@ -12,10 +12,6 @@ equals(QT_MAJOR_VERSION, 4):{
 equals(QT_MAJOR_VERSION, 4):  {
     OTHER_FILES += rpm/libqofono.spec \
                    rpm/libqofono.yaml
-    contains(CONFIG, mlite) {
-        PKGCONFIG += mlite
-        DEFINES += HAS_MLITE
-    }
 }
 
 equals(QT_MAJOR_VERSION, 5):  {
@@ -23,8 +19,4 @@ equals(QT_MAJOR_VERSION, 5):  {
                    rpm/libqofono-qt5.yaml \
                     TODO \
                     README
-    contains(CONFIG, mlite) {
-        PKGCONFIG += mlite5
-        DEFINES += HAS_MLITE
-    }
 }
