@@ -157,11 +157,15 @@ void QOfonoSimManager::updateProperty(const QString& property, const QVariant& v
     } else if (property == QLatin1String("Retries")) {
         QVariantMap convertedRetries;
         if (value.userType() == qMetaTypeId<QDBusArgument>()) {
-            QVariantMap retries;
+            QMap<QString, unsigned char> retries;
             value.value<QDBusArgument>() >> retries;
-
-            Q_FOREACH(QString type, retries.keys()) {
-                convertedRetries[QString::number((PinType)pinTypeFromString(type))] = retries[type];
+            Q_FOREACH(const QString &type, retries.keys()) {
+                QVariant retryCountVariant = retries[type];
+                bool ok = false;
+                int retryCount = retryCountVariant.toInt(&ok);
+                if (ok) {
+                    convertedRetries[QString::number((PinType)pinTypeFromString(type))] = retryCount;
+                }
             }
             d_ptr->properties["Retries"] = convertedRetries;
         }
