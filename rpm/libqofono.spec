@@ -21,7 +21,6 @@ Requires(post): /sbin/ldconfig
 Requires(postun): /sbin/ldconfig
 BuildRequires:  pkgconfig(QtCore)
 BuildRequires:  pkgconfig(QtDBus)
-BuildRequires:  pkgconfig(mlite)
 BuildRequires:  pkgconfig(QtXmlPatterns)
 
 %description
@@ -65,8 +64,7 @@ This package contains qml test for ofono Qt bindings.
 # >> build pre
 # << build pre
 
-%qmake  \
-    CONFIG+=mlite
+%qmake
 
 make %{?jobs:-j%jobs}
 
