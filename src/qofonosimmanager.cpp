@@ -89,7 +89,9 @@ void QOfonoSimManager::setModemPath(const QString &path)
         connect(d_ptr->simManager,SIGNAL(PropertyChanged(QString,QDBusVariant)),
                 this,SLOT(propertyChanged(QString,QDBusVariant)));
 
-        QVariantMap properties = d_ptr->simManager->GetProperties().value();
+        QDBusPendingReply<QVariantMap> reply = d_ptr->simManager->GetProperties();
+        reply.waitForFinished();
+        QVariantMap properties = reply.value();
         for (QVariantMap::ConstIterator it = properties.constBegin();
              it != properties.constEnd(); ++it) {
             updateProperty(it.key(), it.value());
