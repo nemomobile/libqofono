@@ -11,19 +11,11 @@ include(version.pri)
 equals(QT_MAJOR_VERSION, 4): {
     TARGET = qofono
     pkgconfig.path = $$INSTALL_ROOT$$PREFIX/lib/pkgconfig
-    contains(CONFIG, mlite) {
-        PKGCONFIG += mlite
-        DEFINES += HAS_MLITE
-    }
 }
 
 equals(QT_MAJOR_VERSION, 5): {
     TARGET = qofono-qt5
     pkgconfig.path = $$INSTALL_ROOT$$PREFIX/lib/pkgconfig-qt5
-    contains(CONFIG, mlite) {
-        PKGCONFIG += mlite5
-        DEFINES += HAS_MLITE
-    }
 }
 
 TEMPLATE = lib

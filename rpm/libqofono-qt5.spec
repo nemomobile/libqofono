@@ -24,7 +24,6 @@ BuildRequires:  pkgconfig(Qt5Core)
 BuildRequires:  pkgconfig(Qt5DBus)
 BuildRequires:  pkgconfig(Qt5Quick)
 BuildRequires:  pkgconfig(Qt5Test)
-BuildRequires:  pkgconfig(mlite5)
 BuildRequires:  pkgconfig(Qt5XmlPatterns)
 
 %description
@@ -69,8 +68,7 @@ This package contains qml test for ofono Qt bindings.
 export QT_SELECT=5
 # << build pre
 
-%qmake5  \
-    CONFIG+=mlite
+%qmake5
 
 make %{?jobs:-j%jobs}
 
