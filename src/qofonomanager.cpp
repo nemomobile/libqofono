@@ -140,6 +140,7 @@ void QOfonoManager::connectToOfono(const QString &)
         }
         Q_EMIT modemsChanged(d_ptr->modems);
     }
+    d_ptr->available = true;
     Q_EMIT availableChanged(true);
     connect(d_ptr->ofonoManager, SIGNAL(ModemAdded(QDBusObjectPath,QVariantMap)), this, SLOT(onModemAdd(QDBusObjectPath,QVariantMap)));
     connect(d_ptr->ofonoManager, SIGNAL(ModemRemoved(QDBusObjectPath)), this, SLOT(onModemRemove(QDBusObjectPath)));
