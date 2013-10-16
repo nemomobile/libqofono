@@ -88,7 +88,11 @@ public:
 
     Q_INVOKABLE bool validateProvisioning(); //check provision against mbpi
     Q_INVOKABLE bool validateProvisioning(const QString &provider, const QString &mcc, const QString &mnc); //check provision against mbpi
+    #if QT_VERSION < 0x050000
+    Q_INVOKABLE void provision(const QString &provider, const QString &mcc, const QString &mnc, const QString &type="internet");
+    #else
     Q_INVOKABLE void provision(const QString &provider, const QString &mcc, const QString &mnc, const QString &type=QStringLiteral("internet")); // provision context against mbpi
+    #endif
     Q_INVOKABLE void provisionForCurrentNetwork(const QString &type);
 
 Q_SIGNALS:

@@ -111,7 +111,7 @@ void QOfonoDeclarativePlugin::registerTypes(const char *uri)
 
 }
 
-#ifdef QT_VERSION_4
+#if QT_VERSION < 0x050000
 void QOfonoDeclarativePlugin::initializeEngine(QDeclarativeEngine *engine, const char *uri)
 {
     Q_UNUSED(uri);
