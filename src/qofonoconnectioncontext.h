@@ -97,7 +97,7 @@ public:
 
 Q_SIGNALS:
     void disconnectRequested();
-    void activeChanged(const bool);
+    void activeChanged(bool active);
     void accessPointNameChanged(const QString &apn);
     void nameChanged(const QString &name);
     void typeChanged(const QString &type);
