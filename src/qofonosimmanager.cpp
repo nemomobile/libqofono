@@ -98,6 +98,12 @@ void QOfonoSimManager::getAllProperties()
     QDBusPendingReply<QVariantMap> reply = d_ptr->simManager->GetProperties();
     reply.waitForFinished();
     QVariantMap properties = reply.value();
+
+    if (!properties.keys().contains("Present")) {
+        QTimer::singleShot(500,this,SLOT(getAllProperties()));
+        return;
+    }
+
     for (QVariantMap::ConstIterator it = properties.constBegin();
          it != properties.constEnd(); ++it) {
         updateProperty(it.key(), it.value());
@@ -105,6 +111,7 @@ void QOfonoSimManager::getAllProperties()
     }
     foreach (const QString &p, removedProperties)
         updateProperty(p, QVariant());
+
 }
 
 QString QOfonoSimManager::modemPath() const
