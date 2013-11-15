@@ -151,6 +151,9 @@ private slots:
     void resetPinCallFinished(QDBusPendingCallWatcher *call);
     void lockPinCallFinished(QDBusPendingCallWatcher *call);
     void unlockPinCallFinished(QDBusPendingCallWatcher *call);
+
+    void getAllProperties();
+
 };
 
 #endif // QOFONOSimManager_H

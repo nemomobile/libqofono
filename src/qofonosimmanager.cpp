@@ -77,9 +77,6 @@ void QOfonoSimManager::setModemPath(const QString &path)
     if (path == d_ptr->modemPath ||
             path.isEmpty())
         return;
-
-    QStringList removedProperties = d_ptr->properties.keys();
-
     delete d_ptr->simManager;
     d_ptr->simManager = new OfonoSimManager("org.ofono", path, QDBusConnection::systemBus(), this);
 
@@ -89,17 +86,23 @@ void QOfonoSimManager::setModemPath(const QString &path)
         connect(d_ptr->simManager,SIGNAL(PropertyChanged(QString,QDBusVariant)),
                 this,SLOT(propertyChanged(QString,QDBusVariant)));
 
-        QDBusPendingReply<QVariantMap> reply = d_ptr->simManager->GetProperties();
-        reply.waitForFinished();
-        QVariantMap properties = reply.value();
-        for (QVariantMap::ConstIterator it = properties.constBegin();
-             it != properties.constEnd(); ++it) {
-            updateProperty(it.key(), it.value());
-            removedProperties.removeOne(it.key());
-        }
         Q_EMIT modemPathChanged(path);
     }
+    QTimer::singleShot(200,this,SLOT(getAllProperties()));
+}
 
+void QOfonoSimManager::getAllProperties()
+{
+    QStringList removedProperties = d_ptr->properties.keys();
+
+    QDBusPendingReply<QVariantMap> reply = d_ptr->simManager->GetProperties();
+    reply.waitForFinished();
+    QVariantMap properties = reply.value();
+    for (QVariantMap::ConstIterator it = properties.constBegin();
+         it != properties.constEnd(); ++it) {
+        updateProperty(it.key(), it.value());
+        removedProperties.removeOne(it.key());
+    }
     foreach (const QString &p, removedProperties)
         updateProperty(p, QVariant());
 }
