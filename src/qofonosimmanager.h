@@ -144,6 +144,7 @@ private:
 
     QOfonoSimManagerPrivate *d_ptr;
 
+
 private slots:
     void propertyChanged(const QString &property,const QDBusVariant &value);
     void changePinCallFinished(QDBusPendingCallWatcher *call);
@@ -153,6 +154,8 @@ private slots:
     void unlockPinCallFinished(QDBusPendingCallWatcher *call);
 
     void getAllProperties();
+    void initialize();
+    void modemInterfacesChanged(const QStringList &);
 
 };
 

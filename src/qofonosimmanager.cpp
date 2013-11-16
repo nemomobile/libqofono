@@ -16,6 +16,7 @@
 #include <QDBusPendingCallWatcher>
 
 #include "qofonosimmanager.h"
+#include "qofonomodem.h"
 #include "dbus/ofonosimmanager.h"
 
 static const int qofonosimmanager_pinRetries = 3;
@@ -49,15 +50,16 @@ public:
     QString modemPath;
     OfonoSimManager *simManager;
     QVariantMap properties;
-
+    QOfonoModem *oModem;
     static QHash<QOfonoSimManager::PinType, QString> allPinTypes;
 };
 
 QHash<QOfonoSimManager::PinType, QString> QOfonoSimManagerPrivate::allPinTypes = qofonosimmanager_pinTypes();
 
 QOfonoSimManagerPrivate::QOfonoSimManagerPrivate() :
-    modemPath(QString())
-  , simManager(0)
+    modemPath(QString()),
+    simManager(0),
+    oModem(0)
 {
 }
 
@@ -65,6 +67,7 @@ QOfonoSimManager::QOfonoSimManager(QObject *parent) :
     QObject(parent)
   , d_ptr(new QOfonoSimManagerPrivate)
 {
+    d_ptr->oModem = new QOfonoModem(this);
 }
 
 QOfonoSimManager::~QOfonoSimManager()
@@ -77,18 +80,39 @@ void QOfonoSimManager::setModemPath(const QString &path)
     if (path == d_ptr->modemPath ||
             path.isEmpty())
         return;
+    d_ptr->modemPath = path;
+    Q_EMIT modemPathChanged(path);
+
+    d_ptr->oModem->setModemPath(path);
+    if (d_ptr->oModem->interfaces().contains(QLatin1String("org.ofono.SimManager")))
+        initialize();
+    else
+        connect(d_ptr->oModem,SIGNAL(interfacesChanged(QStringList)),this,SLOT(modemInterfacesChanged(QStringList)));
+}
+
+void QOfonoSimManager::initialize()
+{
+    if (d_ptr->modemPath.isEmpty())
+        return;
+
     delete d_ptr->simManager;
-    d_ptr->simManager = new OfonoSimManager("org.ofono", path, QDBusConnection::systemBus(), this);
+    d_ptr->simManager = new OfonoSimManager("org.ofono", d_ptr->modemPath, QDBusConnection::systemBus(), this);
 
     if (d_ptr->simManager->isValid()) {
-        d_ptr->modemPath = path;
 
         connect(d_ptr->simManager,SIGNAL(PropertyChanged(QString,QDBusVariant)),
                 this,SLOT(propertyChanged(QString,QDBusVariant)));
 
-        Q_EMIT modemPathChanged(path);
+        getAllProperties();
     }
-    QTimer::singleShot(200,this,SLOT(getAllProperties()));
+}
+
+void QOfonoSimManager::modemInterfacesChanged(const QStringList &list)
+{
+    if (list.contains(QLatin1String("org.ofono.SimManager"))) {
+        disconnect(d_ptr->oModem,SIGNAL(interfacesChanged(QStringList)),this,SLOT(modemInterfacesChanged(QStringList)));
+        initialize();
+    }
 }
 
 void QOfonoSimManager::getAllProperties()
@@ -98,11 +122,6 @@ void QOfonoSimManager::getAllProperties()
     QDBusPendingReply<QVariantMap> reply = d_ptr->simManager->GetProperties();
     reply.waitForFinished();
     QVariantMap properties = reply.value();
-
-    if (!properties.keys().contains("Present")) {
-        QTimer::singleShot(500,this,SLOT(getAllProperties()));
-        return;
-    }
 
     for (QVariantMap::ConstIterator it = properties.constBegin();
          it != properties.constEnd(); ++it) {
