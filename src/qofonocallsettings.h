@@ -33,6 +33,12 @@ class QOFONOSHARED_EXPORT QOfonoCallSettings : public QObject
     Q_PROPERTY(QString modemPath READ modemPath WRITE setModemPath NOTIFY modemPathChanged)
     Q_PROPERTY(QString hideCallerId READ hideCallerId WRITE setHideCallerId NOTIFY hideCallerIdChanged)
     Q_PROPERTY(QString voiceCallWaiting READ voiceCallWaiting WRITE setVoiceCallWaiting NOTIFY voiceCallWaitingChanged)
+    Q_PROPERTY(QString callingLinePresentation READ callingLinePresentation NOTIFY callingLinePresentationChanged)
+    Q_PROPERTY(QString calledLinePresentation READ calledLinePresentation NOTIFY calledLinePresentationChanged)
+    Q_PROPERTY(QString callingNamePresentation READ callingNamePresentation NOTIFY callingNamePresentationChanged)
+    Q_PROPERTY(QString connectedLinePresentation READ connectedLinePresentation NOTIFY connectedLinePresentationChanged)
+    Q_PROPERTY(QString connectedLineRestriction READ connectedLineRestriction NOTIFY connectedLineRestrictionChanged)
+    Q_PROPERTY(QString callingLineRestriction READ callingLineRestriction NOTIFY callingLineRestrictionChanged)
     Q_PROPERTY(bool ready READ isReady NOTIFY readyChanged)
 
 public:
