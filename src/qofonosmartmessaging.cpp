@@ -50,7 +50,7 @@ void QOfonoSmartMessaging::setModemPath(const QString &path)
     if (path != modemPath()) {
         if (d_ptr->smartMessaging) {
             delete d_ptr->smartMessaging;
-            d_ptr->smartMessaging - 0;
+            d_ptr->smartMessaging = 0;
         }
         d_ptr->smartMessaging = new OfonoSmartMessaging("org.ofono", path, QDBusConnection::systemBus(),this);
         if (d_ptr->smartMessaging->isValid()) {
