@@ -38,6 +38,7 @@ class QOFONOSHARED_EXPORT QOfonoConnectionManager : public QObject
 
     Q_PROPERTY(QString modemPath READ modemPath WRITE setModemPath NOTIFY modemPathChanged)
     Q_PROPERTY(QStringList contexts READ contexts NOTIFY contextsChanged)
+    Q_PROPERTY(QString filter READ filter WRITE setFilter NOTIFY filterChanged)
 
 public:
     explicit QOfonoConnectionManager(QObject *parent = 0);
@@ -58,6 +59,10 @@ public:
 
     QStringList contexts();
     bool isValid() const;
+
+    QString filter() const;
+    void setFilter(const QString &filter);
+
 Q_SIGNALS:
     void attachedChanged(bool value);
     void bearerChanged(const QString &bearer);
@@ -69,6 +74,7 @@ Q_SIGNALS:
     void contextRemoved(const QString &path);
     void contextsChanged(const QStringList &contexts);
     void modemPathChanged(const QString &path);
+    void filterChanged(const QString &filter);
 
     void messagesFinished();
     void reportError(const QString &errorMessage);

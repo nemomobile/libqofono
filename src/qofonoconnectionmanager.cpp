@@ -25,8 +25,11 @@ public:
     OfonoConnectionManager *connman;
     QVariantMap properties;
     QStringList contexts;
+    QHash<QString,QString> contextTypes;
+    QString filter;
 
-    QStringList getContexts();
+    void getContexts();
+    void filterContexts();
 };
 
 QOfonoConnectionManagerPrivate::QOfonoConnectionManagerPrivate() :
@@ -36,17 +39,47 @@ QOfonoConnectionManagerPrivate::QOfonoConnectionManagerPrivate() :
 {
 }
 
-QStringList QOfonoConnectionManagerPrivate::getContexts()
+void QOfonoConnectionManagerPrivate::getContexts()
 {
-    QStringList contextList;
+    contextTypes.clear();
     QDBusReply<ObjectPathPropertiesList> reply2 = connman->GetContexts();
     foreach(ObjectPathProperties context, reply2.value()) {
-        contextList.append(context.path.path());
+        contextTypes.insert(context.path.path(), context.properties.value("Type").toString());
     }
-    contexts = contextList;
-    return contexts;
+    filterContexts();
 }
 
+// FILTER = [!]NAMES
+// NAMES = NAME [,NAMES]
+// Spaces and tabs are ignored
+void QOfonoConnectionManagerPrivate::filterContexts()
+{
+    if (contextTypes.isEmpty()) {
+        contexts.clear();
+    } else {
+        QStringList contextList = contextTypes.keys();
+        if (filter.isEmpty()) {
+            contexts = contextList;
+        } else {
+            contexts.clear();
+            QString f(filter);
+            f.remove(' ').remove('\t');
+            if (f[0] == '!') {
+                QStringList blackList = f.remove(0,1).split(',', QString::SkipEmptyParts);
+                foreach (QString path, contextList) {
+                    if (!blackList.contains(contextTypes.value(path)))
+                        contexts.append(path);
+                }
+            } else {
+                QStringList whiteList = f.split(',', QString::SkipEmptyParts);
+                foreach (QString path, contextList) {
+                    if (whiteList.contains(contextTypes.value(path)))
+                        contexts.append(path);
+                }
+            }
+        }
+    }
+}
 
 QOfonoConnectionManager::QOfonoConnectionManager(QObject *parent) :
     QObject(parent),
@@ -211,11 +244,12 @@ void QOfonoConnectionManager::updateProperty(const QString &property, const QVar
 
     if (property == QLatin1String("Attached")) {
         if (value.value<bool>()) {
-            if (d_ptr->contexts.isEmpty()) {
+            if (d_ptr->contextTypes.isEmpty()) {
                 d_ptr->getContexts();
                 Q_EMIT contextsChanged(d_ptr->contexts);
             }
         } else {
+            d_ptr->contextTypes.clear();
             d_ptr->contexts.clear();
             Q_EMIT contextsChanged(d_ptr->contexts);
         }
@@ -239,20 +273,34 @@ QStringList QOfonoConnectionManager::contexts()
 void QOfonoConnectionManager::onContextAdd(const QDBusObjectPath &path, const QVariantMap &propertyMap)
 {
     Q_UNUSED(propertyMap);
-    if (!d_ptr->contexts.contains(path.path()))
-        d_ptr->contexts.append(path.path());
+    d_ptr->contextTypes.insert(path.path(), propertyMap.value("Type").toString());
+    d_ptr->filterContexts();
     Q_EMIT contextAdded(path.path());
     Q_EMIT contextsChanged(d_ptr->contexts);
 }
 
 void QOfonoConnectionManager::onContextRemove(const QDBusObjectPath &path)
 {
-    if (d_ptr->contexts.contains(path.path()))
-        d_ptr->contexts.removeOne(path.path());
+    d_ptr->contextTypes.remove(path.path());
+    d_ptr->filterContexts();
     Q_EMIT contextRemoved(path.path());
     Q_EMIT contextsChanged(d_ptr->contexts);
 }
 
+QString QOfonoConnectionManager::filter() const
+{
+    return d_ptr->filter;
+}
+
+void QOfonoConnectionManager::setFilter(const QString &filter)
+{
+    if (d_ptr->filter != filter) {
+        d_ptr->filter = filter;
+        d_ptr->filterContexts();
+        Q_EMIT filterChanged(filter);
+        Q_EMIT contextsChanged(d_ptr->contexts);
+    }
+}
 
 bool QOfonoConnectionManager::isValid() const
 {
