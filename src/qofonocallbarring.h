@@ -52,6 +52,8 @@ public:
      bool isValid() const;
      bool isReady() const;
 
+     void connectOfono();
+
 Q_SIGNALS:
      void voiceIncomingChanged(const QString &barrings);
      void voiceOutgoingChanged(const QString &barrings);
@@ -75,6 +77,7 @@ public slots:
 private:
     QOfonoCallBarringPrivate *d_ptr;
 private slots:
+    void modemInterfacesChanged(const QStringList &interfaces);
     void propertyChanged(const QString &property,const QDBusVariant &value);
     void getPropertiesComplete(QDBusPendingCallWatcher *);
     void setVoiceIncomingComplete(QDBusPendingCallWatcher *);

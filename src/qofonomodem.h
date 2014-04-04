@@ -49,6 +49,7 @@ class QOFONOSHARED_EXPORT QOfonoModem : public QObject
     Q_PROPERTY(QStringList interfaces READ interfaces NOTIFY interfacesChanged)
 
     Q_PROPERTY(QString modemPath READ modemPath WRITE setModemPath NOTIFY modemPathChanged)
+    Q_PROPERTY(QString valid READ isValid NOTIFY validChanged)
 
 public:
     explicit QOfonoModem(QObject *parent = 0);
@@ -80,6 +81,9 @@ public:
 
     bool isValid() const;
 
+    // If you use this, remember to keep a QSharedPointer to it, otherwise it may be destroyed.
+    static QSharedPointer<QOfonoModem> instance(const QString &modemPath);
+
 Q_SIGNALS:
     void poweredChanged(bool powered);
     void onlineChanged(bool online);
@@ -96,6 +100,7 @@ Q_SIGNALS:
     void interfacesChanged(const QStringList &interfaces);
     void modemPathChanged(const QString &path);
     void reportError(const QString &errorMessage);
+    void validChanged(bool);
 
 protected:
     void setOneProperty(const QString &prop,const QDBusVariant &var);
@@ -103,6 +108,7 @@ protected slots:
     void setPropertyFinished(QDBusPendingCallWatcher *watch);
 
 private slots:
+    void connectOfono();
     void propertyChanged(const QString &property,const QDBusVariant &value);
 
 private:

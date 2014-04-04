@@ -15,6 +15,7 @@
 
 #include "qofonocallforwarding.h"
 #include "dbus/ofonocallforwarding.h"
+#include "qofonomodem.h"
 
 class QOfonoCallForwardingPrivate
 {
@@ -23,11 +24,14 @@ public:
     QString modemPath;
     OfonoCallForwarding *callForward;
     QVariantMap properties;
+    bool propertiesPending;
+    QSharedPointer<QOfonoModem> modem;
 };
 
 QOfonoCallForwardingPrivate::QOfonoCallForwardingPrivate() :
     modemPath(QString())
   , callForward(0)
+  , propertiesPending(false)
 {
 }
 
@@ -44,30 +48,21 @@ QOfonoCallForwarding::~QOfonoCallForwarding()
 
 void QOfonoCallForwarding::setModemPath(const QString &path)
 {
-    if (path == d_ptr->modemPath ||
-            path.isEmpty())
+    if (path == d_ptr->modemPath || path.isEmpty())
         return;
 
-    if (path != modemPath()) {
-        if (d_ptr->callForward) {
-            delete d_ptr->callForward;
-            d_ptr->callForward = 0;
-            d_ptr->properties.clear();
-        }
-        d_ptr->callForward = new OfonoCallForwarding("org.ofono", path, QDBusConnection::systemBus(),this);
+    if (!d_ptr->modem.isNull())
+        disconnect(d_ptr->modem.data(), SIGNAL(interfacesChanged(QStringList)),
+                   this, SLOT(modemInterfacesChanged(QStringList)));
 
-        if (d_ptr->callForward->isValid()) {
-            d_ptr->modemPath = path;
-            connect(d_ptr->callForward,SIGNAL(PropertyChanged(QString,QDBusVariant)),
-                    this,SLOT(propertyChanged(QString,QDBusVariant)));
+    d_ptr->modemPath = path;
+    connectOfono();
 
-            QDBusPendingReply<QVariantMap> reply = d_ptr->callForward->GetProperties();
-            QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(reply, this);
-            connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
-                    SLOT(getPropertiesComplete(QDBusPendingCallWatcher*)));
-            Q_EMIT modemPathChanged(path);
-        }
-    }
+    d_ptr->modem = QOfonoModem::instance(path);
+    connect(d_ptr->modem.data(), SIGNAL(interfacesChanged(QStringList)),
+            this, SLOT(modemInterfacesChanged(QStringList)));
+
+    Q_EMIT modemPathChanged(path);
 }
 
 QString QOfonoCallForwarding::modemPath() const
@@ -75,6 +70,36 @@ QString QOfonoCallForwarding::modemPath() const
     return d_ptr->modemPath;
 }
 
+void QOfonoCallForwarding::modemInterfacesChanged(const QStringList &interfaces)
+{
+    bool haveIface = interfaces.contains("org.ofono.CallForwarding");
+    if (haveIface != (isValid() && (isReady() || d_ptr->propertiesPending)))
+        connectOfono();
+}
+
+void QOfonoCallForwarding::connectOfono()
+{
+    if (d_ptr->callForward) {
+        bool wasReady = isReady();
+        delete d_ptr->callForward;
+        d_ptr->callForward = 0;
+        d_ptr->properties.clear();
+        d_ptr->propertiesPending = false;
+        if (wasReady != isReady())
+            Q_EMIT readyChanged();
+    }
+    d_ptr->callForward = new OfonoCallForwarding("org.ofono", d_ptr->modemPath, QDBusConnection::systemBus(),this);
+
+    if (d_ptr->callForward->isValid()) {
+        connect(d_ptr->callForward,SIGNAL(PropertyChanged(QString,QDBusVariant)),
+                this,SLOT(propertyChanged(QString,QDBusVariant)));
+        d_ptr->propertiesPending = true;
+        QDBusPendingReply<QVariantMap> reply = d_ptr->callForward->GetProperties();
+        QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(reply, this);
+        connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
+                SLOT(getPropertiesComplete(QDBusPendingCallWatcher*)));
+    }
+}
 
 void QOfonoCallForwarding::propertyChanged(const QString& property, const QDBusVariant& dbusvalue)
 {
@@ -99,7 +124,7 @@ void QOfonoCallForwarding::propertyChanged(const QString& property, const QDBusV
 QString QOfonoCallForwarding::voiceUnconditional()
 {
     if (d_ptr->callForward)
-        return d_ptr->properties["VoiceUnconditional"].value<QString>();
+        return d_ptr->properties.value("VoiceUnconditional").value<QString>();
     else
         return QString();
 }
@@ -117,7 +142,7 @@ void QOfonoCallForwarding::setVoiceUnconditional(const QString &property)
 QString QOfonoCallForwarding::voiceBusy()
 {
     if (d_ptr->callForward)
-        return d_ptr->properties["VoiceBusy"].value<QString>();
+        return d_ptr->properties.value("VoiceBusy").value<QString>();
     else
         return QString();
 }
@@ -135,7 +160,7 @@ void QOfonoCallForwarding::setVoiceBusy(const QString &property)
 QString QOfonoCallForwarding::voiceNoReply()
 {
     if (d_ptr->callForward)
-        return d_ptr->properties["VoiceNoReply"].value<QString>();
+        return d_ptr->properties.value("VoiceNoReply").value<QString>();
     else
         return QString();
 }
@@ -153,7 +178,7 @@ void QOfonoCallForwarding::setVoiceNoReply(const QString &property)
 quint16 QOfonoCallForwarding::voiceNoReplyTimeout()
 {
     if (d_ptr->callForward)
-        return d_ptr->properties["VoiceNoReplyTimeout"].value<quint16>();
+        return d_ptr->properties.value("VoiceNoReplyTimeout").value<quint16>();
     else
         return 0;
 }
@@ -172,7 +197,7 @@ void QOfonoCallForwarding::setVoiceNoReplyTimeout(ushort timeout)
 QString QOfonoCallForwarding::voiceNotReachable()
 {
     if (d_ptr->callForward)
-        return d_ptr->properties["VoiceNotReachable"].value<QString>();
+        return d_ptr->properties.value("VoiceNotReachable").value<QString>();
     else
         return QString();
 }
@@ -191,7 +216,7 @@ void QOfonoCallForwarding::setVoiceNotReachable(const QString &property)
 bool QOfonoCallForwarding::forwardingFlagOnSim()
 {
     if (d_ptr->callForward)
-        return d_ptr->properties["ForwardingFlagOnSim"].value<bool>();
+        return d_ptr->properties.value("ForwardingFlagOnSim").value<bool>();
     else
         return false;
 }
@@ -228,6 +253,7 @@ void QOfonoCallForwarding::getPropertiesComplete(QDBusPendingCallWatcher *call)
     } else {
         Q_EMIT getPropertiesFailed();
     }
+    d_ptr->propertiesPending = false;
     call->deleteLater();
 }
 

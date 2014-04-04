@@ -15,6 +15,7 @@
 
 #include "qofonocallbarring.h"
 #include "dbus/ofonocallbarring.h"
+#include "qofonomodem.h"
 
 class QOfonoCallBarringPrivate
 {
@@ -23,12 +24,14 @@ public:
     QString modemPath;
     OfonoCallBarring *callBarring;
     QVariantMap properties;
-
+    bool propertiesPending;
+    QSharedPointer<QOfonoModem> modem;
 };
 
 QOfonoCallBarringPrivate::QOfonoCallBarringPrivate() :
     modemPath(QString())
   , callBarring(0)
+  , propertiesPending(false)
 {
 }
 
@@ -45,28 +48,52 @@ QOfonoCallBarring::~QOfonoCallBarring()
 
 void QOfonoCallBarring::setModemPath(const QString &path)
 {
-    if (path == d_ptr->modemPath ||
-            path.isEmpty())
+    if (path == d_ptr->modemPath || path.isEmpty())
         return;
 
-    if (path != modemPath()) {
-        if (d_ptr->callBarring) {
-            delete d_ptr->callBarring;
-            d_ptr->callBarring = 0;
-        }
-        d_ptr->callBarring = new OfonoCallBarring("org.ofono", path, QDBusConnection::systemBus(),this);
+    if (!d_ptr->modem.isNull())
+        disconnect(d_ptr->modem.data(), SIGNAL(interfacesChanged(QStringList)),
+                   this, SLOT(modemInterfacesChanged(QStringList)));
 
-        if (d_ptr->callBarring->isValid()) {
-            d_ptr->modemPath = path;
-            connect(d_ptr->callBarring,SIGNAL(PropertyChanged(QString,QDBusVariant)),
-                    this,SLOT(propertyChanged(QString,QDBusVariant)));
+    d_ptr->modemPath = path;
+    connectOfono();
 
-            QDBusPendingReply<QVariantMap> reply = d_ptr->callBarring->GetProperties();
-            QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(reply, this);
-            connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
-                    SLOT(getPropertiesComplete(QDBusPendingCallWatcher*)));
-            Q_EMIT modemPathChanged(path);
-        }
+    d_ptr->modem = QOfonoModem::instance(path);
+    connect(d_ptr->modem.data(), SIGNAL(interfacesChanged(QStringList)),
+            this, SLOT(modemInterfacesChanged(QStringList)));
+
+    Q_EMIT modemPathChanged(path);
+}
+
+void QOfonoCallBarring::modemInterfacesChanged(const QStringList &interfaces)
+{
+    bool haveIface = interfaces.contains("org.ofono.CallBarring");
+    if (haveIface != (isValid() && (isReady() || d_ptr->propertiesPending)))
+        connectOfono();
+}
+
+void QOfonoCallBarring::connectOfono()
+{
+    if (d_ptr->callBarring) {
+        bool wasReady = isReady();
+        delete d_ptr->callBarring;
+        d_ptr->callBarring = 0;
+        d_ptr->properties.clear();
+        d_ptr->propertiesPending = false;
+        if (wasReady != isReady())
+            Q_EMIT readyChanged();
+    }
+
+    d_ptr->callBarring = new OfonoCallBarring("org.ofono", d_ptr->modemPath, QDBusConnection::systemBus(),this);
+
+    if (d_ptr->callBarring->isValid()) {
+        connect(d_ptr->callBarring,SIGNAL(PropertyChanged(QString,QDBusVariant)),
+                this,SLOT(propertyChanged(QString,QDBusVariant)));
+        d_ptr->propertiesPending = true;
+        QDBusPendingReply<QVariantMap> reply = d_ptr->callBarring->GetProperties();
+        QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(reply, this);
+        connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
+                SLOT(getPropertiesComplete(QDBusPendingCallWatcher*)));
     }
 }
 
@@ -91,7 +118,7 @@ void QOfonoCallBarring::propertyChanged(const QString& property, const QDBusVari
 QString QOfonoCallBarring::voiceIncoming()
 {
     if (d_ptr->callBarring)
-        return d_ptr->properties["VoiceIncoming"].value<QString>();
+        return d_ptr->properties.value("VoiceIncoming").value<QString>();
     else
         return QString();
 }
@@ -109,7 +136,7 @@ void QOfonoCallBarring::setVoiceIncoming(const QString &barrings, const QString 
 QString QOfonoCallBarring::voiceOutgoing()
 {
     if (d_ptr->callBarring)
-        return d_ptr->properties["VoiceOutgoing"].value<QString>();
+        return d_ptr->properties.value("VoiceOutgoing").value<QString>();
     else
         return QString();
 }
@@ -175,6 +202,7 @@ void QOfonoCallBarring::getPropertiesComplete(QDBusPendingCallWatcher *call)
     } else {
         Q_EMIT getPropertiesFailed();
     }
+    d_ptr->propertiesPending = false;
     call->deleteLater();
 }
 
