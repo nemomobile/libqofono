@@ -70,6 +70,7 @@ void QOfonoVoiceCallManager::setModemPath(const QString &path)
             reply = d_ptr->voiceCallManager->GetProperties();
             reply.waitForFinished();
             d_ptr->properties = reply.value();
+            Q_EMIT emergencyNumbersChanged(emergencyNumbers());
             Q_EMIT modemPathChanged(path);
         }
     }
