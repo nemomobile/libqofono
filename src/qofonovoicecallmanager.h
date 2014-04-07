@@ -31,7 +31,7 @@ class QOFONOSHARED_EXPORT QOfonoVoiceCallManager : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(QString modemPath READ modemPath WRITE setModemPath NOTIFY modemPathChanged)
-    Q_PROPERTY(QStringList emergencyNumbers READ emergencyNumbers)
+    Q_PROPERTY(QStringList emergencyNumbers READ emergencyNumbers NOTIFY emergencyNumbersChanged)
     Q_PROPERTY(QString errorMessage READ errorMessage)
 
 public:
