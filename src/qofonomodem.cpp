@@ -16,7 +16,12 @@
 
 #include "qofonomodem.h"
 #include "dbus/ofonomodem.h"
+#include <QMap>
+#include <QWeakPointer>
 #include <QDBusPendingCallWatcher>
+
+typedef QMap<QString,QWeakPointer<QOfonoModem> > ModemMap;
+Q_GLOBAL_STATIC(ModemMap, modemMap)
 
 class QOfonoModemPrivate
 {
@@ -47,30 +52,40 @@ QOfonoModem::~QOfonoModem()
 void QOfonoModem::setModemPath(const QString &path)
 {
     if (path != modemPath()) {
-        if (d_ptr->modem) {
-            delete d_ptr->modem;
-            d_ptr->modem = 0;
-            d_ptr->properties.clear();
-        }
-        d_ptr->modem = new OfonoModem("org.ofono", path, QDBusConnection::systemBus(),this);
-
-        if (d_ptr->modem->isValid()) {
-            d_ptr->modemPath = path;
-            connect(d_ptr->modem,SIGNAL(PropertyChanged(QString,QDBusVariant)),
-                    this,SLOT(propertyChanged(QString,QDBusVariant)));
-
-            QDBusPendingReply<QVariantMap> reply;
-            reply = d_ptr->modem->GetProperties();
-            reply.waitForFinished();
-            d_ptr->properties = reply.value();
-            Q_EMIT modemPathChanged(path);
-        }
+        d_ptr->modemPath = path;
+        connectOfono();
+        Q_EMIT modemPathChanged(path);
     }
 }
 
 QString QOfonoModem::modemPath() const
 {
     return d_ptr->modemPath;
+}
+
+void QOfonoModem::connectOfono()
+{
+    bool wasValid = isValid();
+    if (d_ptr->modem) {
+        delete d_ptr->modem;
+        d_ptr->modem = 0;
+        d_ptr->properties.clear();
+    }
+
+    d_ptr->modem = new OfonoModem("org.ofono", d_ptr->modemPath, QDBusConnection::systemBus(),this);
+
+    if (d_ptr->modem->isValid()) {
+        connect(d_ptr->modem,SIGNAL(PropertyChanged(QString,QDBusVariant)),
+                this,SLOT(propertyChanged(QString,QDBusVariant)));
+
+        QDBusPendingReply<QVariantMap> reply;
+        reply = d_ptr->modem->GetProperties();
+        reply.waitForFinished();
+        d_ptr->properties = reply.value();
+    }
+
+    if (wasValid != isValid())
+        Q_EMIT validChanged(isValid());
 }
 
 bool QOfonoModem::powered() const
@@ -223,7 +238,21 @@ void QOfonoModem::propertyChanged(const QString& property, const QDBusVariant& d
 
 bool QOfonoModem::isValid() const
 {
-    return d_ptr->modem->isValid();
+    return d_ptr->modem && d_ptr->modem->isValid();
+}
+
+QSharedPointer<QOfonoModem> QOfonoModem::instance(const QString &modemPath)
+{
+    QSharedPointer<QOfonoModem> modem = modemMap()->value(modemPath);
+    if (modem.isNull()) {
+        modem = QSharedPointer<QOfonoModem>::create();
+        modem->setModemPath(modemPath);
+        modemMap()->insert(modemPath, QWeakPointer<QOfonoModem>(modem));
+    } else if (!modem->isValid()) {
+        modem->connectOfono();
+    }
+
+    return modem;
 }
 
 void QOfonoModem::setOneProperty(const QString &prop, const QDBusVariant &var)

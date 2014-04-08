@@ -68,6 +68,8 @@ public:
     bool isValid() const;
     bool isReady() const;
 
+    void connectOfono();
+
 Q_SIGNALS:
     void voiceUnconditionalChanged(const QString &property);
     void voiceBusyChanged(const QString &property);
@@ -88,6 +90,7 @@ private:
     QOfonoCallForwardingPrivate *d_ptr;
 
 private slots:
+    void modemInterfacesChanged(const QStringList &interfaces);
     void propertyChanged(const QString &property,const QDBusVariant &value);
     void getPropertiesComplete(QDBusPendingCallWatcher *call);
     void setVoiceUnconditionalComplete(QDBusPendingCallWatcher *call);

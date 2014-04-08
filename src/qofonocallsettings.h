@@ -64,6 +64,8 @@ public:
     bool isValid() const;
     bool isReady() const;
 
+    void connectOfono();
+
 Q_SIGNALS:
     void callingLinePresentationChanged(const QString &setting);
     void calledLinePresentationChanged(const QString &setting);
@@ -83,6 +85,7 @@ private:
     QOfonoCallSettingsPrivate *d_ptr;
 
 private slots:
+    void modemInterfacesChanged(const QStringList &interfaces);
     void propertyChanged(const QString &property,const QDBusVariant &value);
     void getPropertiesComplete(QDBusPendingCallWatcher*);
     void setHideCallerIdComplete(QDBusPendingCallWatcher *call);
