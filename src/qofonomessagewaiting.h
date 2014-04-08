@@ -33,6 +33,7 @@ class QOFONOSHARED_EXPORT QOfonoMessageWaiting : public QObject
     Q_PROPERTY(bool voicemailWaiting READ voicemailWaiting NOTIFY voicemailWaitingChanged)
     Q_PROPERTY(int voicemailMessageCount READ voicemailMessageCount NOTIFY voicemailMessageCountChanged)
     Q_PROPERTY(QString voicemailMailboxNumber READ voicemailMailboxNumber WRITE setVoicemailMailboxNumber NOTIFY voicemailMailboxNumberChanged)
+    Q_PROPERTY(bool ready READ isReady NOTIFY readyChanged)
 
 public:
     explicit QOfonoMessageWaiting(QObject *parent = 0);
@@ -47,6 +48,9 @@ public:
     void setVoicemailMailboxNumber(const QString &mailboxnumber);
 
     bool isValid() const;
+    bool isReady() const;
+
+    void connectOfono();
 
 Q_SIGNALS:
     void voicemailWaitingChanged(bool waiting);
@@ -56,11 +60,13 @@ Q_SIGNALS:
 
     void voicemailMailboxComplete(bool success);
     void getPropertiesFailed();
+    void readyChanged();
     
 private:
     QOfonoMessageWaitingPrivate *d_ptr;
 
 private slots:
+    void modemInterfacesChanged(const QStringList &interfaces);
     void propertyChanged(const QString &property,const QDBusVariant &value);
     void setVoicemailMailboxNumberComplete(QDBusPendingCallWatcher*);
 };

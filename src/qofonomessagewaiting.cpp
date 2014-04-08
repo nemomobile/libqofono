@@ -15,6 +15,7 @@
 
 #include "qofonomessagewaiting.h"
 #include "dbus/ofonomessagewaiting.h"
+#include "qofonomodem.h"
 
 class QOfonoMessageWaitingPrivate
 {
@@ -23,7 +24,7 @@ public:
     QString modemPath;
     OfonoMessageWaiting *messageWaiting;
     QVariantMap properties;
-
+    QSharedPointer<QOfonoModem> modem;
 };
 
 QOfonoMessageWaitingPrivate::QOfonoMessageWaitingPrivate() :
@@ -45,33 +46,21 @@ QOfonoMessageWaiting::~QOfonoMessageWaiting()
 
 void QOfonoMessageWaiting::setModemPath(const QString &path)
 {
-    if (path == d_ptr->modemPath ||
-            path.isEmpty())
+    if (path == d_ptr->modemPath || path.isEmpty())
         return;
 
-    if (path != modemPath()) {
-        if (d_ptr->messageWaiting) {
-            delete d_ptr->messageWaiting;
-            d_ptr->messageWaiting = 0;
-            d_ptr->properties.clear();
-        }
-        d_ptr->messageWaiting = new OfonoMessageWaiting("org.ofono", path, QDBusConnection::systemBus(),this);
+    if (!d_ptr->modem.isNull())
+        disconnect(d_ptr->modem.data(), SIGNAL(interfacesChanged(QStringList)),
+                   this, SLOT(modemInterfacesChanged(QStringList)));
 
-        if (d_ptr->messageWaiting->isValid()) {
-            d_ptr->modemPath = path;
-            connect(d_ptr->messageWaiting,SIGNAL(PropertyChanged(QString,QDBusVariant)),
-                    this,SLOT(propertyChanged(QString,QDBusVariant)));
+    d_ptr->modemPath = path;
+    connectOfono();
 
-            QDBusPendingReply<QVariantMap> reply;
-            reply = d_ptr->messageWaiting->GetProperties();
-            reply.waitForFinished();
-            if (reply.isError())
-                Q_EMIT getPropertiesFailed();
-            else
-                d_ptr->properties = reply.value();
-            Q_EMIT modemPathChanged(path);
-        }
-    }
+    d_ptr->modem = QOfonoModem::instance(path);
+    connect(d_ptr->modem.data(), SIGNAL(interfacesChanged(QStringList)),
+            this, SLOT(modemInterfacesChanged(QStringList)));
+
+    Q_EMIT modemPathChanged(path);
 }
 
 QString QOfonoMessageWaiting::modemPath() const
@@ -79,6 +68,44 @@ QString QOfonoMessageWaiting::modemPath() const
     return d_ptr->modemPath;
 }
 
+void QOfonoMessageWaiting::modemInterfacesChanged(const QStringList &interfaces)
+{
+    bool haveIface = interfaces.contains("org.ofono.MessageWaiting");
+    if (haveIface != (isValid() && isReady()))
+        connectOfono();
+}
+
+void QOfonoMessageWaiting::connectOfono()
+{
+    bool wasReady = isReady();
+    if (d_ptr->messageWaiting) {
+        delete d_ptr->messageWaiting;
+        d_ptr->messageWaiting = 0;
+        d_ptr->properties.clear();
+    }
+
+    d_ptr->messageWaiting = new OfonoMessageWaiting("org.ofono", d_ptr->modemPath, QDBusConnection::systemBus(),this);
+
+    if (d_ptr->messageWaiting->isValid()) {
+        connect(d_ptr->messageWaiting,SIGNAL(PropertyChanged(QString,QDBusVariant)),
+                this,SLOT(propertyChanged(QString,QDBusVariant)));
+
+        QDBusPendingReply<QVariantMap> reply;
+        reply = d_ptr->messageWaiting->GetProperties();
+        reply.waitForFinished();
+        if (reply.isError()) {
+            Q_EMIT getPropertiesFailed();
+        } else {
+            d_ptr->properties = reply.value();
+            Q_EMIT voicemailWaitingChanged(voicemailWaiting());
+            Q_EMIT voicemailMessageCountChanged(voicemailMessageCount());
+            Q_EMIT voicemailMailboxNumberChanged(voicemailMailboxNumber());
+        }
+    }
+
+    if (wasReady != isReady())
+        Q_EMIT readyChanged();
+}
 
 void QOfonoMessageWaiting::propertyChanged(const QString& property, const QDBusVariant& dbusvalue)
 {
@@ -98,7 +125,7 @@ void QOfonoMessageWaiting::propertyChanged(const QString& property, const QDBusV
 bool QOfonoMessageWaiting::voicemailWaiting() const
 {
     if ( d_ptr->messageWaiting)
-        return d_ptr->properties["VoicemailWaiting"].value<bool>();
+        return d_ptr->properties.value("VoicemailWaiting").value<bool>();
     else
         return false;
 }
@@ -106,7 +133,7 @@ bool QOfonoMessageWaiting::voicemailWaiting() const
 int QOfonoMessageWaiting::voicemailMessageCount() const
 {
     if ( d_ptr->messageWaiting)
-        return d_ptr->properties["VoicemailMessageCount"].value<int>();
+        return d_ptr->properties.value("VoicemailMessageCount").value<int>();
     else
         return false;
 }
@@ -114,7 +141,7 @@ int QOfonoMessageWaiting::voicemailMessageCount() const
 QString QOfonoMessageWaiting::voicemailMailboxNumber() const
 {
     if (d_ptr->messageWaiting)
-        return d_ptr->properties["VoicemailMailboxNumber"].value<QString>();
+        return d_ptr->properties.value("VoicemailMailboxNumber").value<QString>();
     else
         return QString();
 }
@@ -131,7 +158,12 @@ void QOfonoMessageWaiting::setVoicemailMailboxNumber(const QString &mailboxnumbe
 
 bool QOfonoMessageWaiting::isValid() const
 {
-    return d_ptr->messageWaiting->isValid();
+    return d_ptr->messageWaiting && d_ptr->messageWaiting->isValid();
+}
+
+bool QOfonoMessageWaiting::isReady() const
+{
+    return !d_ptr->properties.isEmpty();
 }
 
 void QOfonoMessageWaiting::setVoicemailMailboxNumberComplete(QDBusPendingCallWatcher *call)
