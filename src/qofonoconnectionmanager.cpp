@@ -16,6 +16,7 @@
 #include "qofonoconnectionmanager.h"
 #include "dbus/ofonoconnectionmanager.h"
 #include "dbustypes.h"
+#include <limits.h>
 
 class QOfonoConnectionManagerPrivate
 {
@@ -49,6 +50,23 @@ void QOfonoConnectionManagerPrivate::getContexts()
     filterContexts();
 }
 
+static int endingInt(const QString &str)
+{
+    int lastDigit = str.length() - 1;
+    if (str.isEmpty() || !str[lastDigit].isDigit())
+        return INT_MAX;
+
+    while (lastDigit > 0 && str[lastDigit-1].isDigit())
+        --lastDigit;
+
+    return QStringRef(&str, lastDigit, str.length() - lastDigit).toInt();
+}
+
+static bool contextLessThan(const QString &c1, const QString &c2)
+{
+    return endingInt(c1) < endingInt(c2);
+}
+
 // FILTER = [!]NAMES
 // NAMES = NAME [,NAMES]
 // Spaces and tabs are ignored
@@ -79,6 +97,8 @@ void QOfonoConnectionManagerPrivate::filterContexts()
             }
         }
     }
+
+    qSort(contexts.begin(), contexts.end(), contextLessThan);
 }
 
 QOfonoConnectionManager::QOfonoConnectionManager(QObject *parent) :
