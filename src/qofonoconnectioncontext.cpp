@@ -334,6 +334,15 @@ void QOfonoConnectionContext::setPropertyFinished(QDBusPendingCallWatcher *watch
 
 }
 
+void QOfonoConnectionContext::disconnect()
+{
+    Q_EMIT disconnectRequested();
+    QString active("Active");
+    QDBusPendingReply <> reply = d_ptr->context->SetProperty(active,QDBusVariant(false));
+    reply.waitForFinished();
+    d_ptr->properties[active] = false;
+}
+
 /*
  * These provisioning functions use the mobile broadband provider info database available from this url:
  * https://git.gnome.org/browse/mobile-broadband-provider-info/
