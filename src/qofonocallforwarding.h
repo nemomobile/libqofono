@@ -56,6 +56,7 @@ public:
     void setVoiceNoReply(const QString &property);
 
     quint16 voiceNoReplyTimeout();
+    // TODO: Fix argument type - should be quint16
     void setVoiceNoReplyTimeout(ushort timeout);
 
     QString voiceNotReachable();
@@ -74,6 +75,7 @@ Q_SIGNALS:
     void voiceUnconditionalChanged(const QString &property);
     void voiceBusyChanged(const QString &property);
     void voiceNoReplyChanged(const QString &property);
+    // TODO: Fix argument type - should be quint16
     void voiceNoReplyTimeoutChanged(ushort timeout);
     void voiceNotReachableChanged(const QString &property);
     void forwardingFlagOnSimChanged(bool property);

@@ -186,7 +186,7 @@ quint16 QOfonoCallForwarding::voiceNoReplyTimeout()
 void QOfonoCallForwarding::setVoiceNoReplyTimeout(ushort timeout)
 {
     if (d_ptr->callForward) {
-        QDBusPendingReply<> reply = d_ptr->callForward->SetProperty("VoiceNoReplyTimeout",QDBusVariant(timeout));
+        QDBusPendingReply<> reply = d_ptr->callForward->SetProperty("VoiceNoReplyTimeout",QDBusVariant(QVariant::fromValue((quint16)timeout)));
         QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(reply, this);
         connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
                 SLOT(setVoiceNoReplyTimeoutComplete(QDBusPendingCallWatcher*)));
