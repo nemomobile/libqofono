@@ -16,6 +16,7 @@
 #include "qofonomessagewaiting.h"
 #include "dbus/ofonomessagewaiting.h"
 #include "qofonomodem.h"
+#include "qofonoutils_p.h"
 
 class QOfonoMessageWaitingPrivate
 {
@@ -78,6 +79,9 @@ void QOfonoMessageWaiting::modemInterfacesChanged(const QStringList &interfaces)
 void QOfonoMessageWaiting::connectOfono()
 {
     bool wasReady = isReady();
+    // FIXME: Clearing properties here results in false *Changed signal
+    // emissions. Ideally ready() should not be derived from
+    // properties.isEmpty(). Also compare with QOfonoSimManager.
     if (d_ptr->messageWaiting) {
         delete d_ptr->messageWaiting;
         d_ptr->messageWaiting = 0;
@@ -96,10 +100,11 @@ void QOfonoMessageWaiting::connectOfono()
         if (reply.isError()) {
             Q_EMIT getPropertiesFailed();
         } else {
-            d_ptr->properties = reply.value();
-            Q_EMIT voicemailWaitingChanged(voicemailWaiting());
-            Q_EMIT voicemailMessageCountChanged(voicemailMessageCount());
-            Q_EMIT voicemailMailboxNumberChanged(voicemailMailboxNumber());
+            QVariantMap properties = reply.value();
+            for (QVariantMap::ConstIterator it = properties.constBegin();
+                    it != properties.constEnd(); ++it) {
+                updateProperty(it.key(), it.value());
+            }
         }
     }
 
@@ -109,8 +114,17 @@ void QOfonoMessageWaiting::connectOfono()
 
 void QOfonoMessageWaiting::propertyChanged(const QString& property, const QDBusVariant& dbusvalue)
 {
-    QVariant value = dbusvalue.variant();
+    updateProperty(property, dbusvalue.variant());
+}
+
+void QOfonoMessageWaiting::updateProperty(const QString& property, const QVariant& value)
+{
+    QVariant old = d_ptr->properties.value(property);
+
     d_ptr->properties.insert(property,value);
+
+    if (qofono::safeVariantEq(old, value))
+        return;
 
     if (property == QLatin1String("VoicemailWaiting")) {
         Q_EMIT voicemailWaitingChanged(value.value<bool>());
