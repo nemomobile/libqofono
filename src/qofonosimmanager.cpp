@@ -365,9 +365,10 @@ void QOfonoSimManager::unlockPin(QOfonoSimManager::PinType pinType, const QStrin
 QByteArray QOfonoSimManager::getIcon(quint8 id)
 {
     QDBusMessage request = QDBusMessage::createMethodCall("org.ofono",
-                                                          "org.ofono.SimManager",
                                                           d_ptr->simManager->path(),
+                                                          "org.ofono.SimManager",
                                                           "GetIcon");
+    request.setArguments(QList<QVariant>() << QVariant::fromValue(id));
 
     QDBusReply<QByteArray> reply2 = QDBusConnection::systemBus().call(request);
 
