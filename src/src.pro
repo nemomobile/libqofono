@@ -144,11 +144,8 @@ SOURCES += $$DBUS_SOURCES\
     qofonotexttelephony.cpp
 
 PUBLIC_HEADERS += \
-        qofono.h\
-        qofono_global.h
-
-HEADERS += $$DBUS_HEADERS \
-    $$PUBLIC_HEADERS \
+    qofono.h \
+    qofono_global.h \
     qofonomanager.h \
     dbustypes.h \
     qofonomodem.h \
@@ -182,6 +179,11 @@ HEADERS += $$DBUS_HEADERS \
     qofonosupplementaryservices.h \
     qofonotexttelephony.h
 
+HEADERS += \
+    $$DBUS_HEADERS \
+    $$PUBLIC_HEADERS \
+    qofonoutils_p.h
+
     QT -= gui
 equals(QT_MAJOR_VERSION, 4): {
     headers.path = $$INSTALL_ROOT$$PREFIX/include/qofono
@@ -202,7 +204,7 @@ equals(QT_MAJOR_VERSION, 5): {
 }
 
 target.path = $$INSTALL_ROOT$$PREFIX/lib
-headers.files = $$HEADERS
+headers.files = $$PUBLIC_HEADERS
 
 dbusheaders.files = $$DBUS_HEADERS
 
