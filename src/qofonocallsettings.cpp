@@ -223,6 +223,7 @@ bool QOfonoCallSettings::isReady() const
 
 void QOfonoCallSettings::getPropertiesComplete(QDBusPendingCallWatcher *call)
 {
+    call->deleteLater();
     QDBusPendingReply<QVariantMap> reply = *call;
     if (!reply.isError()) {
         d_ptr->properties = reply.value();
@@ -239,19 +240,18 @@ void QOfonoCallSettings::getPropertiesComplete(QDBusPendingCallWatcher *call)
         Q_EMIT getPropertiesFailed();
     }
     d_ptr->propertiesPending = false;
-    call->deleteLater();
 }
 
 void QOfonoCallSettings::setHideCallerIdComplete(QDBusPendingCallWatcher *call)
 {
+    call->deleteLater();
     QDBusPendingReply<> reply = *call;
     Q_EMIT hideCallerIdComplete(!reply.isError());
-    call->deleteLater();
 }
 
 void QOfonoCallSettings::setVoiceCallWaitingComplete(QDBusPendingCallWatcher *call)
 {
+    call->deleteLater();
     QDBusPendingReply<> reply = *call;
     Q_EMIT voiceCallWaitingComplete(!reply.isError());
-    call->deleteLater();
 }

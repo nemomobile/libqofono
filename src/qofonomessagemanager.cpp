@@ -249,6 +249,7 @@ void QOfonoMessageManager::messagesError(const QDBusError &error)
 
 void QOfonoMessageManager::sendMessageFinished(QDBusPendingCallWatcher *call)
 {
+    call->deleteLater();
     QDBusPendingReply<QDBusObjectPath> reply = *call;
     bool ok = true;
     if (reply.isError()) {
@@ -261,29 +262,29 @@ void QOfonoMessageManager::sendMessageFinished(QDBusPendingCallWatcher *call)
 
 void QOfonoMessageManager::setServiceCenterAddressFinished(QDBusPendingCallWatcher *call)
 {
+    call->deleteLater();
     QDBusPendingReply<> reply = *call;
     Q_EMIT setServiceCenterAddressComplete(!reply.isError());
-    call->deleteLater();
 }
 
 void QOfonoMessageManager::setUseDeliveryReportsFinished(QDBusPendingCallWatcher *call)
 {
+    call->deleteLater();
     QDBusPendingReply<> reply = *call;
     Q_EMIT setUseDeliveryReportsComplete(!reply.isError());
-    call->deleteLater();
 }
 
 void QOfonoMessageManager::setBearerFinished(QDBusPendingCallWatcher *call)
 {
+    call->deleteLater();
     QDBusPendingReply<> reply = *call;
     Q_EMIT setBearerComplete(!reply.isError());
-    call->deleteLater();
 }
 
 void QOfonoMessageManager::setAlphabetFinished(QDBusPendingCallWatcher *call)
 {
+    call->deleteLater();
     QDBusPendingReply<> reply = *call;
     Q_EMIT setAlphabetComplete(!reply.isError());
-    call->deleteLater();
 }
 

@@ -116,6 +116,7 @@ bool QOfonoHandsfreeAudioCard::isValid() const
 
 void QOfonoHandsfreeAudioCard::connectAudioFinished(QDBusPendingCallWatcher *call)
 {
+    call->deleteLater();
     QDBusPendingReply<> reply = *call;
     QOfonoHandsfreeAudioCard::Error error = NoError;
     QString errorString;

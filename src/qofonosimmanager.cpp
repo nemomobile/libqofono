@@ -420,6 +420,7 @@ void QOfonoSimManager::setSubscriberNumbers(const QStringList &numbers)
 
 void QOfonoSimManager::changePinCallFinished(QDBusPendingCallWatcher *call)
 {
+    call->deleteLater();
     QDBusPendingReply<> reply = *call;
     QOfonoSimManager::Error error = NoError;
     QString errorString;
@@ -431,11 +432,11 @@ void QOfonoSimManager::changePinCallFinished(QDBusPendingCallWatcher *call)
     }
 
     emit changePinComplete(error, errorString);
-    call->deleteLater();
 }
 
 void QOfonoSimManager::enterPinCallFinished(QDBusPendingCallWatcher *call)
 {
+    call->deleteLater();
     QDBusPendingReply<> reply = *call;
     QOfonoSimManager::Error error = NoError;
     QString errorString;
@@ -447,11 +448,11 @@ void QOfonoSimManager::enterPinCallFinished(QDBusPendingCallWatcher *call)
     }
 
     emit enterPinComplete(error, errorString);
-    call->deleteLater();
 }
 
 void QOfonoSimManager::resetPinCallFinished(QDBusPendingCallWatcher *call)
 {
+    call->deleteLater();
     QDBusPendingReply<> reply = *call;
     QOfonoSimManager::Error error = NoError;
     QString errorString;
@@ -463,11 +464,11 @@ void QOfonoSimManager::resetPinCallFinished(QDBusPendingCallWatcher *call)
     }
 
     emit resetPinComplete(error, errorString);
-    call->deleteLater();
 }
 
 void QOfonoSimManager::lockPinCallFinished(QDBusPendingCallWatcher *call)
 {
+    call->deleteLater();
     QDBusPendingReply<> reply = *call;
     QOfonoSimManager::Error error = NoError;
     QString errorString;
@@ -479,11 +480,11 @@ void QOfonoSimManager::lockPinCallFinished(QDBusPendingCallWatcher *call)
     }
 
     emit lockPinComplete(error, errorString);
-    call->deleteLater();
 }
 
 void QOfonoSimManager::unlockPinCallFinished(QDBusPendingCallWatcher *call)
 {
+    call->deleteLater();
     QDBusPendingReply<> reply = *call;
     QOfonoSimManager::Error error = NoError;
     QString errorString;
@@ -495,7 +496,6 @@ void QOfonoSimManager::unlockPinCallFinished(QDBusPendingCallWatcher *call)
     }
 
     emit unlockPinComplete(error, errorString);
-    call->deleteLater();
 }
 
 QOfonoSimManager::Error QOfonoSimManager::errorNameToEnum(const QString &errorName)

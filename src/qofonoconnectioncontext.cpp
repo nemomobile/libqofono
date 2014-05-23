@@ -324,6 +324,7 @@ void QOfonoConnectionContext::setOneProperty(const QString &prop, const QDBusVar
 
 void QOfonoConnectionContext::setPropertyFinished(QDBusPendingCallWatcher *watch)
 {
+    watch->deleteLater();
     QDBusPendingReply<> reply = *watch;
 
     if(reply.isError()) {

@@ -81,6 +81,7 @@ void QOfonoNetworkOperator::registerOperator()
 
 void QOfonoNetworkOperator::registerFinished(QDBusPendingCallWatcher *call)
 {
+    call->deleteLater();
     QDBusPendingReply<> reply = *call;
     QOfonoNetworkOperator::Error error = NoError;
     QString errorString;

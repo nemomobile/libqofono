@@ -182,7 +182,7 @@ bool QOfonoMessageWaiting::isReady() const
 
 void QOfonoMessageWaiting::setVoicemailMailboxNumberComplete(QDBusPendingCallWatcher *call)
 {
+    call->deleteLater();
     QDBusPendingReply<> reply = *call;
     Q_EMIT voicemailMailboxComplete(!reply.isError());
-    call->deleteLater();
 }

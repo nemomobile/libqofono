@@ -86,6 +86,7 @@ void QOfonoPhonebook::beginImport()
 
 void QOfonoPhonebook::importComplete(QDBusPendingCallWatcher *call)
 {
+    call->deleteLater();
     QDBusPendingReply<QString> reply = *call;
     if (!reply.isError()) {
         QString data = reply.value();
@@ -94,7 +95,6 @@ void QOfonoPhonebook::importComplete(QDBusPendingCallWatcher *call)
         emit importFailed();
     }
     d_ptr->importing = false;
-    call->deleteLater();
     emit importingChanged();
 }
 

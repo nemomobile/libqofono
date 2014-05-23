@@ -242,6 +242,7 @@ bool QOfonoVoiceCall::isValid() const
 
 void QOfonoVoiceCall::answerFinished(QDBusPendingCallWatcher *call)
 {
+    call->deleteLater();
     QDBusPendingReply<> reply = *call;
     QOfonoVoiceCall::Error error = NoError;
     QString errorString;
@@ -256,6 +257,7 @@ void QOfonoVoiceCall::answerFinished(QDBusPendingCallWatcher *call)
 
 void QOfonoVoiceCall::hangupFinished(QDBusPendingCallWatcher *call)
 {
+    call->deleteLater();
     QDBusPendingReply<> reply = *call;
     QOfonoVoiceCall::Error error = NoError;
     QString errorString;
@@ -270,6 +272,7 @@ void QOfonoVoiceCall::hangupFinished(QDBusPendingCallWatcher *call)
 
 void QOfonoVoiceCall::deflectFinished(QDBusPendingCallWatcher *call)
 {
+    call->deleteLater();
     QDBusPendingReply<> reply = *call;
     QOfonoVoiceCall::Error error = NoError;
     QString errorString;

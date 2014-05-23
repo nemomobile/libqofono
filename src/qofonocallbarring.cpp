@@ -193,6 +193,7 @@ bool QOfonoCallBarring::isReady() const
 
 void QOfonoCallBarring::getPropertiesComplete(QDBusPendingCallWatcher *call)
 {
+    call->deleteLater();
     QDBusPendingReply<QVariantMap> reply = *call;
     if (!reply.isError()) {
         d_ptr->properties = reply.value();
@@ -203,26 +204,25 @@ void QOfonoCallBarring::getPropertiesComplete(QDBusPendingCallWatcher *call)
         Q_EMIT getPropertiesFailed();
     }
     d_ptr->propertiesPending = false;
-    call->deleteLater();
 }
 
 void QOfonoCallBarring::setVoiceIncomingComplete(QDBusPendingCallWatcher *call)
 {
+    call->deleteLater();
     QDBusPendingReply<> reply = *call;
     Q_EMIT voiceIncomingComplete(!reply.isError());
-    call->deleteLater();
 }
 
 void QOfonoCallBarring::setVoiceOutgoingComplete(QDBusPendingCallWatcher *call)
 {
+    call->deleteLater();
     QDBusPendingReply<> reply = *call;
     Q_EMIT voiceOutgoingComplete(!reply.isError());
-    call->deleteLater();
 }
 
 void QOfonoCallBarring::changePasswordCallComplete(QDBusPendingCallWatcher *call)
 {
+    call->deleteLater();
     QDBusPendingReply<> reply = *call;
     Q_EMIT changePasswordComplete(!reply.isError());
-    call->deleteLater();
 }

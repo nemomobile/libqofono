@@ -242,6 +242,7 @@ QStringList QOfonoVoiceCallManager::getCalls() const
 
  void QOfonoVoiceCallManager::dialFinished(QDBusPendingCallWatcher *call)
  {
+     call->deleteLater();
      QDBusPendingReply<> reply = *call;
      bool ok = true;
      if (reply.isError()) {
@@ -255,6 +256,7 @@ QStringList QOfonoVoiceCallManager::getCalls() const
 
  void QOfonoVoiceCallManager::hangupAllFinished(QDBusPendingCallWatcher *call)
  {
+     call->deleteLater();
      QDBusPendingReply<> reply = *call;
      bool ok = true;
      if (reply.isError()) {
@@ -267,6 +269,7 @@ QStringList QOfonoVoiceCallManager::getCalls() const
 
  void QOfonoVoiceCallManager::sendTonesFinished(QDBusPendingCallWatcher *call)
  {
+     call->deleteLater();
      QDBusPendingReply<> reply = *call;
 //     bool ok = true;
      if (reply.isError()) {
@@ -279,6 +282,7 @@ QStringList QOfonoVoiceCallManager::getCalls() const
 
  void QOfonoVoiceCallManager::transferFinished(QDBusPendingCallWatcher *call)
  {
+     call->deleteLater();
      QDBusPendingReply<> reply = *call;
      bool ok = true;
      if (reply.isError()) {
@@ -291,6 +295,7 @@ QStringList QOfonoVoiceCallManager::getCalls() const
 
  void QOfonoVoiceCallManager::swapCallsFinished(QDBusPendingCallWatcher *call)
  {
+     call->deleteLater();
      QDBusPendingReply<> reply = *call;
      bool ok = true;
      if (reply.isError()) {
@@ -303,6 +308,7 @@ QStringList QOfonoVoiceCallManager::getCalls() const
 
  void QOfonoVoiceCallManager::releaseAndAnswerFinished(QDBusPendingCallWatcher *call)
  {
+     call->deleteLater();
      QDBusPendingReply<> reply = *call;
      bool ok = true;
      if (reply.isError()) {
@@ -315,6 +321,7 @@ QStringList QOfonoVoiceCallManager::getCalls() const
 
  void QOfonoVoiceCallManager::holdAndAnswerFinished(QDBusPendingCallWatcher *call)
  {
+     call->deleteLater();
      QDBusPendingReply<> reply = *call;
      bool ok = true;
      if (reply.isError()) {
@@ -327,6 +334,7 @@ QStringList QOfonoVoiceCallManager::getCalls() const
 
  void QOfonoVoiceCallManager::privateChatFinished(QDBusPendingCallWatcher *call)
  {
+     call->deleteLater();
      QDBusPendingReply<QList<QDBusObjectPath> > reply = *call;
      QStringList calls;
      bool ok = true;
@@ -344,6 +352,7 @@ QStringList QOfonoVoiceCallManager::getCalls() const
 
  void QOfonoVoiceCallManager::createMultipartyFinished(QDBusPendingCallWatcher *call)
  {
+     call->deleteLater();
      QDBusPendingReply<> reply = *call;
      bool ok = true;
      if (reply.isError()) {
@@ -356,6 +365,7 @@ QStringList QOfonoVoiceCallManager::getCalls() const
 
  void QOfonoVoiceCallManager::hangupMultipartyFinished(QDBusPendingCallWatcher *call)
  {
+     call->deleteLater();
      QDBusPendingReply<> reply = *call;
      bool ok = true;
      if (reply.isError()) {
