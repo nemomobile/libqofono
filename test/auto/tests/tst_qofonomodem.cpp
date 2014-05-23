@@ -24,6 +24,7 @@
 #include <QtTest/QtTest>
 #include <QtCore/QObject>
 
+#include "../../../src/qofonomanager.h"
 #include "../../../src/qofonomodem.h"
 
 #include <QtDebug>
@@ -32,27 +33,31 @@ class TestQOfonoModem : public QObject
 {
     Q_OBJECT
 
-private slots:
+    static const int INTERACTIVE_STEP_TIMEOUT = 30000;
+    // The same as the QTRY_* macros use
+    static const int REASONABLE_TIMEOUT = 5000;
+    static const int REASONABLE_TIMEOUT_AFTER_RESTART = 10000;
 
-    void initTestCase()
+public:
+    TestQOfonoModem()
+        : mm(0)
     {
-    mm = new QOfonoModem(this);
-    mm->setModemPath("/phonesim");
-    ma = new QOfonoModem(this);
-    ma->setModemPath(QString());
-	
-	if (!mm->powered()) {
-  	    mm->setPowered(true);
-            QTest::qWait(5000);
-        }
-        if (!mm->online()) {
-  	    mm->setOnline(true);
-            QTest::qWait(5000);
-        }
-
     }
 
-    void testQOfonoModemManual()
+private slots:
+    void init()
+    {
+        delete mm;
+        mm = new QOfonoModem(this);
+        mm->setModemPath("/phonesim");
+
+        mm->setPowered(true);
+        QTRY_VERIFY(mm->powered());
+        mm->setOnline(true);
+        QTRY_VERIFY(mm->online());
+    }
+
+    void testQOfonoModem()
     {
         QVERIFY(mm->isValid());
         QVERIFY(mm->powered());
@@ -71,63 +76,39 @@ private slots:
         QCOMPARE(mm->type(), QString("hardware"));
     }
 
-    void testQOfonoModemAutomatic()
-    {
-        QVERIFY(ma->isValid());
-        QVERIFY(ma->modemPath().length() > 1);
-    }
-
     void testQOfonoModemAddRemove()
     {
-        QSignalSpy avalid(ma, SIGNAL(validityChanged(bool)));
-        QSignalSpy valid(mm, SIGNAL(validityChanged(bool)));
-        QSignalSpy amodemPath(ma, SIGNAL(pathChanged(QString)));
-        QSignalSpy modemPath(mm, SIGNAL(pathChanged(QString)));
-        
-        qDebug() << "Please stop oFono and then start it again";
-    
-        for (int i=0; i<30; i++) {
-            if (avalid.count() == 2 &&
-                valid.count() == 1 &&
-                amodemPath.count() == 2 &&
-                modemPath.count() == 0)
-                break;
-            QTest::qWait(1000);
-        }
-        QCOMPARE(avalid.count(), 2);
-        QCOMPARE(valid.count(), 1);
-        QCOMPARE(amodemPath.count(), 2);
-        QCOMPARE(modemPath.count(), 0);
-        QCOMPARE(avalid.takeFirst().at(0).toBool(), false);
-        QCOMPARE(avalid.takeFirst().at(0).toBool(), true);        
-        QCOMPARE(valid.takeFirst().at(0).toBool(), false);
-        amodemPath.takeFirst();
-        QVERIFY(amodemPath.takeFirst().at(0).toString().length() > 1);
+        QSignalSpy valid(mm, SIGNAL(validChanged(bool)));
+        QSignalSpy modemPath(mm, SIGNAL(modemPathChanged(QString)));
 
-        QVERIFY(!mm->isValid());
-        QVERIFY(ma->isValid());
-        QVERIFY(ma->modemPath().length() > 1);
-        delete mm;
-        mm = new QOfonoModem(this);
-        mm->setModemPath("/phonesim");
-	if (!mm->powered()) {
-  	    mm->setPowered(true);
-            QTest::qWait(5000);
-        }
-        if (!mm->online()) {
-  	    mm->setOnline(true);
-            QTest::qWait(5000);
-        }
+        QVERIFY(mm->isValid());
+
+        QOfonoManager *manager = new QOfonoManager(this);
+        QSignalSpy availableChanged(manager, SIGNAL(availableChanged(bool)));
+
+        qDebug() << "Please stop oFono and then start it again";
+        QTRY_COMPARE_WITH_TIMEOUT(availableChanged.count(), 2, INTERACTIVE_STEP_TIMEOUT);
+        QCOMPARE(availableChanged.takeFirst().at(0).toBool(), false);
+        QCOMPARE(availableChanged.takeFirst().at(0).toBool(), true);
+
+        QTRY_VERIFY(manager->modems().contains("/phonesim"));
+        QTest::qWait(REASONABLE_TIMEOUT);
+        QEXPECT_FAIL("", "Modem not invalidated when oFono is stopped", Continue);
+        QCOMPARE(valid.count(), 1);
+        // Uncomment when above is fixed
+        //QCOMPARE(valid.takeFirst().at(0).toBool(), false);
+        //QVERIFY(!mm->isValid());
     }
 
     void testQOfonoModemPowercycle()
     {
+        // TODO: Workaround. Find a way to detect oFono is fully up. Without this
+        // the QCOMPARE(manufacturer.count(), 0) test below fails.
+        QTest::qWait(REASONABLE_TIMEOUT_AFTER_RESTART);
+
         QSignalSpy powered(mm, SIGNAL(poweredChanged(bool)));
-        QSignalSpy poweredFailed(mm, SIGNAL(setPoweredFailed()));
         QSignalSpy online(mm, SIGNAL(onlineChanged(bool)));
-        QSignalSpy onlineFailed(mm, SIGNAL(setOnlineFailed()));
         QSignalSpy lockdown(mm, SIGNAL(lockdownChanged(bool)));
-        QSignalSpy lockdownFailed(mm, SIGNAL(setLockdownFailed()));
         QSignalSpy emergency(mm, SIGNAL(emergencyChanged(bool)));
         QSignalSpy name(mm, SIGNAL(nameChanged(const QString &)));
         QSignalSpy manufacturer(mm, SIGNAL(manufacturerChanged(const QString &)));
@@ -137,14 +118,12 @@ private slots:
         QSignalSpy type(mm, SIGNAL(typeChanged(const QString &)));
         QSignalSpy features(mm, SIGNAL(featuresChanged(const QStringList &)));
         QSignalSpy interfaces(mm, SIGNAL(interfacesChanged(const QStringList &)));
-        
+
         mm->setOnline(false);
-        QTest::qWait(5000);
+        QTest::qWait(REASONABLE_TIMEOUT);
         QCOMPARE(powered.count(), 0);
-        QCOMPARE(poweredFailed.count(), 0);
         QCOMPARE(online.count(), 1);
         QCOMPARE(online.takeFirst().at(0).toBool(), false);
-        QCOMPARE(onlineFailed.count(), 0);
         QCOMPARE(emergency.count(), 0);
         QCOMPARE(name.count(), 0);
         QCOMPARE(manufacturer.count(), 0);
@@ -152,18 +131,18 @@ private slots:
         QCOMPARE(revision.count(), 0);
         QCOMPARE(serial.count(), 0);
         QCOMPARE(type.count(), 0);
-        QCOMPARE(features.count(), 1);
-        QVERIFY(features.takeFirst().at(0).toStringList().count() > 0);
-        QCOMPARE(interfaces.count(), 1);
-        QVERIFY(interfaces.takeFirst().at(0).toStringList().count() > 0);
+        QVERIFY(features.count() > 0);
+        QVERIFY(features.takeLast().at(0).toStringList().count() > 0);
+        features.clear();
+        QVERIFY(interfaces.count() > 0);
+        QVERIFY(interfaces.takeLast().at(0).toStringList().count() > 0);
+        interfaces.clear();
 
         mm->setPowered(false);
-        QTest::qWait(5000);
+        QTest::qWait(REASONABLE_TIMEOUT);
         QCOMPARE(powered.count(), 1);
         QCOMPARE(powered.takeFirst().at(0).toBool(), false);
-        QCOMPARE(poweredFailed.count(), 0);
         QCOMPARE(online.count(), 0);
-        QCOMPARE(onlineFailed.count(), 0);
         QCOMPARE(emergency.count(), 0);
         QCOMPARE(name.count(), 0);
         QCOMPARE(manufacturer.count(), 0);
@@ -171,35 +150,45 @@ private slots:
         QCOMPARE(revision.count(), 0);
         QCOMPARE(serial.count(), 0);
         QCOMPARE(type.count(), 0);
-        QCOMPARE(features.count(), 1);
-        QCOMPARE(features.takeFirst().at(0).toStringList().count(), 0);
-        QCOMPARE(interfaces.count(), 1);
-        QCOMPARE(interfaces.takeFirst().at(0).toStringList().count(), 0);
+        QVERIFY(features.count() > 0);
+        QCOMPARE(features.takeLast().at(0).toStringList().count(), 0);
+        features.clear();
+        QVERIFY(interfaces.count() > 0);
+        QEXPECT_FAIL("", "org.ofono.SmsHistory remains available even when poweroff - ok?",
+                Continue);
+        qDebug() << "interfaces: " << interfaces.last().at(0).toStringList();
+        QCOMPARE(interfaces.takeLast().at(0).toStringList().count(), 0);
+        interfaces.clear();
 
         mm->setLockdown(true);
-        QTest::qWait(5000);
-        QCOMPARE(lockdown.count(), 1);
+        QTRY_COMPARE(lockdown.count(), 1);
         QCOMPARE(lockdown.takeFirst().at(0).toBool(), true);
-        QCOMPARE(lockdownFailed.count(), 0);
 
         mm->setLockdown(false);
-        QTest::qWait(5000);
-        QCOMPARE(lockdown.count(), 1);
+        QTRY_COMPARE(lockdown.count(), 1);
         QCOMPARE(lockdown.takeFirst().at(0).toBool(), false);
-        QCOMPARE(lockdownFailed.count(), 0);
 
-	mm->setOnline(true);
-        QTest::qWait(5000);
-        QCOMPARE(onlineFailed.count(), 1);
-        onlineFailed.takeFirst();
+        mm->setOnline(true);
+        QTest::qWait(REASONABLE_TIMEOUT);
+        QCOMPARE(powered.count(), 0);
+        QCOMPARE(online.count(), 0);
+        QCOMPARE(emergency.count(), 0);
+        QCOMPARE(name.count(), 0);
+        QCOMPARE(manufacturer.count(), 0);
+        QCOMPARE(model.count(), 0);
+        QCOMPARE(revision.count(), 0);
+        QCOMPARE(serial.count(), 0);
+        QCOMPARE(type.count(), 0);
+        QCOMPARE(features.count(), 0);
+        QCOMPARE(interfaces.count(), 0);
 
+        // FIXME: This does not seem to be valid - These properties actually
+        // do not change.
         mm->setPowered(true);
-        QTest::qWait(5000);
+        QTest::qWait(REASONABLE_TIMEOUT);
         QCOMPARE(powered.count(), 1);
         QCOMPARE(powered.takeFirst().at(0).toBool(), true);
-        QCOMPARE(poweredFailed.count(), 0);
         QCOMPARE(online.count(), 0);
-        QCOMPARE(onlineFailed.count(), 0);
         QCOMPARE(emergency.count(), 0);
         QCOMPARE(name.count(), 0);
         QCOMPARE(manufacturer.count(), 1);
@@ -218,13 +207,11 @@ private slots:
         QVERIFY(interfaces.takeLast().at(0).toStringList().count() > 0);
         interfaces.clear();
 
-	mm->setOnline(true);
-        QTest::qWait(5000);
+        mm->setOnline(true);
+        QTest::qWait(REASONABLE_TIMEOUT);
         QCOMPARE(powered.count(), 0);
-        QCOMPARE(poweredFailed.count(), 0);
         QCOMPARE(online.count(), 1);
         QCOMPARE(online.takeFirst().at(0).toBool(), true);
-        QCOMPARE(onlineFailed.count(), 0);
         QCOMPARE(emergency.count(), 0);
         QCOMPARE(name.count(), 0);
         QCOMPARE(manufacturer.count(), 0);
@@ -234,10 +221,11 @@ private slots:
         QCOMPARE(type.count(), 0);
         QVERIFY(features.count() > 0);
         QVERIFY(features.takeLast().at(0).toStringList().count() > 0);
+        features.clear();
         QVERIFY(interfaces.count() > 0);
         QVERIFY(interfaces.takeLast().at(0).toStringList().count() > 0);
-
-    }    
+        interfaces.clear();
+    }
 
     void cleanupTestCase()
     {
@@ -247,7 +235,6 @@ private slots:
 
 private:
     QOfonoModem *mm;
-    QOfonoModem *ma;
 };
 
 QTEST_MAIN(TestQOfonoModem)

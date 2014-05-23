@@ -1,76 +1,79 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <testdefinition version="1.0">
-  <suite name="libofono-qt-tests">
-    <set name="libofono-qt-unit-tests">
+  <suite name="libqofono-qt5-tests">
+    <set name="libqofono-qt5-unit-tests">
       <description>Ofono test set with manual, automatic and semi-automatic case.</description>
-      <case name="test_ofonocallbarring">
-        <step>/opt/tests/libofono-qt/test_ofonocallbarring</step>
+      <pre_steps>
+          <step>run-blts-root systemctl stop connman.service</step>
+      </pre_steps>
+      <post_steps>
+          <step>run-blts-root systemctl start connman.service</step>
+      </post_steps>
+      <case name="tst_qofonocallbarring">
+        <step>/opt/tests/libqofono-qt5/runtest.sh tst_qofonocallbarring</step>
       </case>
-      <case name="test_ofonocallforwarding">
-        <step>/opt/tests/libofono-qt/test_ofonocallforwarding</step>
+      <case name="tst_qofonocallforwarding">
+        <step>/opt/tests/libqofono-qt5/runtest.sh tst_qofonocallforwarding</step>
       </case>
-      <case name="test_ofonocallmeter">
-        <step>/opt/tests/libofono-qt/test_ofonocallmeter</step>
+      <case name="tst_qofonocallmeter">
+        <step>/opt/tests/libqofono-qt5/runtest.sh tst_qofonocallmeter</step>
       </case>
-      <case name="test_ofonocallsettings">
-        <step>/opt/tests/libofono-qt/test_ofonocallsettings</step>
+      <case name="tst_qofonocallsettings">
+        <step>/opt/tests/libqofono-qt5/runtest.sh tst_qofonocallsettings</step>
       </case>
-      <case name="test_ofonocallvolume">
-        <step>/opt/tests/libofono-qt/test_ofonocallvolume</step>
+      <case name="tst_qofonocallvolume">
+        <step>/opt/tests/libqofono-qt5/runtest.sh tst_qofonocallvolume</step>
       </case>
-      <case name="test_ofonocellbroadcast">
-        <step>/opt/tests/libofono-qt/test_ofonocellbroadcast</step>
+      <case manual="true" name="tst_qofonocellbroadcast">
+        <step>/opt/tests/libqofono-qt5/runtest.sh tst_qofonocellbroadcast</step>
       </case>
-      <case name="test_ofonoconnmancontext">
-        <step>/opt/tests/libofono-qt/test_ofonoconnmancontext</step>
+      <case name="tst_qofonoconnmancontext">
+        <step>/opt/tests/libqofono-qt5/runtest.sh tst_qofonoconnmancontext</step>
       </case>
-      <case name="test_ofonoconnman">
-        <step>/opt/tests/libofono-qt/test_ofonoconnman</step>
+      <case name="tst_qofonoconnman">
+        <step>/opt/tests/libqofono-qt5/runtest.sh tst_qofonoconnman</step>
       </case>
-      <case name="test_ofonointerface">
-        <step>/opt/tests/libofono-qt/test_ofonointerface</step>
+      <case manual="true" name="tst_qofonomanager">
+        <step>/opt/tests/libqofono-qt5/runtest.sh tst_qofonomanager</step>
       </case>
-      <case name="test_ofonomessagemanager">
-        <step>/opt/tests/libofono-qt/test_ofonomessagemanager</step>
+      <case name="tst_qofonomessagemanager">
+        <step>/opt/tests/libqofono-qt5/runtest.sh tst_qofonomessagemanager</step>
       </case>
-      <case name="test_ofonomessagewaiting">
-      <step>/opt/tests/libofono-qt/test_ofonomessagewaiting</step>
+      <case name="tst_qofonomessagewaiting">
+      <step>/opt/tests/libqofono-qt5/runtest.sh tst_qofonomessagewaiting</step>
       </case>
-      <case manual="true" name="test_ofonomodem">
-        <step>/opt/tests/libofono-qt/test_ofonomodem</step>
+      <case manual="true" name="tst_qofonomodem">
+        <step>/opt/tests/libqofono-qt5/runtest.sh tst_qofonomodem</step>
       </case>
-      <case manual="true" name="test_ofonomodeminterface">
-        <step>/opt/tests/libofono-qt/test_ofonomodeminterface</step>
+      <case manual="true" name="tst_qofonomultipartycall">
+        <!-- EXPECTFAIL: Not aligned with the current API -->
+        <step>/opt/tests/libqofono-qt5/runtest.sh tst_qofonomultipartycall</step>
       </case>
-      <case manual="true" name="test_ofonomodemmanager">
-        <step>/opt/tests/libofono-qt/test_ofonomodemmanager</step>
+      <case name="tst_qofononetworkoperator">
+        <step>/opt/tests/libqofono-qt5/runtest.sh tst_qofononetworkoperator</step>
       </case>
-      <case manual="true" name="test_ofonomultipartycall">
-        <step>/opt/tests/libofono-qt/test_ofonomultipartycall</step>
+      <case name="tst_qofononetworkregistration">
+        <step>/opt/tests/libqofono-qt5/runtest.sh tst_qofononetworkregistration</step>
       </case>
-      <case name="test_ofononetworkoperator">
-        <step>/opt/tests/libofono-qt/test_ofononetworkoperator</step>
+      <case name="tst_qofonophonebook">
+      <step>/opt/tests/libqofono-qt5/runtest.sh tst_qofonophonebook</step>
       </case>
-      <case name="test_ofononetworkregistration">
-        <step>/opt/tests/libofono-qt/test_ofononetworkregistration</step>
+      <case insignificant="true" name="tst_qofonoradiosettings">
+        <step>/opt/tests/libqofono-qt5/runtest.sh tst_qofonoradiosettings</step>
       </case>
-      <case name="test_ofonophonebook">
-      <step>/opt/tests/libofono-qt/test_ofonophonebook</step>
+      <case name="tst_qofonosimmanager">
+        <step>/opt/tests/libqofono-qt5/runtest.sh tst_qofonosimmanager</step>
       </case>
-      <case insignificant="true" name="test_ofonoradiosettings">
-        <step>/opt/tests/libofono-qt/test_ofonoradiosettings</step>
+      <case name="tst_qofonosupplementaryservices">
+        <step>/opt/tests/libqofono-qt5/runtest.sh tst_qofonosupplementaryservices</step>
       </case>
-      <case name="test_ofonosimmanager">
-        <step>/opt/tests/libofono-qt/test_ofonosimmanager</step>
+      <case manual="true" name="tst_qofonovoicecall">
+        <!-- EXPECTFAIL: Not aligned with the current API -->
+        <step>/opt/tests/libqofono-qt5/runtest.sh tst_qofonovoicecall</step>
       </case>
-      <case name="test_ofonosupplementaryservices">
-        <step>/opt/tests/libofono-qt/test_ofonosupplementaryservices</step>
-      </case>
-      <case manual="true" name="test_ofonovoicecall">
-        <step>/opt/tests/libofono-qt/test_ofonovoicecall</step>
-      </case>
-      <case manual="true" name="test_ofonovoicecallmanager">
-        <step>/opt/tests/libofono-qt/test_ofonovoicecallmanager</step>
+      <case manual="true" name="tst_qofonovoicecallmanager">
+        <!-- EXPECTFAIL: Not aligned with the current API -->
+        <step>/opt/tests/libqofono-qt5/runtest.sh tst_qofonovoicecallmanager</step>
       </case>
     </set>
   </suite>

@@ -33,7 +33,6 @@ class TestQOfonoPhonebook : public QObject
     Q_OBJECT
 
 private slots:
-
     void initTestCase()
     {
         m = new QOfonoPhonebook(this);
@@ -42,26 +41,27 @@ private slots:
 
     void testQOfonoPhonebook()
     {
-        QSignalSpy import(m, SIGNAL(importComplete(bool, QString)));
-        m->importing();
+        QSignalSpy importingChanged(m, SIGNAL(importingChanged()));
+        QSignalSpy importReady(m, SIGNAL(importReady(QString)));
 
-        for (int i = 0; i < 30; i++) {
-            if (import.count() > 0)
-                break;
-            QTest::qWait(1000);
-        }
-        QCOMPARE(import.count(), 1);
-        QVariantList list = import.takeFirst();
-        QCOMPARE(list.at(0).toBool(), true);
-        QVERIFY(list.at(1).toStringList().length() > 0);
+        QCOMPARE(m->importing(), false);
+
+        m->beginImport();
+
+        QTRY_COMPARE(importingChanged.count(), 1);
+        importingChanged.takeFirst();
+        QCOMPARE(m->importing(), true);
+        QTRY_COMPARE(importingChanged.count(), 1);
+        importingChanged.takeFirst();
+        QCOMPARE(m->importing(), false);
+        QTRY_COMPARE(importReady.count(), 1);
+        QVERIFY(!importReady.takeFirst().at(0).toString().isEmpty());
     }
-
 
     void cleanupTestCase()
     {
 
     }
-
 
 private:
     QOfonoPhonebook *m;

@@ -30,10 +30,12 @@
 
 #include <QtDebug>
 
-
 class TestQOfonoConnectionManagerContext : public QObject
 {
     Q_OBJECT
+
+    // The same as the QTRY_* macros use
+    static const int REASONABLE_TIMEOUT = 5000;
 
 private slots:
     void initTestCase()
@@ -42,23 +44,18 @@ private slots:
         m = new QOfonoConnectionManager(this);
         m->setModemPath("/phonesim");
         QCOMPARE(m->isValid(), true);
+        QCOMPARE(m->powered(), true);
     }
 
     void testQOfonoConnectionManagerContext ()
     {
-//        QSignalSpy addcon(m,SIGNAL(addContextComplete(bool, const QString&)));
         QSignalSpy conadd(m, SIGNAL(contextAdded(const QString&)));
         QSignalSpy conrem(m, SIGNAL(contextRemoved(const QString&)));
 
         m->addContext("internet");
-        QTest::qWait(1000);
-
-//        QCOMPARE(addcon.count(), 1);
-//        QVariantList list = addcon.takeFirst();
-//        QCOMPARE(list.at(0).toBool(),true);
-        QCOMPARE(conadd.count(), 1);
+        QTRY_COMPARE(conadd.count(), 1);
         QString contextid = conadd.takeFirst().at(0).toString();
-        QCOMPARE(contextid, m->contexts().at(1));
+        QVERIFY(m->contexts().contains(contextid));
 
         QOfonoConnectionContext* context = new QOfonoConnectionContext(this);
         context->setContextPath(contextid);
@@ -74,50 +71,54 @@ private slots:
         QSignalSpy sett6 (context, SIGNAL(IPv6SettingsChanged(const QVariantMap&)));
 
         context->setAccessPointName("hyva");
-        QTest::qWait(5000);
+        QTRY_COMPARE(apn.count(), 1);
+        QCOMPARE(apn.takeFirst().at(0).toString(), QString("hyva"));
         context->setUsername("huomenta");
-        QTest::qWait(5000);
+        QTRY_COMPARE(uname.count(), 1);
+        QCOMPARE(uname.takeFirst().at(0).toString(), QString("huomenta"));
         context->setPassword("HYVA");
-        QTest::qWait(5000);
+        QTRY_COMPARE(pw.count(), 1);
+        QCOMPARE(pw.takeFirst().at(0).toString(), QString("HYVA"));
         context->setName("yota");
-        QTest::qWait(5000);
+        QTRY_COMPARE(name.count(), 1);
+        QCOMPARE(name.takeFirst().at(0).toString(), QString("yota"));
         context->setType("mms");
-        QTest::qWait(5000);
+        QTRY_COMPARE(type.count(), 1);
+        QCOMPARE(type.takeFirst().at(0).toString(), QString("mms"));
         context->setProtocol("ipv6");
-        QTest::qWait(5000);
+        QTRY_COMPARE(proto.count(), 1);
+        QCOMPARE(proto.takeFirst().at(0).toString(), QString("ipv6"));
 
         context->setActive(true);
-        QTest::qWait(10000);
+        QTRY_COMPARE(active.count(), 1);
+        QCOMPARE(active.takeFirst().at(0).toBool(), true);
 
-        QCOMPARE(apn.count(),1);
-        QCOMPARE(apn.takeFirst().at(0).toString(),QString("hyva"));
-        QCOMPARE(uname.count(),1);
-        QCOMPARE(uname.takeFirst().at(0).toString(),QString("huomenta"));
-        QCOMPARE(pw.count(),1);
-        QCOMPARE(pw.takeFirst().at(0).toString(),QString("HYVA"));
-        QCOMPARE(name.count(),1);
-        QCOMPARE(name.takeFirst().at(0).toString(),QString("yota"));
-        QCOMPARE(type.count(),1);
-        QCOMPARE(type.takeFirst().at(0).toString(),QString("mms"));
-        QCOMPARE(sett.count(),0);
-        QCOMPARE(sett6.count(),1);
+        QTRY_COMPARE(sett6.count(), 1);
+        QCOMPARE(sett6.takeFirst().at(0).toMap()["Interface"].value<QString>().left(5),
+            QString("dummy")); // "dummy" plus number
         QVariantMap settings = context->IPv6Settings();
         QCOMPARE(settings["Interface"].value<QString>().left(5),QString("dummy")); // "dummy" plus number
-        QCOMPARE(proto.count(),1);
-        QCOMPARE(proto.takeFirst().at(0).toString(),QString("ipv6"));
-        QCOMPARE(active.count(),1);
-        QCOMPARE(context->active(),true);
-        context->setActive(false);
-        QTest::qWait(5000);
-        delete context;
-        QTest::qWait(5000);
-        m->removeContext(contextid);
-        QTest::qWait(5000);
-        QCOMPARE(active.count(),2);
-        QCOMPARE(sett.count(),0);
-        QCOMPARE(sett6.count(),2);
-        QCOMPARE(conrem.count(), 1);
 
+        QTest::qWait(REASONABLE_TIMEOUT);
+
+        QCOMPARE(apn.count(), 0);
+        QCOMPARE(uname.count(), 0);
+        QCOMPARE(pw.count(), 0);
+        QCOMPARE(name.count(), 0);
+        QCOMPARE(type.count(), 0);
+        QCOMPARE(sett.count(), 0);
+        QCOMPARE(proto.count(), 0);
+        QCOMPARE(active.count(), 0);
+
+        context->setActive(false);
+        QTRY_COMPARE(active.count(), 1);
+        QCOMPARE(active.takeFirst().at(0).toBool(), false);
+
+        delete context;
+
+        m->removeContext(contextid);
+        QTRY_COMPARE(conrem.count(), 1);
+        QCOMPARE(conrem.takeFirst().at(0).toString(), contextid);
     }
 
     void cleanupTestCase()
@@ -127,19 +128,25 @@ private slots:
 
     void tst_provisioning()
     {
+        QSignalSpy conadd(m, SIGNAL(contextAdded(QString)));
+
         Q_FOREACH (const QString con, m->contexts()) {
-         m->removeContext(con);
+            m->removeContext(con);
         }
+        QTRY_COMPARE(m->contexts(), QStringList());
 
         m->addContext("internet");
-
-        QString contextid = m->contexts().at(0);
-        //QCOMPARE(contextid, m->contexts().at(1));
+        QTRY_COMPARE(conadd.count(), 1);
+        QString contextid = conadd.takeFirst().at(0).toString();
+        QVERIFY(m->contexts().contains(contextid));
 
         QOfonoConnectionContext* context = new QOfonoConnectionContext(this);
         context->setContextPath(contextid);
+        QSignalSpy apn(context, SIGNAL(accessPointNameChanged(QString)));
 
         context->setAccessPointName("internet");
+        QTRY_COMPARE(apn.count(), 1);
+        QCOMPARE(apn.takeFirst().at(0).toString(), QString("internet"));
 
         QString operatorString = "Optus";
         QString mcc = "505";
@@ -148,19 +155,24 @@ private slots:
         QCOMPARE(context->validateProvisioning(operatorString, mcc, mnc),true);
 
         context->setAccessPointName("yesinternet");
+        QTRY_COMPARE(apn.count(), 1);
+        QCOMPARE(apn.takeFirst().at(0).toString(), QString("yesinternet"));
         QCOMPARE(context->validateProvisioning(operatorString, mcc, mnc),true);
 
         context->setAccessPointName("connect");
+        QTRY_COMPARE(apn.count(), 1);
+        QCOMPARE(apn.takeFirst().at(0).toString(), QString("connect"));
         QCOMPARE(context->validateProvisioning(operatorString, mcc, mnc),true);
 
         context->setAccessPointName("connectcap");
+        QTRY_COMPARE(apn.count(), 1);
+        QCOMPARE(apn.takeFirst().at(0).toString(), QString("connectcap"));
         QCOMPARE(context->validateProvisioning(operatorString, mcc, mnc),true);
 
         context->setAccessPointName("test");
+        QTRY_COMPARE(apn.count(), 1);
+        QCOMPARE(apn.takeFirst().at(0).toString(), QString("test"));
         QCOMPARE(context->validateProvisioning(operatorString, mcc, mnc),false);
-
-
-
     }
 
 private:

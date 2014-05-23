@@ -28,7 +28,6 @@
 
 #include <QtDebug>
 
-
 class TestQOfonoCallMeter : public QObject
 {
     Q_OBJECT
@@ -36,33 +35,21 @@ class TestQOfonoCallMeter : public QObject
 private slots:
     void initTestCase()
     {
-    m = new QOfonoCallMeter(this);
-    m->setModemPath("/phonesim");
-	QCOMPARE(m->isValid(), true);
+        m = new QOfonoCallMeter(this);
+        m->setModemPath("/phonesim");
+        QCOMPARE(m->isValid(), true);
     }
 
     void testQOfonoCallMeter()
     {
-    	QSignalSpy callMeterComplete(m, SIGNAL(callMeterComplete(bool, uint)));
-    	QSignalSpy callMeterChanged(m, SIGNAL(callMeterChanged(uint)));
-
-    m->callMeter();
-	QTest::qWait(1000);
-	QCOMPARE(callMeterComplete.count(), 1);
-	QVariantList list = callMeterComplete.takeFirst();
-	QCOMPARE(list.at(0).toBool(), true);
-	QCOMPARE(list.at(1).toUInt(), uint(0));
-	QCOMPARE(callMeterChanged.count(), 1);
-	QCOMPARE(callMeterChanged.takeFirst().at(0).toUInt(), uint(0));
-	// should also test change in call meter as a result of voice call
+      QCOMPARE(m->callMeter(), quint32(0));
+      // TODO: should also test change in call meter as a result of voice call
     }
-
 
     void cleanupTestCase()
     {
 
     }
-
 
 private:
     QOfonoCallMeter *m;

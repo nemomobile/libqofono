@@ -31,6 +31,7 @@
 #include "../../../src/qofonovoicecall.h"
 #include <QtDebug>
 
+// FIXME: Not aligned with the current API
 class TestOfonoMultipartyCall : public QObject
 {
     Q_OBJECT

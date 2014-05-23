@@ -60,5 +60,8 @@ SubPackages:
       Summary: qml test app for the ofono Qt bindings
       Group: Development/Tools
       Description: This package contains qml test for ofono Qt bindings.
+      Requires:
+          - blts-tools
       Files:
           - "%{_libdir}/%{name}/tests/*"
+          - "/opt/tests/%{name}/*"

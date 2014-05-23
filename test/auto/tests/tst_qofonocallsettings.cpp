@@ -28,7 +28,6 @@
 
 #include <QtDebug>
 
-
 class TestQOfonoCallSettings : public QObject
 {
     Q_OBJECT
@@ -36,133 +35,72 @@ class TestQOfonoCallSettings : public QObject
 private slots:
     void initTestCase()
     {
-    m = new QOfonoCallSettings(this);
-    m->setModemPath("/phonesim");
-	QCOMPARE(m->isValid(), true);
+        m = new QOfonoCallSettings(this);
+        m->setModemPath("/phonesim");
+        QCOMPARE(m->isValid(), true);
+
+        QSignalSpy ready(m, SIGNAL(readyChanged()));
+        QTRY_COMPARE(ready.count(), 1);
+        QCOMPARE(m->isReady(), true);
     }
 
     void testQOfonoCallSettings()
     {
-        QSignalSpy callingLinePresentationComplete(m, SIGNAL(callingLinePresentationComplete(bool, QString)));
-        QSignalSpy calledLinePresentationComplete(m, SIGNAL(calledLinePresentationComplete(bool, QString)));
-        QSignalSpy callingNamePresentationComplete(m, SIGNAL(callingNamePresentationComplete(bool, QString)));
-        QSignalSpy connectedLinePresentationComplete(m, SIGNAL(connectedLinePresentationComplete(bool, QString)));
-        QSignalSpy connectedLineRestrictionComplete(m, SIGNAL(connectedLineRestrictionComplete(bool, QString)));
-        QSignalSpy callingLineRestrictionComplete(m, SIGNAL(callingLineRestrictionComplete(bool, QString)));
-        QSignalSpy hideCallerIdComplete(m, SIGNAL(hideCallerIdComplete(bool, QString)));
-        QSignalSpy voiceCallWaitingComplete(m, SIGNAL(voiceCallWaitingComplete(bool, QString)));
+        QSignalSpy hideCallerIdComplete(m, SIGNAL(hideCallerIdComplete(bool)));
+        QSignalSpy voiceCallWaitingComplete(m, SIGNAL(voiceCallWaitingComplete(bool)));
 
-        QSignalSpy callingLinePresentationChanged(m, SIGNAL(callingLinePresentationChanged(QString)));        
-        QSignalSpy calledLinePresentationChanged(m, SIGNAL(calledLinePresentationChanged(QString)));        
-        QSignalSpy callingNamePresentationChanged(m, SIGNAL(callingNamePresentationChanged(QString)));        
+        QSignalSpy callingLinePresentationChanged(m, SIGNAL(callingLinePresentationChanged(QString)));
+        QSignalSpy calledLinePresentationChanged(m, SIGNAL(calledLinePresentationChanged(QString)));
+        QSignalSpy callingNamePresentationChanged(m, SIGNAL(callingNamePresentationChanged(QString)));
         QSignalSpy connectedLinePresentationChanged(m, SIGNAL(connectedLinePresentationChanged(QString)));
         QSignalSpy connectedLineRestrictionChanged(m, SIGNAL(connectedLineRestrictionChanged(QString)));
-        QSignalSpy callingLineRestrictionChanged(m, SIGNAL(callingLineRestrictionChanged(QString)));        
-        QSignalSpy hideCallerIdChanged(m, SIGNAL(hideCallerIdChanged(QString)));        
-        QSignalSpy voiceCallWaitingChanged(m, SIGNAL(voiceCallWaitingChanged(QString)));        
+        QSignalSpy callingLineRestrictionChanged(m, SIGNAL(callingLineRestrictionChanged(QString)));
+        QSignalSpy hideCallerIdChanged(m, SIGNAL(hideCallerIdChanged(QString)));
+        QSignalSpy voiceCallWaitingChanged(m, SIGNAL(voiceCallWaitingChanged(QString)));
 
-        QSignalSpy setHideCallerIdFailed(m, SIGNAL(setHideCallerIdFailed()));
-        QSignalSpy setVoiceCallWaitingFailed(m, SIGNAL(setVoiceCallWaitingFailed()));
+        QCOMPARE(m->callingLinePresentation(), QString("enabled"));
+        QCOMPARE(m->calledLinePresentation(), QString("enabled"));
+        QCOMPARE(m->callingNamePresentation(), QString("enabled"));
+        QCOMPARE(m->connectedLinePresentation(), QString("enabled"));
+        QCOMPARE(m->connectedLineRestriction(), QString("enabled"));
+        QCOMPARE(m->callingLineRestriction(), QString("on"));
+        QCOMPARE(m->hideCallerId(), QString("default"));
+        QCOMPARE(m->voiceCallWaiting(), QString("enabled"));
 
-    m->callingLinePresentation();
-	QTest::qWait(5000);
-	QCOMPARE(callingLinePresentationComplete.count(), 1);
-	QVariantList list = callingLinePresentationComplete.takeFirst();
-	QCOMPARE(list.at(0).toBool(), true);
-	QCOMPARE(list.at(1).toString(), QString("enabled"));
-	QVERIFY(callingLinePresentationChanged.count() > 0);	
-	QCOMPARE(callingLinePresentationChanged.takeFirst().at(0).toString(), QString("enabled"));	
-    m->calledLinePresentation();
-	QTest::qWait(1000);
-	QCOMPARE(calledLinePresentationComplete.count(), 1);
-	list = calledLinePresentationComplete.takeFirst();
-	QCOMPARE(list.at(0).toBool(), true);
-	QCOMPARE(list.at(1).toString(), QString("enabled"));
-	QVERIFY(calledLinePresentationChanged.count() > 0);	
-	QCOMPARE(calledLinePresentationChanged.takeFirst().at(0).toString(), QString("enabled"));	
-    m->callingNamePresentation();
-	QTest::qWait(5000);
-	QCOMPARE(callingNamePresentationComplete.count(), 1);
-	list = callingNamePresentationComplete.takeFirst();
-	QCOMPARE(list.at(0).toBool(), true);
-	QCOMPARE(list.at(1).toString(), QString("enabled"));
-	QVERIFY(callingNamePresentationChanged.count() > 0);	
-	QCOMPARE(callingNamePresentationChanged.takeFirst().at(0).toString(), QString("enabled"));	
-        m->connectedLinePresentation();
-	QTest::qWait(1000);
-        QCOMPARE(connectedLinePresentationComplete.count(), 1);
-        list = connectedLinePresentationComplete.takeFirst();
-	QCOMPARE(list.at(0).toBool(), true);
-	QCOMPARE(list.at(1).toString(), QString("enabled"));
-        QVERIFY(connectedLinePresentationChanged.count() > 0);
-        QCOMPARE(connectedLinePresentationChanged.takeFirst().at(0).toString(), QString("enabled"));
-        m->connectedLineRestriction();
-	QTest::qWait(1000);
-        QCOMPARE(connectedLineRestrictionComplete.count(), 1);
-        list = connectedLineRestrictionComplete.takeFirst();
-	QCOMPARE(list.at(0).toBool(), true);
-	QCOMPARE(list.at(1).toString(), QString("enabled"));
-        QVERIFY(connectedLineRestrictionChanged.count() > 0);
-        QCOMPARE(connectedLineRestrictionChanged.takeFirst().at(0).toString(), QString("enabled"));
-    m->callingLineRestriction();
-	QTest::qWait(1000);
-	QCOMPARE(callingLineRestrictionComplete.count(), 1);
-	list = callingLineRestrictionComplete.takeFirst();
-	QCOMPARE(list.at(0).toBool(), true);
-	QCOMPARE(list.at(1).toString(), QString("on"));
-	QVERIFY(callingLineRestrictionChanged.count() > 0);	
-	QCOMPARE(callingLineRestrictionChanged.takeFirst().at(0).toString(), QString("on"));	
-    m->hideCallerId();
-	QTest::qWait(1000);
-	QCOMPARE(hideCallerIdComplete.count(), 1);
-	list = hideCallerIdComplete.takeFirst();
-	QCOMPARE(list.at(0).toBool(), true);
-	QCOMPARE(list.at(1).toString(), QString("default"));
-	QVERIFY(hideCallerIdChanged.count() > 0);	
-	QCOMPARE(hideCallerIdChanged.takeFirst().at(0).toString(), QString("default"));
-    m->voiceCallWaiting();
-	QTest::qWait(1000);
-	QCOMPARE(voiceCallWaitingComplete.count(), 1);
-	list = voiceCallWaitingComplete.takeFirst();
-	QCOMPARE(list.at(0).toBool(), true);
-	QCOMPARE(list.at(1).toString(), QString("enabled"));
-	QVERIFY(voiceCallWaitingChanged.count() > 0);	
-	QCOMPARE(voiceCallWaitingChanged.takeFirst().at(0).toString(), QString("enabled"));
-	
-	m->setHideCallerId("abc");
-	QTest::qWait(1000);
-	QCOMPARE(setHideCallerIdFailed.count(), 1);
-	setHideCallerIdFailed.takeFirst();
-	m->setVoiceCallWaiting("abc");
-	QTest::qWait(1000);
-	QCOMPARE(setVoiceCallWaitingFailed.count(), 1);
-	setVoiceCallWaitingFailed.takeFirst();
-	
-	hideCallerIdChanged.clear();
-	m->setHideCallerId("enabled");
-	QTest::qWait(1000);
-	m->setHideCallerId("default");
-	QTest::qWait(1000);
-	QCOMPARE(hideCallerIdChanged.count(), 2);	
-	QCOMPARE(hideCallerIdChanged.takeFirst().at(0).toString(), QString("enabled"));
-	QCOMPARE(hideCallerIdChanged.takeFirst().at(0).toString(), QString("default"));
-	
-	voiceCallWaitingChanged.clear();	
-	m->setVoiceCallWaiting("disabled");
-	QTest::qWait(5000);
-	m->setVoiceCallWaiting("enabled");
-	QTest::qWait(5000);
-	QCOMPARE(voiceCallWaitingChanged.count(), 2);	
-	QCOMPARE(voiceCallWaitingChanged.takeFirst().at(0).toString(), QString("disabled"));
-	QCOMPARE(voiceCallWaitingChanged.takeFirst().at(0).toString(), QString("enabled"));
+        m->setHideCallerId("abc");
+        QTRY_COMPARE(hideCallerIdComplete.count(), 1);
+        QCOMPARE(hideCallerIdComplete.takeFirst().at(0).toBool(), false);
+        m->setVoiceCallWaiting("abc");
+        QTRY_COMPARE(voiceCallWaitingComplete.count(), 1);
+        QCOMPARE(voiceCallWaitingComplete.takeFirst().at(0).toBool(), false);
+
+        m->setHideCallerId("enabled");
+        QTRY_COMPARE(hideCallerIdComplete.count(), 1);
+        QCOMPARE(hideCallerIdComplete.takeFirst().at(0).toBool(), true);
+        QTRY_COMPARE(hideCallerIdChanged.count(), 1);
+        QCOMPARE(hideCallerIdChanged.takeFirst().at(0).toString(), QString("enabled"));
+        m->setHideCallerId("default");
+        QTRY_COMPARE(hideCallerIdComplete.count(), 1);
+        QCOMPARE(hideCallerIdComplete.takeFirst().at(0).toBool(), true);
+        QTRY_COMPARE(hideCallerIdChanged.count(), 1);
+        QCOMPARE(hideCallerIdChanged.takeFirst().at(0).toString(), QString("default"));
+
+        m->setVoiceCallWaiting("disabled");
+        QTRY_COMPARE(voiceCallWaitingComplete.count(), 1);
+        QCOMPARE(voiceCallWaitingComplete.takeFirst().at(0).toBool(), true);
+        QTRY_COMPARE(voiceCallWaitingChanged.count(), 1);
+        QCOMPARE(voiceCallWaitingChanged.takeFirst().at(0).toString(), QString("disabled"));
+        m->setVoiceCallWaiting("enabled");
+        QTRY_COMPARE(voiceCallWaitingComplete.count(), 1);
+        QCOMPARE(voiceCallWaitingComplete.takeFirst().at(0).toBool(), true);
+        QTRY_COMPARE(voiceCallWaitingChanged.count(), 1);
+        QCOMPARE(voiceCallWaitingChanged.takeFirst().at(0).toString(), QString("enabled"));
     }
-
 
     void cleanupTestCase()
     {
 
     }
-
 
 private:
     QOfonoCallSettings *m;

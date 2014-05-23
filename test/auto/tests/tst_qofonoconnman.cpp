@@ -24,10 +24,11 @@
 #include <QtTest/QtTest>
 #include  <QtCore/QObject>
 
+#include "../../../src/qofonoconnectioncontext.h"
 #include "../../../src/qofonoconnectionmanager.h"
+#include "../../../src/qofonomanager.h"
 
 #include <QtDebug>
-
 
 class TestOfonoConnMan : public QObject
 {
@@ -36,10 +37,12 @@ class TestOfonoConnMan : public QObject
 private slots:
     void initTestCase()
     {
+        QOfonoManager manager;
         m = new QOfonoConnectionManager(this);
         m->setModemPath("/phonesim");
 
         QCOMPARE(m->isValid(), true);
+        QCOMPARE(m->powered(), true);
     }
 
     void testOfonoConnMan()
@@ -51,47 +54,62 @@ private slots:
         QSignalSpy pow(m,SIGNAL(poweredChanged(const bool)));
         QSignalSpy add(m, SIGNAL(contextAdded(const QString&)));
         QSignalSpy rem(m, SIGNAL(contextRemoved(const QString&)));
-        QSignalSpy cadd(m,SIGNAL(addContextComplete(bool, const QString&)));
-        QSignalSpy crem(m,SIGNAL(removeContextComplete(bool)));
-        QSignalSpy deact(m,SIGNAL(deactivateAllComplete(bool)));
 
         m->setPowered(false);
-        QTest::qWait(5000);
+        QTRY_COMPARE(pow.count(), 1);
+        QCOMPARE(pow.takeFirst().at(0).toBool(), false);
+        QCOMPARE(m->powered(), false);
         m->setPowered(true);
-        QTest::qWait(5000);
+        QTRY_COMPARE(pow.count(), 1);
+        QCOMPARE(pow.takeFirst().at(0).toBool(), true);
+        QCOMPARE(m->powered(), true);
         m->setRoamingAllowed(false);
-        QTest::qWait(5000);
+        QTRY_COMPARE(roam.count(), 1);
+        QCOMPARE(roam.takeFirst().at(0).toBool(), false);
+        QCOMPARE(m->roamingAllowed(), false);
         m->setRoamingAllowed(true);
-        QTest::qWait(5000);
+        QTRY_COMPARE(roam.count(), 1);
+        QCOMPARE(roam.takeFirst().at(0).toBool(), true);
+        QCOMPARE(m->roamingAllowed(), true);
         m->addContext(QString("internet"));
-        QTest::qWait(10000);
+        QTRY_COMPARE(add.count(), 1);
+
         QCOMPARE(m->powered(),true);
         QCOMPARE(m->attached(),true);
         QCOMPARE(m->suspended(),false);
         QCOMPARE(m->roamingAllowed(),true);
 
-        QCOMPARE(cadd.count(), 1);
-        QCOMPARE(pow.count(), 2);
-        QCOMPARE(roam.count(), 2);
-        QCOMPARE(add.count(), 1);
         QString path = add.takeFirst().at(0).toString();
-        QString path2 = cadd.takeFirst().at(1).toString();
-        QCOMPARE(path, path2);
         m->removeContext(path);
-        QTest::qWait(10000);
-        QCOMPARE(rem.count(), 1);
-        QCOMPARE(crem.count(), 1);
-        m->deactivateAll();
-        QTest::qWait(5000);
-        QCOMPARE(deact.count(), 1);
+        QTRY_COMPARE(rem.count(), 1);
+        QCOMPARE(rem.takeFirst().at(0).toString(), path);
 
+        m->addContext(QString("internet"));
+        QTRY_COMPARE(add.count(), 1);
+        path = add.takeFirst().at(0).toString();
+        QOfonoConnectionContext* contextInternet = new QOfonoConnectionContext(this);
+        contextInternet->setContextPath(path);
+        m->addContext(QString("mms"));
+        QTRY_COMPARE(add.count(), 1);
+        path = add.takeFirst().at(0).toString();
+        QOfonoConnectionContext* contextMms = new QOfonoConnectionContext(this);
+        contextMms->setContextPath(path);
+
+        contextInternet->setActive(true);
+        contextMms->setActive(true);
+        QTRY_VERIFY(contextInternet->active() && contextMms->active());
+
+        m->deactivateAll();
+        QTRY_VERIFY(!contextInternet->active());
+        QTRY_VERIFY(!contextMms->active());
+
+        QCOMPARE(rem.count(), 0);
     }
 
     void cleanupTestCase()
     {
 
     }
-
 
 private:
     QOfonoConnectionManager *m;

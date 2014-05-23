@@ -29,15 +29,16 @@
 
 #include <QtDebug>
 
-
 class TestQOfonoManager : public QObject
 {
     Q_OBJECT
 
+    static const int INTERACTIVE_STEP_TIMEOUT = 30000;
+
 private slots:
     void initTestCase()
     {
-    mm = new QOfonoManager(this);
+        mm = new QOfonoManager(this);
     }
 
     void testQOfonoManager()
@@ -49,28 +50,24 @@ private slots:
     {
         QSignalSpy add(mm, SIGNAL(modemAdded(const QString &)));
         QSignalSpy remove(mm, SIGNAL(modemRemoved(const QString &)));
+
         qDebug() << "Please stop oFono and then start it again";
-	for (int i=0; i<30; i++) {
-	    if (add.count() > 0 && remove.count() > 0)
-	        break;
-        QTest::qWait(1000);
-	}
+        QTRY_VERIFY_WITH_TIMEOUT(add.count() > 0 && remove.count() > 0,
+                INTERACTIVE_STEP_TIMEOUT);
+
         QVERIFY(mm->modems().contains("/phonesim") == true);
         QOfonoModem *m = new QOfonoModem(this);
         m->setModemPath("/phonesim");
         m->setPowered(true);
-        QTest::qWait(5000);
+        QTRY_VERIFY(m->powered());
         m->setOnline(true);
-        QTest::qWait(5000);
-        QVERIFY(remove.count() > 0);
-	QVERIFY(add.count() > 0);
-    }    
+        QTRY_VERIFY(m->online());
+    }
 
     void cleanupTestCase()
     {
 
     }
-
 
 private:
     QOfonoManager *mm;

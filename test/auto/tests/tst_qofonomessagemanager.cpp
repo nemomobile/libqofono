@@ -25,23 +25,26 @@
 #include <QtCore/QObject>
 #include <QDBusObjectPath>
 
+#include "../../../src/qofonomanager.h"
 #include "../../../src/qofonomessagemanager.h"
 #include "../../../src/qofonomessage.h"
 
 #include <QtDebug>
 
-
 class TestQOfonoMessageManager : public QObject
 {
     Q_OBJECT
 
-private slots:
+    // The same as the QTRY_* macros use
+    static const int REASONABLE_TIMEOUT = 5000;
 
+private slots:
     void initTestCase()
     {
-    m = new QOfonoMessageManager(this);
-    m->setModemPath("/phonesim");
-    QCOMPARE(m->isValid(), true);
+        QOfonoManager manager;
+        m = new QOfonoMessageManager(this);
+        m->setModemPath("/phonesim");
+        QCOMPARE(m->isValid(), true);
     }
 
     void testQOfonoMessageManager()
@@ -58,19 +61,19 @@ private slots:
 
         m->sendMessage("99999", "success");
 
-        QTest::qWait(1000);
-
-        QCOMPARE(sendMessage.count(), 1);
+        QTRY_COMPARE(sendMessage.count(), 1);
         QVariantList params = sendMessage.takeFirst();
         QCOMPARE(params.at(0).toBool(), true);
         QString objectPath = params.at(1).value<QString>();
         QVERIFY(objectPath.length() > 0);
         qDebug() << objectPath;
 
-        QCOMPARE(messageAdded.count(), 1);
-        QCOMPARE(messageRemoved.count(), 1);
-
+        QTRY_COMPARE(messageAdded.count(), 1);
         QString messageId = messageAdded.takeFirst().at(0).toString();
+        QCOMPARE(messageId, objectPath);
+        QTRY_COMPARE(messageRemoved.count(), 1);
+        QCOMPARE(messageRemoved.takeFirst().at(0).toString(), objectPath);
+
         QOfonoMessage* message = new QOfonoMessage();
         message->setMessagePath(messageId);
         QSignalSpy state(message, SIGNAL(stateChanged(const QString)));
@@ -78,9 +81,7 @@ private slots:
 
         m->sendMessage("abc", "fail");
 
-        QTest::qWait(1000);
-
-        QCOMPARE(sendMessage.count(), 1);
+        QTRY_COMPARE(sendMessage.count(), 1);
         params = sendMessage.takeFirst();
         QCOMPARE(params.at(0).toBool(), false);
         objectPath = params.at(1).value<QString>();
@@ -89,187 +90,110 @@ private slots:
 
     void testQOfonoMessageManagerSca()
     {
-        QSignalSpy scaComplete(m, SIGNAL(serviceCenterAddressComplete(bool, QString)));
-        m->serviceCenterAddress();
-        for (int i=0; i<30; i++) {
-            if (scaComplete.count() > 0)
-                break;
-            QTest::qWait(1000);
-        }
-	QCOMPARE(scaComplete.count(), 1);
-	QVariantList params = scaComplete.takeFirst();
-	QCOMPARE(params.at(0).toBool(), true);
-	QString sca = params.at(1).toString();
+        QString sca = m->serviceCenterAddress();
         QVERIFY(sca.length() > 0);
         qDebug() << sca;
 
-//        QSignalSpy setScaFailed(m, SIGNAL(setServiceCenterAddressFailed()));
+        QSignalSpy setScaComplete(m, SIGNAL(setServiceCenterAddressComplete(bool)));
         QSignalSpy scaChanged(m, SIGNAL(serviceCenterAddressChanged(QString)));
 
         m->setServiceCenterAddress("+12345678");
-//        for (int i=0; i<30; i++) {
-//            if (setScaFailed.count() > 0 || scaChanged.count() > 0)
-//                break;
-//            QTest::qWait(1000);
-//        }
-//	QCOMPARE(setScaFailed.count(), 0);
-	QCOMPARE(scaChanged.count(), 1);
-	QCOMPARE(scaChanged.takeFirst().at(0).toString(), QString("+12345678"));
+        QTRY_COMPARE(setScaComplete.count(), 1);
+        QCOMPARE(setScaComplete.takeFirst().at(0).toBool(), true);
+        QTRY_COMPARE(scaChanged.count(), 1);
+        QCOMPARE(scaChanged.takeFirst().at(0).toString(), QString("+12345678"));
+        QCOMPARE(m->serviceCenterAddress(), QString("+12345678"));
 
-//        m->setServiceCenterAddress("");
-//        for (int i=0; i<30; i++) {
-//            if (setScaFailed.count() > 0 || scaChanged.count() > 0)
-//                break;
-//            QTest::qWait(1000);
-//        }
-//	QCOMPARE(setScaFailed.count(), 1);
-//	setScaFailed.takeFirst();
-//	QCOMPARE(scaChanged.count(), 0);
-//	QCOMPARE(m->errorName(), QString("org.ofono.Error.InvalidFormat"));
-//	QCOMPARE(m->errorMessage(), QString("Argument format is not recognized"));
-	
-	m->setServiceCenterAddress(sca);
-//        for (int i=0; i<30; i++) {
-//            if (setScaFailed.count() > 0 || scaChanged.count() > 0)
-//                break;
-//            QTest::qWait(1000);
-//        }
-//	QCOMPARE(setScaFailed.count(), 0);
-	QCOMPARE(scaChanged.count(), 1);
-	QCOMPARE(scaChanged.takeFirst().at(0).toString(), sca);
+        m->setServiceCenterAddress("");
+        QTRY_COMPARE(setScaComplete.count(), 1);
+        QCOMPARE(setScaComplete.takeFirst().at(0).toBool(), false);
+        QCOMPARE(m->serviceCenterAddress(), QString("+12345678"));
+
+        m->setServiceCenterAddress(sca);
+        QTRY_COMPARE(setScaComplete.count(), 1);
+        QCOMPARE(setScaComplete.takeFirst().at(0).toBool(), true);
+        QTRY_COMPARE(scaChanged.count(), 1);
+        QCOMPARE(scaChanged.takeFirst().at(0).toString(), sca);
+        QCOMPARE(m->serviceCenterAddress(), sca);
+
+        QTest::qWait(REASONABLE_TIMEOUT);
+        QCOMPARE(scaChanged.count(), 0);
     }
 
     void testQOfonoMessageManagerUseDeliveryReports()
     {
-        QSignalSpy useDeliveryReportsComplete(m, SIGNAL(useDeliveryReportsComplete(bool, bool)));
-        QSignalSpy setUseDeliveryReportsFailed(m, SIGNAL(setUseDeliveryReportsFailed()));
+        QSignalSpy setUseDeliveryReportsComplete(m, SIGNAL(setUseDeliveryReportsComplete(bool)));
         QSignalSpy useDeliveryReportsChanged(m, SIGNAL(useDeliveryReportsChanged(bool)));
 
-        m->useDeliveryReports();
-        for (int i=0; i<30; i++) {
-            if (useDeliveryReportsComplete.count() > 0)
-                break;
-            QTest::qWait(1000);
-        }
-        QCOMPARE(useDeliveryReportsComplete.count(), 1);
-        QVariantList params = useDeliveryReportsComplete.takeFirst();
-        QCOMPARE(params.at(0).toBool(), true);
-        QCOMPARE(params.at(1).toBool(), false);
+        QCOMPARE(m->useDeliveryReports(), false);
 
         m->setUseDeliveryReports(true);
-        for (int i=0; i<30; i++) {
-            if (setUseDeliveryReportsFailed.count() > 0 || useDeliveryReportsChanged.count() > 0)
-                break;
-            QTest::qWait(1000);
-        }
-        QCOMPARE(setUseDeliveryReportsFailed.count(), 0);
-        QCOMPARE(useDeliveryReportsChanged.count(), 1);
+        QTRY_COMPARE(setUseDeliveryReportsComplete.count(), 1);
+        QCOMPARE(setUseDeliveryReportsComplete.takeFirst().at(0).toBool(), true);
+        QTRY_COMPARE(useDeliveryReportsChanged.count(), 1);
         QCOMPARE(useDeliveryReportsChanged.takeFirst().at(0).toBool(), true);
+        QCOMPARE(m->useDeliveryReports(), true);
 
-         m->setUseDeliveryReports(false);
-         for (int i=0; i<30; i++) {
-             if (setUseDeliveryReportsFailed.count() > 0 || useDeliveryReportsChanged.count() > 0)
-                 break;
-             QTest::qWait(1000);
-         }
-         QCOMPARE(setUseDeliveryReportsFailed.count(), 0);
-         QCOMPARE(useDeliveryReportsChanged.count(), 1);
-         QCOMPARE(useDeliveryReportsChanged.takeFirst().at(0).toBool(), false);
+        m->setUseDeliveryReports(false);
+        QTRY_COMPARE(setUseDeliveryReportsComplete.count(), 1);
+        QCOMPARE(setUseDeliveryReportsComplete.takeFirst().at(0).toBool(), true);
+        QTRY_COMPARE(useDeliveryReportsChanged.count(), 1);
+        QCOMPARE(useDeliveryReportsChanged.takeFirst().at(0).toBool(), false);
+        QCOMPARE(m->useDeliveryReports(), false);
     }
 
     void testQOfonoMessageManagerAlphabet()
     {
-        QSignalSpy alphabetComplete(m, SIGNAL(alphabetComplete(bool, QString)));
-        QSignalSpy setAlphabetFailed(m, SIGNAL(setAlphabetFailed()));
+        QSignalSpy setAlphabetComplete(m, SIGNAL(setAlphabetComplete(bool)));
         QSignalSpy alphabetChanged(m, SIGNAL(alphabetChanged(QString)));
 
-        m->alphabet();
-        for (int i=0; i<30; i++) {
-            if (alphabetComplete.count() > 0)
-                break;
-            QTest::qWait(1000);
-        }
-
-        QCOMPARE(alphabetComplete.count(), 1);
-        QVariantList params = alphabetComplete.takeFirst();
-        QCOMPARE(params.at(0).toBool(), true);
-        QString alphabet = params.at(1).toString();
+        QString alphabet = m->alphabet();
         QVERIFY(alphabet.length() > 0);
         QCOMPARE(alphabet, QString("default"));
-        qDebug() << alphabet;
 
         m->setAlphabet("spanish");
-        for (int i=0; i<30; i++) {
-            if (setAlphabetFailed.count() > 0 || alphabetChanged.count() > 0)
-                break;
-            QTest::qWait(1000);
-        }
-
-        QCOMPARE(setAlphabetFailed.count(), 0);
-        QCOMPARE(alphabetChanged.count(), 1);
+        QTRY_COMPARE(setAlphabetComplete.count(), 1);
+        QCOMPARE(setAlphabetComplete.takeFirst().at(0).toBool(), true);
+        QTRY_COMPARE(alphabetChanged.count(), 1);
         QCOMPARE(alphabetChanged.takeFirst().at(0).toString(), QString("spanish"));
+        QCOMPARE(m->alphabet(), QString("spanish"));
 
         m->setAlphabet(alphabet);
-        for (int i=0; i<30; i++) {
-            if (setAlphabetFailed.count() > 0 || alphabetChanged.count() > 0)
-                break;
-            QTest::qWait(1000);
-        }
-
-        QCOMPARE(setAlphabetFailed.count(), 0);
-        QCOMPARE(alphabetChanged.count(), 1);
+        QTRY_COMPARE(setAlphabetComplete.count(), 1);
+        QCOMPARE(setAlphabetComplete.takeFirst().at(0).toBool(), true);
+        QTRY_COMPARE(alphabetChanged.count(), 1);
         QCOMPARE(alphabetChanged.takeFirst().at(0).toString(), alphabet);
+        QCOMPARE(m->alphabet(), alphabet);
     }
 
     void testQOfonoMessageManagerBearer()
     {
-        QSignalSpy bearerComplete(m, SIGNAL(bearerComplete(bool, QString)));
-        QSignalSpy setBearerFailed(m, SIGNAL(setBearerFailed()));
+        QSignalSpy setBearerComplete(m, SIGNAL(setBearerComplete(bool)));
         QSignalSpy bearerChanged(m, SIGNAL(bearerChanged(QString)));
 
-        m->bearer();
-        for (int i=0; i<30; i++) {
-            if (bearerComplete.count() > 0)
-                break;
-            QTest::qWait(1000);
-        }
-
-        QCOMPARE(bearerComplete.count(), 1);
-        QVariantList params = bearerComplete.takeFirst();
-        QCOMPARE(params.at(0).toBool(), true);
-        QString bearer = params.at(1).toString();
+        QString bearer = m->bearer();
         QVERIFY(bearer.length() > 0);
         QCOMPARE(bearer, QString("cs-preferred"));
-        qDebug() << bearer;
 
         m->setBearer("ps-preferred");
-        for (int i=0; i<30; i++) {
-            if (setBearerFailed.count() > 0 || bearerChanged.count() > 0)
-                break;
-            QTest::qWait(1000);
-        }
-
-        QCOMPARE(setBearerFailed.count(), 0);
-        QCOMPARE(bearerChanged.count(), 1);
+        QTRY_COMPARE(setBearerComplete.count(), 1);
+        QCOMPARE(setBearerComplete.takeFirst().at(0).toBool(), true);
+        QTRY_COMPARE(bearerChanged.count(), 1);
         QCOMPARE(bearerChanged.takeFirst().at(0).toString(), QString("ps-preferred"));
+        QCOMPARE(m->bearer(), QString("ps-preferred"));
 
         m->setBearer(bearer); // change value
-        for (int i=0; i<30; i++) {
-            if (setBearerFailed.count() > 0 || bearerChanged.count() > 0)
-                break;
-            QTest::qWait(1000);
-        }
-
-        QCOMPARE(setBearerFailed.count(), 0);
-        QCOMPARE(bearerChanged.count(), 1);
-        QCOMPARE(bearerChanged.takeFirst().at(0).toString(), bearer);        
+        QTRY_COMPARE(setBearerComplete.count(), 1);
+        QCOMPARE(setBearerComplete.takeFirst().at(0).toBool(), true);
+        QTRY_COMPARE(bearerChanged.count(), 1);
+        QCOMPARE(bearerChanged.takeFirst().at(0).toString(), bearer);
+        QCOMPARE(m->bearer(), bearer);
     }
 
     void cleanupTestCase()
     {
 
     }
-
 
 private:
     QOfonoMessageManager *m;

@@ -21,8 +21,6 @@
  *
  */
 
-
-
 #include <QtTest/QtTest>
 #include <QtCore/QObject>
 
@@ -35,6 +33,8 @@ class TestQOfonoCellBroadcast : public QObject
 {
     Q_OBJECT
 
+    static const int INTERACTIVE_STEP_TIMEOUT = 30000;
+
 private slots:
     void initTestCase()
     {
@@ -43,40 +43,24 @@ private slots:
 
         QCOMPARE(m->isValid(), true);
     }
+
     void testQOfonoCellBroadcast()
     {
-        QSignalSpy cellPowered(m, SIGNAL(powerChanged(bool)));
         QSignalSpy inBroadcast(m, SIGNAL(incomingBroadcast( QString ,quint16)));
-     //   QSignalSpy emBroadcast(m, SIGNAL(emergencyBroadcast( QString , QVariantMap)));
+        //QSignalSpy emBroadcast(m, SIGNAL(emergencyBroadcast( QString , QVariantMap)));
         QSignalSpy topicsSpy(m, SIGNAL(topicsChanged(QString)));
 
-        QOfonoModem modem;
-        modem.setModemPath(m->modemPath());
-        qDebug() << modem.powered() << m->topics();
-        bool isPowered = modem.powered();
-        modem.setPowered(!isPowered);
-        QTest::qWait(2000);
-        QCOMPARE(cellPowered.count(), 1);
-        QVariantList list = cellPowered.takeFirst();
-        QCOMPARE(list.at(0).toBool(), !isPowered);
-        QCOMPARE(modem.powered(),!isPowered);
-
-        modem.setPowered(true);
-
         qDebug() << "Please send CBM using phonesim";
-        QTest::qWait(10000);
-
-//        QCOMPARE(emBroadcast.count(), 1);
-        QCOMPARE(inBroadcast.count(), 1);
-        QVariantList list2 = cellPowered.takeFirst();
-        qDebug() << list2.at(0).toString();
+        //QCOMPARE(emBroadcast.count(), 1);
+        QTRY_COMPARE_WITH_TIMEOUT(inBroadcast.count(), 1, INTERACTIVE_STEP_TIMEOUT);
 
         QString topicsList = "20,50-51,60";
         m->setTopics("");
+        QTRY_COMPARE(topicsSpy.count(), 1);
+        QCOMPARE(topicsSpy.takeFirst().at(0).toString(), QString());
         m->setTopics(topicsList);
-        qDebug() << modem.powered() << m->topics();
-        QTest::qWait(4000);
-        QCOMPARE(topicsSpy.count(), 1);
+        QTRY_COMPARE(topicsSpy.count(), 1);
+        QCOMPARE(topicsSpy.takeFirst().at(0).toString(), topicsList);
     }
 
 private:

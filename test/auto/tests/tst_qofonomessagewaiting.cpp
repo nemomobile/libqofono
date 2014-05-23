@@ -33,8 +33,10 @@ class TestQOfonoMessageWaiting : public QObject
 {
     Q_OBJECT
 
-private slots:
+    // The same as the QTRY_* macros use
+    static const int REASONABLE_TIMEOUT = 5000;
 
+private slots:
     void initTestCase()
     {
         m = new QOfonoMessageWaiting(this);
@@ -46,31 +48,38 @@ private slots:
     {
         QOfonoModem modem;
         modem.setModemPath(m->modemPath());
+        QSignalSpy modemOnline(&modem, SIGNAL(onlineChanged(bool)));
         QSignalSpy waiting(m, SIGNAL(voicemailWaitingChanged(bool)));
         QSignalSpy messageCount(m, SIGNAL(voicemailMessageCountChanged(int)));
         QSignalSpy mailboxNumber(m, SIGNAL(voicemailMailboxNumberChanged(QString)));
-        QSignalSpy setNumberFailed(m, SIGNAL(setVoicemailMailboxNumberFailed()));
+        QSignalSpy setNumberComplete(m, SIGNAL(voicemailMailboxComplete(bool)));
 
         QCOMPARE(m->voicemailWaiting(), true);
         QCOMPARE(m->voicemailMessageCount(), 1);
         QCOMPARE(m->voicemailMailboxNumber(), QString("6789"));
 
         modem.setOnline(false);
-        QTest::qWait(5000);
+        QTRY_COMPARE(modemOnline.count(), 1);
+        QCOMPARE(modemOnline.takeFirst().at(0).toBool(), false);
+
+        QTest::qWait(REASONABLE_TIMEOUT);
         QCOMPARE(waiting.count(), 0);
         QCOMPARE(messageCount.count(), 0);
         QCOMPARE(mailboxNumber.count(), 0);
-        QCOMPARE(setNumberFailed.count(), 0);
+        QCOMPARE(setNumberComplete.count(), 0);
 
         modem.setOnline(true);
-        QTest::qWait(5000);
-        QCOMPARE(waiting.count(), 1);
+        QTRY_COMPARE(modemOnline.count(), 1);
+        QCOMPARE(modemOnline.takeFirst().at(0).toBool(), true);
+        // FIXME: This does not seem to be correct. These properties actually
+        // do not change.
+        QTRY_COMPARE(waiting.count(), 1);
         QCOMPARE(waiting.takeFirst().at(0).toBool(), true);
-        QCOMPARE(messageCount.count(), 1);
+        QTRY_COMPARE(messageCount.count(), 1);
         QCOMPARE(messageCount.takeFirst().at(0).toInt(), 1);
-        QCOMPARE(mailboxNumber.count(), 1);
+        QTRY_COMPARE(mailboxNumber.count(), 1);
         QCOMPARE(mailboxNumber.takeFirst().at(0).toString(), QString("6789"));
-        QCOMPARE(setNumberFailed.count(), 0);
+        QTRY_COMPARE(setNumberComplete.count(), 0);
     }
 
     void testQOfonoMessageWaitingSet()
@@ -78,41 +87,36 @@ private slots:
         QSignalSpy waiting(m, SIGNAL(voicemailWaitingChanged(bool)));
         QSignalSpy messageCount(m, SIGNAL(voicemailMessageCountChanged(int)));
         QSignalSpy mailboxNumber(m, SIGNAL(voicemailMailboxNumberChanged(QString)));
-        QSignalSpy setNumberFailed(m, SIGNAL(setVoicemailMailboxNumberFailed()));
+        QSignalSpy setNumberComplete(m, SIGNAL(voicemailMailboxComplete(bool)));
 
         QString number = m->voicemailMailboxNumber();
 
         m->setVoicemailMailboxNumber("");
-        QTest::qWait(1000);
+        QTRY_COMPARE(setNumberComplete.count(), 1);
+        QCOMPARE(setNumberComplete.takeFirst().at(0).toBool(), false);
+
+        m->setVoicemailMailboxNumber("1234");
+        QTRY_COMPARE(mailboxNumber.count(), 1);
+        QCOMPARE(mailboxNumber.takeFirst().at(0).toString(), QString("1234"));
+        QTRY_COMPARE(setNumberComplete.count(), 1);
+        QCOMPARE(setNumberComplete.takeFirst().at(0).toBool(), true);
+
+        m->setVoicemailMailboxNumber(number);
+        QTRY_COMPARE(mailboxNumber.count(), 1);
+        QCOMPARE(mailboxNumber.takeFirst().at(0).toString(), number);
+        QTRY_COMPARE(setNumberComplete.count(), 1);
+        QCOMPARE(setNumberComplete.takeFirst().at(0).toBool(), true);
+
+        QTest::qWait(REASONABLE_TIMEOUT);
         QCOMPARE(waiting.count(), 0);
         QCOMPARE(messageCount.count(), 0);
         QCOMPARE(mailboxNumber.count(), 0);
-        QCOMPARE(setNumberFailed.count(), 1);
-        setNumberFailed.takeFirst();
-
-        m->setVoicemailMailboxNumber("1234");
-        QTest::qWait(1000);
-        QCOMPARE(waiting.count(), 0);
-        QCOMPARE(messageCount.count(), 0);
-        QCOMPARE(mailboxNumber.count(), 1);
-        QCOMPARE(mailboxNumber.takeFirst().at(0).toString(), QString("1234"));
-        QCOMPARE(setNumberFailed.count(), 0);
-
-        m->setVoicemailMailboxNumber(number);
-        QTest::qWait(1000);
-        QCOMPARE(waiting.count(), 0);
-        QCOMPARE(messageCount.count(), 0);
-        QCOMPARE(mailboxNumber.count(), 1);
-        QCOMPARE(mailboxNumber.takeFirst().at(0).toString(), number);
-        QCOMPARE(setNumberFailed.count(), 0);
     }
-
 
     void cleanupTestCase()
     {
 
     }
-
 
 private:
     QOfonoMessageWaiting *m;
