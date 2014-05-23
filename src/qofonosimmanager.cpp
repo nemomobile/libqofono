@@ -85,10 +85,10 @@ void QOfonoSimManager::setModemPath(const QString &path)
     Q_EMIT modemPathChanged(path);
 
     d_ptr->oModem->setModemPath(path);
-    if (d_ptr->oModem->interfaces().contains(QLatin1String("org.ofono.SimManager")))
-        initialize();
-    else
-        connect(d_ptr->oModem,SIGNAL(interfacesChanged(QStringList)),this,SLOT(modemInterfacesChanged(QStringList)));
+
+    connect(d_ptr->oModem, SIGNAL(interfacesChanged(QStringList)),
+            this, SLOT(modemInterfacesChanged(QStringList)));
+    modemInterfacesChanged(d_ptr->oModem->interfaces());
 }
 
 void QOfonoSimManager::initialize()
@@ -111,8 +111,17 @@ void QOfonoSimManager::initialize()
 void QOfonoSimManager::modemInterfacesChanged(const QStringList &list)
 {
     if (list.contains(QLatin1String("org.ofono.SimManager"))) {
-        disconnect(d_ptr->oModem,SIGNAL(interfacesChanged(QStringList)),this,SLOT(modemInterfacesChanged(QStringList)));
-        initialize();
+        // FIXME: must also handle !simMan->isValid and maybe
+        // properties.isEmpty
+        if (!d_ptr->simManager)
+            initialize();
+    } else {
+        if (d_ptr->simManager) {
+            delete d_ptr->simManager;
+            d_ptr->simManager = 0;
+            foreach (const QString &p, d_ptr->properties.keys())
+                updateProperty(p, QVariant());
+        }
     }
 }
 
@@ -593,5 +602,5 @@ int QOfonoSimManager::pukToPin(QOfonoSimManager::PinType puk)
 
 bool QOfonoSimManager::isValid() const
 {
-    return d_ptr->simManager->isValid();
+    return d_ptr->simManager && d_ptr->simManager->isValid();
 }
