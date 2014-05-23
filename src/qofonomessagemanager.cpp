@@ -104,7 +104,7 @@ void QOfonoMessageManager::propertyChanged(const QString& property, const QDBusV
         Q_EMIT useDeliveryReportsChanged(value.value<bool>());
     } else if (property == QLatin1String("Bearer")) {
         Q_EMIT bearerChanged(value.value<QString>());
-    } else if (property == QLatin1String("AlphabetChanged")) {
+    } else if (property == QLatin1String("Alphabet")) {
         Q_EMIT alphabetChanged(value.value<QString>());
     }
 }
