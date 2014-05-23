@@ -68,6 +68,10 @@ void QOfonoMessageManager::setModemPath(const QString &path)
                     this,SIGNAL(immediateMessage(QString,QVariantMap)));
             connect(d_ptr->messageManager,SIGNAL(IncomingMessage(QString,QVariantMap)),
                     this,SIGNAL(incomingMessage(QString,QVariantMap)));
+            connect(d_ptr->messageManager,SIGNAL(MessageAdded(QDBusObjectPath,QVariantMap)),
+                    this,SLOT(onMessageAdded(QDBusObjectPath,QVariantMap)));
+            connect(d_ptr->messageManager,SIGNAL(MessageRemoved(QDBusObjectPath)),
+                    this,SLOT(onMessageRemoved(QDBusObjectPath)));
 
             QDBusPendingReply<QVariantMap> reply;
             reply = d_ptr->messageManager->GetProperties();
@@ -199,20 +203,25 @@ QStringList QOfonoMessageManager::messages()
 }
 
 
-void QOfonoMessageManager::onMessageAdded(const QString &message)
+void QOfonoMessageManager::onMessageAdded(const QDBusObjectPath &path,
+        const QVariantMap &properties)
 {
+    Q_UNUSED(properties);
+
     if (d_ptr->messageManager) {
-        if (!d_ptr->messageList.contains(message)) {
-            d_ptr->messageList.append(message);
+        if (!d_ptr->messageList.contains(path.path())) {
+            d_ptr->messageList.append(path.path());
+            Q_EMIT messageAdded(path.path());
         }
     }
 }
 
-void QOfonoMessageManager::onMessageRemoved(const QString &message)
+void QOfonoMessageManager::onMessageRemoved(const QDBusObjectPath &path)
 {
     if (d_ptr->messageManager) {
-        if (d_ptr->messageList.contains(message)) {
-            d_ptr->messageList.removeOne(message);
+        if (d_ptr->messageList.contains(path.path())) {
+            d_ptr->messageList.removeOne(path.path());
+            Q_EMIT messageRemoved(path.path());
         }
     }
 }
@@ -228,6 +237,7 @@ void QOfonoMessageManager::getMessagesFinished(const ObjectPathPropertiesList &l
 //    messages = reply2.value();
     foreach(ObjectPathProperties message, list) {
         d_ptr->messageList << message.path.path();
+        Q_EMIT messageAdded(message.path.path());
     }
     Q_EMIT messagesFinished();
 }
