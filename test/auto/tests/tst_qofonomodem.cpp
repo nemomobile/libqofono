@@ -110,14 +110,14 @@ private slots:
         QSignalSpy online(mm, SIGNAL(onlineChanged(bool)));
         QSignalSpy lockdown(mm, SIGNAL(lockdownChanged(bool)));
         QSignalSpy emergency(mm, SIGNAL(emergencyChanged(bool)));
-        QSignalSpy name(mm, SIGNAL(nameChanged(const QString &)));
-        QSignalSpy manufacturer(mm, SIGNAL(manufacturerChanged(const QString &)));
-        QSignalSpy model(mm, SIGNAL(modelChanged(const QString &)));
-        QSignalSpy revision(mm, SIGNAL(revisionChanged(const QString &)));
-        QSignalSpy serial(mm, SIGNAL(serialChanged(const QString &)));
-        QSignalSpy type(mm, SIGNAL(typeChanged(const QString &)));
-        QSignalSpy features(mm, SIGNAL(featuresChanged(const QStringList &)));
-        QSignalSpy interfaces(mm, SIGNAL(interfacesChanged(const QStringList &)));
+        QSignalSpy name(mm, SIGNAL(nameChanged(QString)));
+        QSignalSpy manufacturer(mm, SIGNAL(manufacturerChanged(QString)));
+        QSignalSpy model(mm, SIGNAL(modelChanged(QString)));
+        QSignalSpy revision(mm, SIGNAL(revisionChanged(QString)));
+        QSignalSpy serial(mm, SIGNAL(serialChanged(QString)));
+        QSignalSpy type(mm, SIGNAL(typeChanged(QString)));
+        QSignalSpy features(mm, SIGNAL(featuresChanged(QStringList)));
+        QSignalSpy interfaces(mm, SIGNAL(interfacesChanged(QStringList)));
 
         mm->setOnline(false);
         QTest::qWait(REASONABLE_TIMEOUT);

@@ -47,13 +47,13 @@ private slots:
 
     void testOfonoConnMan()
     {
-        QSignalSpy attch(m, SIGNAL(attachedChanged(const bool)));
-        QSignalSpy sus(m,SIGNAL(suspendedChanged(const bool)));
-        QSignalSpy ber(m, SIGNAL(bearerChanged(const QString&)));
-        QSignalSpy roam(m,SIGNAL(roamingAllowedChanged(const bool)));
-        QSignalSpy pow(m,SIGNAL(poweredChanged(const bool)));
-        QSignalSpy add(m, SIGNAL(contextAdded(const QString&)));
-        QSignalSpy rem(m, SIGNAL(contextRemoved(const QString&)));
+        QSignalSpy attch(m, SIGNAL(attachedChanged(bool)));
+        QSignalSpy sus(m,SIGNAL(suspendedChanged(bool)));
+        QSignalSpy ber(m, SIGNAL(bearerChanged(QString)));
+        QSignalSpy roam(m,SIGNAL(roamingAllowedChanged(bool)));
+        QSignalSpy pow(m,SIGNAL(poweredChanged(bool)));
+        QSignalSpy add(m, SIGNAL(contextAdded(QString)));
+        QSignalSpy rem(m, SIGNAL(contextRemoved(QString)));
 
         m->setPowered(false);
         QTRY_COMPARE(pow.count(), 1);

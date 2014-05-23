@@ -59,8 +59,8 @@ private slots:
         QOfonoVoiceCall* call = new QOfonoVoiceCall(this);
         call->setVoiceCallPath(callid);
 
-        QSignalSpy state(call, SIGNAL(stateChanged(const QString)));
-        QSignalSpy discreason(call,SIGNAL(disconnectReason(const QString)));
+        QSignalSpy state(call, SIGNAL(stateChanged(QString)));
+        QSignalSpy discreason(call,SIGNAL(disconnectReason(QString)));
         QSignalSpy hspy(call, SIGNAL(hangupComplete(bool)));
         QSignalSpy li (call, SIGNAL(lineIdentificationChanged(QString)));
         QSignalSpy name (call, SIGNAL(nameChanged(QString)));
@@ -101,7 +101,7 @@ private slots:
     void testQOfonoVoiceCallStep2()
     {
         //Dial failure, incoming, answer and local hangup
-        QSignalSpy callsignal(m, SIGNAL(callAdded(const QString)));
+        QSignalSpy callsignal(m, SIGNAL(callAdded(QString)));
 
         m->dial("199","");
         QTest::qWait(8000);
@@ -111,9 +111,9 @@ private slots:
 
         QOfonoVoiceCall* call = new QOfonoVoiceCall(this);
         call->setVoiceCallPath(callid);
-        QSignalSpy state(call, SIGNAL(stateChanged(const QString)));
-        QSignalSpy time(call,SIGNAL(startTimeChanged(const QString)));
-        QSignalSpy discreason(call,SIGNAL(disconnectReason(const QString)));
+        QSignalSpy state(call, SIGNAL(stateChanged(QString)));
+        QSignalSpy time(call,SIGNAL(startTimeChanged(QString)));
+        QSignalSpy discreason(call,SIGNAL(disconnectReason(QString)));
         QSignalSpy hspy(call, SIGNAL(hangupComplete(bool)));
         QSignalSpy aspy(call, SIGNAL(answerComplete(bool)));
 
@@ -154,7 +154,7 @@ private slots:
     void testQOfonoVoiceCallStep3()
     {
         //Dial failed, incoming, no answer and state change to disconnect
-        QSignalSpy callsignal(m, SIGNAL(callAdded(const QString)));
+        QSignalSpy callsignal(m, SIGNAL(callAdded(QString)));
 
         m->dial("177","");
         QTest::qWait(3000);
@@ -164,8 +164,8 @@ private slots:
 
         QOfonoVoiceCall* call = new QOfonoVoiceCall(this);
         call->setVoiceCallPath(callid);
-        QSignalSpy state(call, SIGNAL(stateChanged(const QString)));
-        QSignalSpy discreason(call,SIGNAL(disconnectReason(const QString)));
+        QSignalSpy state(call, SIGNAL(stateChanged(QString)));
+        QSignalSpy discreason(call,SIGNAL(disconnectReason(QString)));
 
         QTest::qWait(1000);
         QCOMPARE(call->state(),QString("incoming"));
@@ -179,7 +179,7 @@ private slots:
     void testQOfonoVoiceCallStep4()
     {
         //Deflect
-        QSignalSpy callsignal(m, SIGNAL(callAdded(const QString)));
+        QSignalSpy callsignal(m, SIGNAL(callAdded(QString)));
         m->dial("199","");
         QTest::qWait(8000);
 

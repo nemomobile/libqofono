@@ -49,8 +49,8 @@ private slots:
 
     void testQOfonoConnectionManagerContext ()
     {
-        QSignalSpy conadd(m, SIGNAL(contextAdded(const QString&)));
-        QSignalSpy conrem(m, SIGNAL(contextRemoved(const QString&)));
+        QSignalSpy conadd(m, SIGNAL(contextAdded(QString)));
+        QSignalSpy conrem(m, SIGNAL(contextRemoved(QString)));
 
         m->addContext("internet");
         QTRY_COMPARE(conadd.count(), 1);
@@ -60,15 +60,15 @@ private slots:
         QOfonoConnectionContext* context = new QOfonoConnectionContext(this);
         context->setContextPath(contextid);
 
-        QSignalSpy active(context, SIGNAL(activeChanged(const bool)));
-        QSignalSpy apn(context,SIGNAL(accessPointNameChanged(const QString&)));
-        QSignalSpy name(context, SIGNAL(nameChanged(const QString&)));
-        QSignalSpy type (context, SIGNAL(typeChanged(const QString&)));
-        QSignalSpy uname (context, SIGNAL(usernameChanged(const QString&)));
-        QSignalSpy pw (context, SIGNAL(passwordChanged(const QString&)));
-        QSignalSpy proto (context, SIGNAL(protocolChanged(const QString&)));
-        QSignalSpy sett (context, SIGNAL(settingsChanged(const QVariantMap&)));
-        QSignalSpy sett6 (context, SIGNAL(IPv6SettingsChanged(const QVariantMap&)));
+        QSignalSpy active(context, SIGNAL(activeChanged(bool)));
+        QSignalSpy apn(context,SIGNAL(accessPointNameChanged(QString)));
+        QSignalSpy name(context, SIGNAL(nameChanged(QString)));
+        QSignalSpy type (context, SIGNAL(typeChanged(QString)));
+        QSignalSpy uname (context, SIGNAL(usernameChanged(QString)));
+        QSignalSpy pw (context, SIGNAL(passwordChanged(QString)));
+        QSignalSpy proto (context, SIGNAL(protocolChanged(QString)));
+        QSignalSpy sett (context, SIGNAL(settingsChanged(QVariantMap)));
+        QSignalSpy sett6 (context, SIGNAL(IPv6SettingsChanged(QVariantMap)));
 
         context->setAccessPointName("hyva");
         QTRY_COMPARE(apn.count(), 1);

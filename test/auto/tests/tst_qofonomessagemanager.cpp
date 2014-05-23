@@ -76,7 +76,7 @@ private slots:
 
         QOfonoMessage* message = new QOfonoMessage();
         message->setMessagePath(messageId);
-        QSignalSpy state(message, SIGNAL(stateChanged(const QString)));
+        QSignalSpy state(message, SIGNAL(stateChanged(QString)));
         qDebug() << message->state();
 
         m->sendMessage("abc", "fail");

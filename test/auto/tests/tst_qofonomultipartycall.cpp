@@ -86,8 +86,8 @@ private slots:
         QOfonoVoiceCall* c1 = new QOfonoVoiceCall();
         c1->setVoiceCallPath(c1id);
 
-        QSignalSpy c1state(c1, SIGNAL(stateChanged(const QString)));
-        QSignalSpy c1discreason(c1,SIGNAL(disconnectReason(const QString)));
+        QSignalSpy c1state(c1, SIGNAL(stateChanged(QString)));
+        QSignalSpy c1discreason(c1,SIGNAL(disconnectReason(QString)));
         QSignalSpy c1li (c1, SIGNAL(lineIdentificationChanged(QString)));
         QSignalSpy c1name (c1, SIGNAL(nameChanged(QString)));
         QSignalSpy c1info (c1, SIGNAL(informationChanged(QString)));
@@ -127,9 +127,9 @@ private slots:
 
         QOfonoVoiceCall* c2 = new QOfonoVoiceCall();
         c2->setVoiceCallPath(c2id);
-        QSignalSpy c2state(c2, SIGNAL(stateChanged(const QString)));
-        QSignalSpy c2time(c2,SIGNAL(startTimeChanged(const QString)));
-        QSignalSpy c2discreason(c2,SIGNAL(disconnectReason(const QString)));
+        QSignalSpy c2state(c2, SIGNAL(stateChanged(QString)));
+        QSignalSpy c2time(c2,SIGNAL(startTimeChanged(QString)));
+        QSignalSpy c2discreason(c2,SIGNAL(disconnectReason(QString)));
 
         QSignalSpy c2li (c2, SIGNAL(lineIdentificationChanged(QString)));
         QSignalSpy c2name (c2, SIGNAL(nameChanged(QString)));
@@ -214,8 +214,8 @@ private slots:
         QOfonoVoiceCall* c3 = new QOfonoVoiceCall();
         c3->setVoiceCallPath(c3id);
 
-        QSignalSpy c3state(c3, SIGNAL(stateChanged(const QString)));
-        QSignalSpy c3discreason(c3,SIGNAL(disconnectReason(const QString)));
+        QSignalSpy c3state(c3, SIGNAL(stateChanged(QString)));
+        QSignalSpy c3discreason(c3,SIGNAL(disconnectReason(QString)));
         QSignalSpy c3li (c3, SIGNAL(lineIdentificationChanged(QString)));
         QSignalSpy c3name (c3, SIGNAL(nameChanged(QString)));
         QSignalSpy c3info (c3, SIGNAL(informationChanged(QString)));

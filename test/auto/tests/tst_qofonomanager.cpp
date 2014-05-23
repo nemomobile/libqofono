@@ -48,8 +48,8 @@ private slots:
 
     void testQOfonoManagerAddRemove()
     {
-        QSignalSpy add(mm, SIGNAL(modemAdded(const QString &)));
-        QSignalSpy remove(mm, SIGNAL(modemRemoved(const QString &)));
+        QSignalSpy add(mm, SIGNAL(modemAdded(QString)));
+        QSignalSpy remove(mm, SIGNAL(modemRemoved(QString)));
 
         qDebug() << "Please stop oFono and then start it again";
         QTRY_VERIFY_WITH_TIMEOUT(add.count() > 0 && remove.count() > 0,
