@@ -207,6 +207,9 @@ bool QOfonoConnectionManager::roamingAllowed() const
 
 void QOfonoConnectionManager::setRoamingAllowed(bool value)
 {
+    if (roamingAllowed() == value)
+        return;
+
     QString str("RoamingAllowed");
     QDBusVariant var(value);
     setOneProperty(str,var);
@@ -222,6 +225,9 @@ bool QOfonoConnectionManager::powered() const
 
 void QOfonoConnectionManager::setPowered(bool value)
 {
+    if (powered() == value)
+        return;
+
     QString str("Powered");
     QDBusVariant var(value);
     setOneProperty(str,var);
