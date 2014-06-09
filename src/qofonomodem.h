@@ -110,6 +110,7 @@ protected slots:
 private slots:
     void connectOfono();
     void propertyChanged(const QString &property,const QDBusVariant &value);
+    void propertyChanged(const QString &property, const QVariant &value);
 
 private:
     QOfonoModemPrivate *d_ptr;
