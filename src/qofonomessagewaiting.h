@@ -69,6 +69,9 @@ private slots:
     void modemInterfacesChanged(const QStringList &interfaces);
     void propertyChanged(const QString &property,const QDBusVariant &value);
     void setVoicemailMailboxNumberComplete(QDBusPendingCallWatcher*);
+
+private:
+    void updateProperty(const QString& property, const QVariant& value);
 };
 
 #endif // QOFONOMessageWaiting_H

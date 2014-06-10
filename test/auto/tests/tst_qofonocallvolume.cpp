@@ -34,10 +34,12 @@ class TestQOfonoCallVolume : public QObject
 {
     Q_OBJECT
 
+    // The same as the QTRY_* macros use
+    static const int REASONABLE_TIMEOUT = 5000;
+
 private slots:
     void initTestCase()
     {
-
         m = new QOfonoCallVolume(this);
         m->setModemPath("/phonesim");
         QCOMPARE(m->isValid(), true);
@@ -45,55 +47,36 @@ private slots:
 
     void testQOfonoCallVolume()
     {
-
-        QSignalSpy mutedChanged(m, SIGNAL(mutedChanged(const bool)));
-        QSignalSpy speakerVolumeChanged(m, SIGNAL(speakerVolumeChanged(const quint8)));
-        QSignalSpy microphoneVolumeChanged(m, SIGNAL(microphoneVolumeChanged(const quint8)));
-        QSignalSpy spfail(m, SIGNAL(setSpeakerVolumeFailed()));
-        QSignalSpy mvfail(m, SIGNAL(setMicrophoneVolumeFailed()));
-
-        QOfonoModem modem;
-        modem.setModemPath(m->modemPath());
-        modem.setPowered(false);
-        QTest::qWait(5000);
-        modem.setPowered(true);
-        QTest::qWait(5000);
-        modem.setOnline(true);
-        QTest::qWait(5000);
+        QSignalSpy mutedChanged(m, SIGNAL(mutedChanged(bool)));
+        QSignalSpy speakerVolumeChanged(m, SIGNAL(speakerVolumeChanged(quint8)));
+        QSignalSpy microphoneVolumeChanged(m, SIGNAL(microphoneVolumeChanged(quint8)));
 
         m->setMuted(true);
-        QTest::qWait(2000);
-        QCOMPARE(mutedChanged.count(), 1);
+        QTRY_COMPARE(mutedChanged.count(), 1);
         QVERIFY(mutedChanged.takeFirst().at(0).toBool()==bool(true));
         QVERIFY(m->muted()==bool(true));
 
         m->setMuted(false);
-        QTest::qWait(2000);
-        QCOMPARE(mutedChanged.count(), 1);
+        QTRY_COMPARE(mutedChanged.count(), 1);
         QVERIFY(mutedChanged.takeFirst().at(0).toBool()==bool(false));
         QVERIFY(m->muted()==bool(false));
 
-
         m->setSpeakerVolume(quint8(15));
-        QTest::qWait(2000);
-        QCOMPARE(speakerVolumeChanged.count(), 1);
+        QTRY_COMPARE(speakerVolumeChanged.count(), 1);
         QCOMPARE(quint8(speakerVolumeChanged.takeFirst().at(0).toUInt()), quint8(15));
         QCOMPARE(m->speakerVolume(),quint8(15));
 
         m->setSpeakerVolume(quint8(250));
-        QTest::qWait(2000);
-        QCOMPARE(spfail.count(), 1);
-
         m->setMicrophoneVolume(quint8(10));
-        QTest::qWait(2000);
-        QCOMPARE(mvfail.count(), 1);
-
+        QTest::qWait(REASONABLE_TIMEOUT);
+        QCOMPARE(speakerVolumeChanged.count(), 0);
+        QCOMPARE(microphoneVolumeChanged.count(), 0);
     }
+
     void cleanupTestCase()
     {
 
     }
-
 
 private:
     QOfonoCallVolume *m;

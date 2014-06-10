@@ -1,6 +1,6 @@
 TEMPLATE = subdirs
 
-tests.xml.file = tests.xml
-tests.xml.path = $$[QT_INSTALL_PREFIX]/opt/tests/libofono-qt/
+tests.xml.files = tests.xml runtest.sh
+tests.xml.path = /opt/tests/libqofono-qt5/
 
 INSTALLS += tests.xml

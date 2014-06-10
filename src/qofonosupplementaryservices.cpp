@@ -131,9 +131,9 @@ bool QOfonoSupplementaryServices::isValid() const
 
 void QOfonoSupplementaryServices::initiateResponseReceived(QDBusPendingCallWatcher *call)
 {
+    call->deleteLater();
     QDBusPendingReply<QString, QDBusVariant> reply = *call;
     if (reply.isError()) {
-        call->deleteLater();
         emit initiateFailed();
         return;
     }
@@ -201,19 +201,18 @@ void QOfonoSupplementaryServices::initiateResponseReceived(QDBusPendingCallWatch
             emit initiateFailed();
         }
     }
-    call->deleteLater();
 }
 
 void QOfonoSupplementaryServices::respondResponseReceived(QDBusPendingCallWatcher *call)
 {
+    call->deleteLater();
     QDBusPendingReply<QString> reply = *call;
     Q_EMIT respondComplete(!reply.isError(), reply.value());
-    call->deleteLater();
 }
 
 void QOfonoSupplementaryServices::cancelResponseReceived(QDBusPendingCallWatcher *call)
 {
+    call->deleteLater();
     QDBusPendingReply<> reply = *call;
     Q_EMIT cancelComplete(!reply.isError());
-    call->deleteLater();
 }

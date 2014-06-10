@@ -28,7 +28,6 @@
 
 #include <QtDebug>
 
-
 class TestQOfonoRadioSettings : public QObject
 {
     Q_OBJECT
@@ -36,26 +35,26 @@ class TestQOfonoRadioSettings : public QObject
 private slots:
     void initTestCase()
     {
-    m = new QOfonoRadioSettings(this);
-    m->setModemPath("/phonesim");
-    qDebug() << "FIXME: radio settings interface is not supported by AT modems, and consequently, phonesim";
-	QCOMPARE(m->isValid(), true);    
+        m = new QOfonoRadioSettings(this);
+        m->setModemPath("/phonesim");
+        QCOMPARE(m->isValid(), true);
+
+        QEXPECT_FAIL("", "FIXME: radio settings interface is not supported by AT modems, "
+                "and consequently, phonesim", Abort);
+        QVERIFY(false);
     }
 
     void testQOfonoRadioSettings()
     {
         QSignalSpy preference(m, SIGNAL(technologyPreferenceChanged(QString)));
-        QSignalSpy setPreferenceFailed(m, SIGNAL(setTechnologyPreferenceFailed()));
 
-	qDebug() << "technologyPreference():" << m->technologyPreference();
+        qDebug() << "technologyPreference():" << m->technologyPreference();
     }
-
 
     void cleanupTestCase()
     {
 
     }
-
 
 private:
     QOfonoRadioSettings *m;

@@ -53,6 +53,7 @@ This package contains the development header files for the ofono Qt bindings.
 Summary:    qml test app for the ofono Qt bindings
 Group:      Development/Tools
 Requires:   %{name} = %{version}-%{release}
+Requires:   blts-tools
 
 %description tests
 This package contains qml test for ofono Qt bindings.
@@ -116,5 +117,6 @@ export QT_SELECT=5
 %files tests
 %defattr(-,root,root,-)
 %{_libdir}/%{name}/tests/*
+/opt/tests/%{name}/*
 # >> files tests
 # << files tests

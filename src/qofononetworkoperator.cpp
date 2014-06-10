@@ -37,28 +37,10 @@ QOfonoNetworkOperator::QOfonoNetworkOperator(QObject *parent) :
 {
 }
 
-QOfonoNetworkOperator::QOfonoNetworkOperator(const QOfonoNetworkOperator &op)
-    : QObject(op.parent()),
-        d_ptr(op.d_ptr)
-{
-    setOperatorPath(op.operatorPath());
-}
-
 QOfonoNetworkOperator::~QOfonoNetworkOperator()
 {
     delete d_ptr;
 }
-
-bool QOfonoNetworkOperator::operator==(const QOfonoNetworkOperator &op)
-{
-    return operatorPath() == op.operatorPath();
-}
-
-//QOfonoNetworkOperator QOfonoNetworkOperator::operator=(const QOfonoNetworkOperator &other)
-//{
-//    d_ptr = other.d_ptr;
-//    return *this;
-//}
 
 void QOfonoNetworkOperator::setOperatorPath(const QString &path)
 {
@@ -99,6 +81,7 @@ void QOfonoNetworkOperator::registerOperator()
 
 void QOfonoNetworkOperator::registerFinished(QDBusPendingCallWatcher *call)
 {
+    call->deleteLater();
     QDBusPendingReply<> reply = *call;
     QOfonoNetworkOperator::Error error = NoError;
     QString errorString;

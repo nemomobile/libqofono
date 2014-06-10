@@ -231,7 +231,7 @@ QVariantMap QOfonoConnectionContext::IPv6Settings() const
 {
     QVariantMap map;
     if (d_ptr->context)
-        d_ptr->properties["IPv6Settings"].value<QDBusArgument>()>>map;
+        d_ptr->properties["IPv6.Settings"].value<QDBusArgument>()>>map;
 
     return map;
 }
@@ -324,6 +324,7 @@ void QOfonoConnectionContext::setOneProperty(const QString &prop, const QDBusVar
 
 void QOfonoConnectionContext::setPropertyFinished(QDBusPendingCallWatcher *watch)
 {
+    watch->deleteLater();
     QDBusPendingReply<> reply = *watch;
 
     if(reply.isError()) {

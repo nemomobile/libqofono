@@ -1,5 +1,6 @@
 TEMPLATE = subdirs
 SUBDIRS += \
+    tests.xml.pro \
     tst_qofonomanager.pro \
     tst_qofonomodem.pro \
     tst_qofonoconnman.pro \

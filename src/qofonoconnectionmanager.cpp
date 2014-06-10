@@ -325,6 +325,7 @@ void QOfonoConnectionManager::setOneProperty(const QString &prop, const QDBusVar
 
 void QOfonoConnectionManager::addContextFinished(QDBusPendingCallWatcher *watch)
 {
+    watch->deleteLater();
     QDBusPendingReply<QDBusObjectPath> reply = *watch;
     if (reply.isError()) {
         qDebug() << Q_FUNC_INFO << reply.error();
@@ -334,6 +335,7 @@ void QOfonoConnectionManager::addContextFinished(QDBusPendingCallWatcher *watch)
 
 void QOfonoConnectionManager::removeContextFinished(QDBusPendingCallWatcher *watch)
 {
+    watch->deleteLater();
     QDBusPendingReply<> reply = *watch;
     if (reply.isError()) {
         qDebug() << Q_FUNC_INFO << reply.error();
@@ -343,6 +345,7 @@ void QOfonoConnectionManager::removeContextFinished(QDBusPendingCallWatcher *wat
 
 void QOfonoConnectionManager::setPropertyFinished(QDBusPendingCallWatcher *watch)
 {
+    watch->deleteLater();
     QDBusPendingReply<> reply = *watch;
     if (reply.isError()) {
         qDebug() << Q_FUNC_INFO << reply.error();

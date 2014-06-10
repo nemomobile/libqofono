@@ -27,7 +27,6 @@
 #include "../../../src/qofonocallforwarding.h"
 #include <QtDebug>
 
-
 class TestQOfonoCallForwarding : public QObject
 {
     Q_OBJECT
@@ -38,16 +37,19 @@ private slots:
         m = new QOfonoCallForwarding(this);
         m->setModemPath("/phonesim");
         QCOMPARE(m->isValid(), true);
+
+        QSignalSpy ready(m, SIGNAL(readyChanged()));
+        QTRY_COMPARE(ready.count(), 1);
+        QCOMPARE(m->isReady(), true);
     }
 
     void testQOfonoCallForwarding()
     {
-        QSignalSpy voiceUnconditionalComplete(m, SIGNAL(voiceUnconditionalComplete(bool, QString)));
-        QSignalSpy voiceBusyComplete(m, SIGNAL(voiceBusyComplete(bool, QString)));
-        QSignalSpy voiceNoReplyComplete(m, SIGNAL(voiceNoReplyComplete(bool, QString)));
-        QSignalSpy voiceNoReplyTimeoutComplete(m, SIGNAL(voiceNoReplyTimeoutComplete(bool, ushort)));
-        QSignalSpy voiceNotReachableComplete(m, SIGNAL(voiceNotReachableComplete(bool, QString)));
-        QSignalSpy forwardingFlagOnSimComplete(m, SIGNAL(forwardingFlagOnSimComplete(bool, bool)));
+        QSignalSpy voiceUnconditionalComplete(m, SIGNAL(voiceUnconditionalComplete(bool)));
+        QSignalSpy voiceBusyComplete(m, SIGNAL(voiceBusyComplete(bool)));
+        QSignalSpy voiceNoReplyComplete(m, SIGNAL(voiceNoReplyComplete(bool)));
+        QSignalSpy voiceNoReplyTimeoutComplete(m, SIGNAL(voiceNoReplyTimeoutComplete(bool)));
+        QSignalSpy voiceNotReachableComplete(m, SIGNAL(voiceNotReachableComplete(bool)));
 
         QSignalSpy voiceUnconditionalChanged(m, SIGNAL(voiceUnconditionalChanged(QString)));
         QSignalSpy voiceBusyChanged(m, SIGNAL(voiceBusyChanged(QString)));
@@ -56,158 +58,91 @@ private slots:
         QSignalSpy voiceNotReachableChanged(m, SIGNAL(voiceNotReachableChanged(QString)));
         QSignalSpy forwardingFlagOnSimChanged(m, SIGNAL(forwardingFlagOnSimChanged(bool)));
 
-        QSignalSpy setVoiceUnconditionalFailed(m, SIGNAL(setVoiceUnconditionalFailed()));
-        QSignalSpy setVoiceBusyFailed(m, SIGNAL(setVoiceBusyFailed()));
-        QSignalSpy setVoiceNoReplyFailed(m, SIGNAL(setVoiceNoReplyFailed()));
-        QSignalSpy setVoiceNoReplyTimeoutFailed(m, SIGNAL(setVoiceNoReplyTimeoutFailed()));
-        QSignalSpy setVoiceNotReachableFailed(m, SIGNAL(setVoiceNotReachableFailed()));
-
-        QSignalSpy disableAllComplete(m, SIGNAL(disableAllComplete(bool)));
-
-        m->voiceUnconditional();
-        QTest::qWait(1000);
-        QCOMPARE(voiceUnconditionalComplete.count(), 1);
-        QVariantList list = voiceUnconditionalComplete.takeFirst();
-        QCOMPARE(list.at(0).toBool(), true);
-        QCOMPARE(list.at(1).toString(), QString(""));
-        QCOMPARE(voiceUnconditionalChanged.count(), 1);
-        QCOMPARE(voiceUnconditionalChanged.takeFirst().at(0).toString(), QString(""));
-        m->voiceBusy();
-        QTest::qWait(1000);
-        QCOMPARE(voiceBusyComplete.count(), 1);
-        list = voiceBusyComplete.takeFirst();
-        QCOMPARE(list.at(0).toBool(), true);
-        QCOMPARE(list.at(1).toString(), QString(""));
-        QCOMPARE(voiceBusyChanged.count(), 1);
-        QCOMPARE(voiceBusyChanged.takeFirst().at(0).toString(), QString(""));
-        m->voiceNoReply();
-        QTest::qWait(1000);
-        QCOMPARE(voiceNoReplyComplete.count(), 1);
-        list = voiceNoReplyComplete.takeFirst();
-        QCOMPARE(list.at(0).toBool(), true);
-        QCOMPARE(list.at(1).toString(), QString(""));
-        QCOMPARE(voiceNoReplyChanged.count(), 1);
-        QCOMPARE(voiceNoReplyChanged.takeFirst().at(0).toString(), QString(""));
-        m->voiceNoReplyTimeout();
-        QTest::qWait(1000);
-        QCOMPARE(voiceNoReplyTimeoutComplete.count(), 1);
-        list = voiceNoReplyTimeoutComplete.takeFirst();
-        QCOMPARE(list.at(0).toBool(), true);
-        QCOMPARE(list.at(1).toUInt(), uint(20));
-        QCOMPARE(voiceNoReplyTimeoutChanged.count(), 1);
-        QCOMPARE(voiceNoReplyTimeoutChanged.takeFirst().at(0).toUInt(), uint(20));
-        m->voiceNotReachable();
-        QTest::qWait(1000);
-        QCOMPARE(voiceNotReachableComplete.count(), 1);
-        list = voiceNotReachableComplete.takeFirst();
-        QCOMPARE(list.at(0).toBool(), true);
-        QCOMPARE(list.at(1).toString(), QString(""));
-        QCOMPARE(voiceNotReachableChanged.count(), 1);
-        QCOMPARE(voiceNotReachableChanged.takeFirst().at(0).toString(), QString(""));
-        m->forwardingFlagOnSim();
-        QTest::qWait(1000);
-        QCOMPARE(forwardingFlagOnSimComplete.count(), 1);
-        list = forwardingFlagOnSimComplete.takeFirst();
-        QCOMPARE(list.at(0).toBool(), true);
-        QCOMPARE(list.at(1).toBool(), false);
-        QCOMPARE(forwardingFlagOnSimChanged.count(), 1);
-        QCOMPARE(forwardingFlagOnSimChanged.takeFirst().at(0).toBool(), false);
+        QCOMPARE(m->voiceUnconditional(), QString(""));
+        QCOMPARE(m->voiceBusy(), QString(""));
+        QCOMPARE(m->voiceNoReply(), QString(""));
+        QCOMPARE(m->voiceNoReplyTimeout(), quint16(20));
+        QCOMPARE(m->voiceNotReachable(), QString(""));
+        QCOMPARE(m->forwardingFlagOnSim(), false);
 
         m->setVoiceUnconditional("abc");
-        QTest::qWait(1000);
-        QCOMPARE(setVoiceUnconditionalFailed.count(), 1);
-        setVoiceUnconditionalFailed.takeFirst();
+        QTRY_COMPARE(voiceUnconditionalComplete.count(), 1);
+        QCOMPARE(voiceUnconditionalComplete.takeFirst().at(0).toBool(), false);
         m->setVoiceBusy("abc");
-        QTest::qWait(1000);
-        QCOMPARE(setVoiceBusyFailed.count(), 1);
-        setVoiceBusyFailed.takeFirst();
+        QTRY_COMPARE(voiceBusyComplete.count(), 1);
+        QCOMPARE(voiceBusyComplete.takeFirst().at(0).toBool(), false);
         m->setVoiceNoReply("abc");
-        QTest::qWait(1000);
-        QCOMPARE(setVoiceNoReplyFailed.count(), 1);
-        setVoiceNoReplyFailed.takeFirst();
+        QTRY_COMPARE(voiceNoReplyComplete.count(), 1);
+        QCOMPARE(voiceNoReplyComplete.takeFirst().at(0).toBool(), false);
         m->setVoiceNoReplyTimeout(-30);
-        QTest::qWait(1000);
-        QCOMPARE(setVoiceNoReplyTimeoutFailed.count(), 1);
-        setVoiceNoReplyTimeoutFailed.takeFirst();
+        QTRY_COMPARE(voiceNoReplyTimeoutComplete.count(), 1);
+        QCOMPARE(voiceNoReplyTimeoutComplete.takeFirst().at(0).toBool(), false);
         m->setVoiceNotReachable("abc");
-        QTest::qWait(1000);
-        QCOMPARE(setVoiceNotReachableFailed.count(), 1);
-        setVoiceNotReachableFailed.takeFirst();
+        QTRY_COMPARE(voiceNotReachableComplete.count(), 1);
+        QCOMPARE(voiceNotReachableComplete.takeFirst().at(0).toBool(), false);
 
         m->setVoiceBusy("12345678");
-        QTest::qWait(1000);
-        m->setVoiceNoReply("12345678");
-        QTest::qWait(1000);
-        m->setVoiceNoReplyTimeout(30);
-        QTest::qWait(1000);
-        m->setVoiceNotReachable("12345678");
-        QTest::qWait(1000);
-        m->setVoiceUnconditional("12345678");
-        QTest::qWait(1000);
-
-        m->voiceUnconditional();
-        QTest::qWait(1000);
-        QCOMPARE(voiceUnconditionalComplete.count(), 1);
-        list = voiceUnconditionalComplete.takeFirst();
-        QCOMPARE(list.at(0).toBool(), true);
-        QCOMPARE(list.at(1).toString(), QString("12345678"));
-        QCOMPARE(voiceUnconditionalChanged.count(), 1);
-        QCOMPARE(voiceUnconditionalChanged.takeFirst().at(0).toString(), QString("12345678"));
-        m->voiceBusy();
-        QTest::qWait(1000);
-        QCOMPARE(voiceBusyComplete.count(), 1);
-        list = voiceBusyComplete.takeFirst();
-        QCOMPARE(list.at(0).toBool(), true);
-        QCOMPARE(list.at(1).toString(), QString("12345678"));
-        QCOMPARE(voiceBusyChanged.count(), 1);
+        QTRY_COMPARE(voiceBusyComplete.count(), 1);
+        QCOMPARE(voiceBusyComplete.takeFirst().at(0).toBool(), true);
+        QTRY_COMPARE(voiceBusyChanged.count(), 1);
         QCOMPARE(voiceBusyChanged.takeFirst().at(0).toString(), QString("12345678"));
-        m->voiceNoReply();
-        QTest::qWait(1000);
-        QCOMPARE(voiceNoReplyComplete.count(), 1);
-        list = voiceNoReplyComplete.takeFirst();
-        QCOMPARE(list.at(0).toBool(), true);
-        QCOMPARE(list.at(1).toString(), QString("12345678"));
-        QCOMPARE(voiceNoReplyChanged.count(), 1);
+        m->setVoiceNoReply("12345678");
+        QTRY_COMPARE(voiceNoReplyComplete.count(), 1);
+        QCOMPARE(voiceNoReplyComplete.takeFirst().at(0).toBool(), true);
+        QTRY_COMPARE(voiceNoReplyChanged.count(), 1);
         QCOMPARE(voiceNoReplyChanged.takeFirst().at(0).toString(), QString("12345678"));
-        m->voiceNoReplyTimeout();
-        QTest::qWait(1000);
-        QCOMPARE(voiceNoReplyTimeoutComplete.count(), 1);
-        list = voiceNoReplyTimeoutComplete.takeFirst();
-        QCOMPARE(list.at(0).toBool(), true);
-        QCOMPARE(list.at(1).toUInt(), uint(30));
-        QCOMPARE(voiceNoReplyTimeoutChanged.count(), 1);
-        QCOMPARE(voiceNoReplyTimeoutChanged.takeFirst().at(0).toUInt(), uint(30));
-        m->voiceNotReachable();
-        QTest::qWait(1000);
-        QCOMPARE(voiceNotReachableComplete.count(), 1);
-        list = voiceNotReachableComplete.takeFirst();
-        QCOMPARE(list.at(0).toBool(), true);
-        QCOMPARE(list.at(1).toString(), QString("12345678"));
-        QCOMPARE(voiceNotReachableChanged.count(), 1);
+        m->setVoiceNoReplyTimeout(30);
+        QTRY_COMPARE(voiceNoReplyTimeoutComplete.count(), 1);
+        QCOMPARE(voiceNoReplyTimeoutComplete.takeFirst().at(0).toBool(), true);
+        QTRY_COMPARE(voiceNoReplyTimeoutChanged.count(), 1);
+        QCOMPARE(voiceNoReplyTimeoutChanged.takeFirst().at(0).value<quint16>(), quint16(30));
+        m->setVoiceNotReachable("12345678");
+        QTRY_COMPARE(voiceNotReachableComplete.count(), 1);
+        QCOMPARE(voiceNotReachableComplete.takeFirst().at(0).toBool(), true);
+        QTRY_COMPARE(voiceNotReachableChanged.count(), 1);
         QCOMPARE(voiceNotReachableChanged.takeFirst().at(0).toString(), QString("12345678"));
+        m->setVoiceUnconditional("12345678");
+        QTRY_COMPARE(voiceUnconditionalComplete.count(), 1);
+        QCOMPARE(voiceUnconditionalComplete.takeFirst().at(0).toBool(), true);
+        QTRY_COMPARE(voiceUnconditionalChanged.count(), 1);
+        QCOMPARE(voiceUnconditionalChanged.takeFirst().at(0).toString(), QString("12345678"));
+
+        QTRY_COMPARE(forwardingFlagOnSimChanged.count(), 1);
+        QCOMPARE(forwardingFlagOnSimChanged.takeFirst().at(0).toBool(), true);
+
+        QCOMPARE(m->voiceBusy(), QString("12345678"));
+        QCOMPARE(m->voiceNoReply(), QString("12345678"));
+        QCOMPARE(m->voiceNoReplyTimeout(), quint16(30));
+        QCOMPARE(m->voiceNotReachable(), QString("12345678"));
+        QCOMPARE(m->voiceUnconditional(), QString("12345678"));
+        QCOMPARE(m->forwardingFlagOnSim(), true);
 
         m->disableAll("all");
-        QTest::qWait(1000);
-        QCOMPARE(disableAllComplete.count(), 1);
-        QCOMPARE(disableAllComplete.takeFirst().at(0).toBool(), true);
-        QCOMPARE(voiceUnconditionalChanged.count(), 1);
+        QTRY_COMPARE(voiceUnconditionalChanged.count(), 1);
         QCOMPARE(voiceUnconditionalChanged.takeFirst().at(0).toString(), QString(""));
-        QCOMPARE(voiceBusyChanged.count(), 1);
+        QTRY_COMPARE(voiceBusyChanged.count(), 1);
         QCOMPARE(voiceBusyChanged.takeFirst().at(0).toString(), QString(""));
-        QCOMPARE(voiceNoReplyChanged.count(), 1);
+        QTRY_COMPARE(voiceNoReplyChanged.count(), 1);
         QCOMPARE(voiceNoReplyChanged.takeFirst().at(0).toString(), QString(""));
-        QCOMPARE(voiceNoReplyTimeoutChanged.count(), 1);
+        QTRY_COMPARE(voiceNoReplyTimeoutChanged.count(), 1);
         QCOMPARE(voiceNoReplyTimeoutChanged.takeFirst().at(0).toUInt(), uint(20));
-        QCOMPARE(voiceNotReachableChanged.count(), 1);
+        QTRY_COMPARE(voiceNotReachableChanged.count(), 1);
         QCOMPARE(voiceNotReachableChanged.takeFirst().at(0).toString(), QString(""));
-    }
+        QTRY_COMPARE(forwardingFlagOnSimChanged.count(), 1);
+        QCOMPARE(forwardingFlagOnSimChanged.takeFirst().at(0).toBool(), false);
 
+        QCOMPARE(m->voiceUnconditional(), QString(""));
+        QCOMPARE(m->voiceBusy(), QString(""));
+        QCOMPARE(m->voiceNoReply(), QString(""));
+        QCOMPARE(m->voiceNoReplyTimeout(), quint16(20));
+        QCOMPARE(m->voiceNotReachable(), QString(""));
+        QCOMPARE(m->forwardingFlagOnSim(), false);
+    }
 
     void cleanupTestCase()
     {
 
     }
-
 
 private:
     QOfonoCallForwarding *m;

@@ -267,6 +267,7 @@ void QOfonoModem::setOneProperty(const QString &prop, const QDBusVariant &var)
 
 void QOfonoModem::setPropertyFinished(QDBusPendingCallWatcher *watch)
 {
+    watch->deleteLater();
     QDBusPendingReply<> reply = *watch;
     if(reply.isError()) {
         qDebug() << Q_FUNC_INFO  << reply.error().message();

@@ -80,13 +80,12 @@ Q_SIGNALS:
     void setBearerComplete(bool success);
     void setAlphabetComplete(bool success);
 
-public slots:
-    void onMessageAdded(const QString &message);
-    void onMessageRemoved(const QString &message);
-
 private:
     QOfonoMessageManagerPrivate *d_ptr;
 private slots:
+    void onMessageAdded(const QDBusObjectPath &path, const QVariantMap &properties);
+    void onMessageRemoved(const QDBusObjectPath &path);
+
     void propertyChanged(const QString &property,const QDBusVariant &value);
     void getMessagesFinished(const ObjectPathPropertiesList &list);
     void messagesError(const QDBusError &error);

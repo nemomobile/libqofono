@@ -166,6 +166,7 @@ bool QOfonoCallMeter::isValid() const
 
 void QOfonoCallMeter::resetFinished(QDBusPendingCallWatcher *call)
 {
+    call->deleteLater();
     QDBusPendingReply<> reply = *call;
     QOfonoCallMeter::Error error = NoError;
     QString errorString;

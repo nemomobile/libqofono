@@ -117,7 +117,7 @@ quint8 QOfonoCallVolume::speakerVolume() const
 void QOfonoCallVolume::setSpeakerVolume(const quint8 &volume)
 {
     if ( d_ptr->callVolume)
-        d_ptr->callVolume->SetProperty("SpeakerVolume",QDBusVariant(volume));
+        d_ptr->callVolume->SetProperty("SpeakerVolume",QDBusVariant(QVariant::fromValue(volume)));
 }
 
 quint8 QOfonoCallVolume::microphoneVolume()const

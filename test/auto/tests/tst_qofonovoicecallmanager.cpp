@@ -29,7 +29,7 @@
 
 #include <QtDebug>
 
-
+// FIXME: Not aligned with the current API
 class TestQOfonoVoiceCallManager : public QObject
 {
     Q_OBJECT
