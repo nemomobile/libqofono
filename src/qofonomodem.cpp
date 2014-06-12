@@ -82,6 +82,10 @@ void QOfonoModem::connectOfono()
         reply = d_ptr->modem->GetProperties();
         reply.waitForFinished();
         d_ptr->properties = reply.value();
+        for (QVariantMap::ConstIterator it = d_ptr->properties.constBegin();
+             it != d_ptr->properties.constEnd(); ++it) {
+            propertyChanged(it.key(), it.value());
+        }
     }
 
     if (wasValid != isValid())
@@ -209,6 +213,11 @@ void QOfonoModem::propertyChanged(const QString& property, const QDBusVariant& d
 {
     QVariant value = dbusValue.variant();
     d_ptr->properties.insert(property,value);
+    propertyChanged(property, value);
+}
+
+void QOfonoModem::propertyChanged(const QString& property, const QVariant& value)
+{
     if (property == QLatin1String("Online"))
         Q_EMIT onlineChanged(value.value<bool>());
     else if (property == QLatin1String("Powered"))
