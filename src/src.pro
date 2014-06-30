@@ -10,12 +10,12 @@ include(version.pri)
 
 equals(QT_MAJOR_VERSION, 4): {
     TARGET = qofono
-    pkgconfig.path = $$INSTALL_ROOT$$PREFIX/lib/pkgconfig
+    pkgconfig.path = $$[QT_INSTALL_LIBS]/pkgconfig
 }
 
 equals(QT_MAJOR_VERSION, 5): {
     TARGET = qofono-qt5
-    pkgconfig.path = $$INSTALL_ROOT$$PREFIX/lib/pkgconfig-qt5
+    pkgconfig.path = $$[QT_INSTALL_LIBS]/pkgconfig-qt5
 }
 
 TEMPLATE = lib
@@ -203,7 +203,7 @@ equals(QT_MAJOR_VERSION, 5): {
     xmlfiles.path = $$INSTALL_ROOT$$PREFIX/include/qofono-qt5/dbus
 }
 
-target.path = $$INSTALL_ROOT$$PREFIX/lib
+target.path = $$[QT_INSTALL_LIBS]
 headers.files = $$PUBLIC_HEADERS
 
 dbusheaders.files = $$DBUS_HEADERS
