@@ -49,7 +49,7 @@ class QOFONOSHARED_EXPORT QOfonoModem : public QObject
     Q_PROPERTY(QStringList interfaces READ interfaces NOTIFY interfacesChanged)
 
     Q_PROPERTY(QString modemPath READ modemPath WRITE setModemPath NOTIFY modemPathChanged)
-    Q_PROPERTY(QString valid READ isValid NOTIFY validChanged)
+    Q_PROPERTY(bool valid READ isValid NOTIFY validChanged)
 
 public:
     explicit QOfonoModem(QObject *parent = 0);
