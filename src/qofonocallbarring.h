@@ -64,9 +64,9 @@ Q_SIGNALS:
      void readyChanged();
 
      void changePasswordComplete(bool success);
-//     void disableAllComplete(bool success);
-//     void disableAllIncomingComplete(bool success);
-//     void disableAllOutgoingComplete(bool success);
+     void disableAllComplete(bool success);
+     void disableAllIncomingComplete(bool success);
+     void disableAllOutgoingComplete(bool success);
 
 public slots:
      void changePassword(const QString &oldPassword, const QString &newPassword);
@@ -83,6 +83,9 @@ private slots:
     void setVoiceIncomingComplete(QDBusPendingCallWatcher *);
     void setVoiceOutgoingComplete(QDBusPendingCallWatcher *);
     void changePasswordCallComplete(QDBusPendingCallWatcher *);
+    void disableAllCallComplete(QDBusPendingCallWatcher *);
+    void disableAllIncomingCallComplete(QDBusPendingCallWatcher *);
+    void disableAllOutgoingCallComplete(QDBusPendingCallWatcher *);
 };
 
 #endif // QOFONOCALLBARRING_H
