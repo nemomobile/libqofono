@@ -165,20 +165,32 @@ void QOfonoCallBarring::changePassword(const QString &oldPassword, const QString
 
 void QOfonoCallBarring::disableAll(const QString &password)
 {
-    if (d_ptr->callBarring)
-        d_ptr->callBarring->DisableAll(password);
+    if (d_ptr->callBarring) {
+        QDBusPendingReply<> reply = d_ptr->callBarring->DisableAll(password);
+        QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(reply, this);
+        connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
+                SLOT(disableAllCallComplete(QDBusPendingCallWatcher*)));
+    }
 }
 
 void QOfonoCallBarring::disableAllIncoming(const QString &password)
 {
-    if (d_ptr->callBarring)
-        d_ptr->callBarring->DisableAllIncoming(password);
+    if (d_ptr->callBarring) {
+        QDBusPendingReply<> reply = d_ptr->callBarring->DisableAllIncoming(password);
+        QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(reply, this);
+        connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
+                SLOT(disableAllIncomingCallComplete(QDBusPendingCallWatcher*)));
+    }
 }
 
 void QOfonoCallBarring::disableAllOutgoing(const QString &password)
 {
-    if (d_ptr->callBarring)
-        d_ptr->callBarring->DisableAllOutgoing(password);
+    if (d_ptr->callBarring) {
+        QDBusPendingReply<> reply = d_ptr->callBarring->DisableAllOutgoing(password);
+        QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(reply, this);
+        connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
+                SLOT(disableAllOutgoingCallComplete(QDBusPendingCallWatcher*)));
+    }
 }
 
 bool QOfonoCallBarring::isValid() const
@@ -226,3 +238,25 @@ void QOfonoCallBarring::changePasswordCallComplete(QDBusPendingCallWatcher *call
     QDBusPendingReply<> reply = *call;
     Q_EMIT changePasswordComplete(!reply.isError());
 }
+
+void QOfonoCallBarring::disableAllCallComplete(QDBusPendingCallWatcher *call)
+{
+    QDBusPendingReply<> reply = *call;
+    Q_EMIT disableAllComplete(!reply.isError());
+    call->deleteLater();
+}
+
+void QOfonoCallBarring::disableAllIncomingCallComplete(QDBusPendingCallWatcher *call)
+{
+    QDBusPendingReply<> reply = *call;
+    Q_EMIT disableAllIncomingComplete(!reply.isError());
+    call->deleteLater();
+}
+
+void QOfonoCallBarring::disableAllOutgoingCallComplete(QDBusPendingCallWatcher *call)
+{
+    QDBusPendingReply<> reply = *call;
+    Q_EMIT disableAllOutgoingComplete(!reply.isError());
+    call->deleteLater();
+}
+
