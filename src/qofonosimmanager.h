@@ -41,6 +41,7 @@ class QOFONOSHARED_EXPORT QOfonoSimManager : public QObject
     Q_PROPERTY(QString mobileCountryCode READ mobileCountryCode NOTIFY mobileCountryCodeChanged)
     Q_PROPERTY(QString mobileNetworkCode READ mobileNetworkCode NOTIFY mobileNetworkCodeChanged)
     Q_PROPERTY(QStringList subscriberNumbers READ subscriberNumbers WRITE setSubscriberNumbers NOTIFY subscriberNumbersChanged)
+    Q_PROPERTY(QVariantMap serviceNumbers READ serviceNumbers NOTIFY serviceNumbersChanged)
     Q_PROPERTY(PinType pinRequired READ pinRequired NOTIFY pinRequiredChanged)
     Q_PROPERTY(QVariantList lockedPins READ lockedPins NOTIFY lockedPinsChanged)
     Q_PROPERTY(QString cardIdentifier READ cardIdentifier NOTIFY cardIdentifierChanged)
