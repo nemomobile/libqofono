@@ -33,6 +33,7 @@ class QOFONOSHARED_EXPORT QOfonoRadioSettings : public QObject
     Q_PROPERTY(QString modemPath READ modemPath WRITE setModemPath NOTIFY modemPathChanged)
 
     Q_PROPERTY(QString technologyPreference READ technologyPreference WRITE setTechnologyPreference NOTIFY technologyPreferenceChanged)
+    Q_PROPERTY(QStringList modemTechnologies READ modemTechnologies NOTIFY modemTechnologiesChanged)
     Q_PROPERTY(QString gsmBand READ gsmBand WRITE setGsmBand NOTIFY gsmBandChanged)
     Q_PROPERTY(QString umtsBand READ umtsBand WRITE setUmtsBand NOTIFY umtsBandChanged)
     Q_PROPERTY(bool fastDormancy READ fastDormancy WRITE setFastDormancy NOTIFY fastDormancyChanged)
@@ -47,6 +48,8 @@ public:
     QString technologyPreference() const;
     void setTechnologyPreference(const QString &preference);
 
+    QStringList modemTechnologies() const;
+
     QString gsmBand() const;
     void setGsmBand(const QString &gsmBand);
 
@@ -59,13 +62,14 @@ public:
     bool isValid() const;
 Q_SIGNALS:
     void technologyPreferenceChanged(const QString &preference);
+    void modemTechnologiesChanged(const QStringList &technologies);
     void gsmBandChanged(const QString &gsmBand);
     void umtsBandChanged(const QString &umtsBand);
     void fastDormancyChanged(bool fastDormancy);
     void modemPathChanged(const QString &path);
 
 public slots:
-    
+
 private:
     void updateProperty(const QString &property, const QVariant &value);
 
