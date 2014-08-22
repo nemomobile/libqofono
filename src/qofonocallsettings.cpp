@@ -95,6 +95,7 @@ void QOfonoCallSettings::connectOfono()
         connect(d_ptr->callSettings,SIGNAL(PropertyChanged(QString,QDBusVariant)),
                 this,SLOT(propertyChanged(QString,QDBusVariant)));
         d_ptr->propertiesPending = true;
+        d_ptr->callSettings->setTimeout(1000 * 120); //increase dbus timeout as scanning can take a long time
         QDBusPendingReply<QVariantMap> reply = d_ptr->callSettings->GetProperties();
         QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(reply, this);
         connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
