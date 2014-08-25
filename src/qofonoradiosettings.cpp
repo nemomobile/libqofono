@@ -121,7 +121,10 @@ void QOfonoRadioSettings::setTechnologyPreference(const QString &preference)
 
 QStringList QOfonoRadioSettings::modemTechnologies() const
 {
-    return d_ptr->properties["ModemTechnologies"].value<QStringList>();
+    if (d_ptr->properties.contains("ModemTechnologies"))
+        return d_ptr->properties["ModemTechnologies"].value<QStringList>();
+    else
+        return QStringList();
 }
 
 QString QOfonoRadioSettings::gsmBand() const
