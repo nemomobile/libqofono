@@ -62,6 +62,7 @@ SubPackages:
       Description: This package contains qml test for ofono Qt bindings.
       Requires:
           - blts-tools
+          - phonesim
       Files:
           - "%{_libdir}/%{name}/tests/*"
           - "/opt/tests/%{name}/*"
