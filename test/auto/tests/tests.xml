@@ -4,10 +4,17 @@
     <set name="libqofono-qt5-unit-tests">
       <description>Ofono test set with manual, automatic and semi-automatic case.</description>
       <pre_steps>
-          <step>run-blts-root systemctl stop connman.service</step>
+        <step>/usr/sbin/mcetool --set-never-blank=disabled --set-demo-mode=off --block=1 --set-never-blank=enabled --unblank-screen --block=1 --set-tklock-mode=unlocked</step>
+        <step>/usr/sbin/run-blts-root /bin/mv /var/lib/environment/ofono/noplugin.conf /var/lib/environment/ofono/noplugin.conf_LIBQOFONO_TESTS_DISABLED || true</step>
+        <step>/usr/sbin/run-blts-root /bin/systemctl restart ofono.service</step>
+        <step>/usr/sbin/run-blts-root /bin/systemctl stop connman.service</step>
       </pre_steps>
       <post_steps>
-          <step>run-blts-root systemctl start connman.service</step>
+        <step>/bin/systemctl --user stop phonesim.service</step>
+        <step>/usr/sbin/run-blts-root /bin/mv /var/lib/environment/ofono/noplugin.conf_LIBQOFONO_TESTS_DISABLED /var/lib/environment/ofono/noplugin.conf || true</step>
+        <step>/usr/sbin/run-blts-root /bin/systemctl restart ofono.service</step>
+        <step>/usr/sbin/run-blts-root /bin/systemctl start connman.service</step>
+        <step>/usr/sbin/mcetool --set-never-blank=disabled --set-demo-mode=off</step>
       </post_steps>
       <case name="tst_qofonocallbarring">
         <step>/opt/tests/libqofono-qt5/runtest.sh tst_qofonocallbarring</step>

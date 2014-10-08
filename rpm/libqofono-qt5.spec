@@ -55,6 +55,7 @@ Group:      Development/Tools
 Requires:   %{name} = %{version}-%{release}
 Requires:   blts-tools
 Requires:   phonesim
+Requires:   mce-tools
 
 %description tests
 This package contains qml test for ofono Qt bindings.

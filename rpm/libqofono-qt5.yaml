@@ -63,6 +63,7 @@ SubPackages:
       Requires:
           - blts-tools
           - phonesim
+          - mce-tools
       Files:
           - "%{_libdir}/%{name}/tests/*"
           - "/opt/tests/%{name}/*"
