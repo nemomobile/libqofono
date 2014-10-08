@@ -54,6 +54,7 @@ Summary:    qml test app for the ofono Qt bindings
 Group:      Development/Tools
 Requires:   %{name} = %{version}-%{release}
 Requires:   blts-tools
+Requires:   phonesim
 
 %description tests
 This package contains qml test for ofono Qt bindings.
