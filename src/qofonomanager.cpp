@@ -19,6 +19,7 @@
 #include <QVariant>
 #include <QTimer>
 #include "dbustypes.h"
+#include <qtaround/dbus.hpp>
 
 QDBusArgument &operator<<(QDBusArgument &argument, const ObjectPathProperties &modem)
 {
@@ -89,7 +90,7 @@ QStringList QOfonoManager::modems()
     return d_ptr->modems;
 }
 
-void QOfonoManager::onModemAdd(const QDBusObjectPath& path, const QVariantMap& var)
+void QOfonoManager::onModemAdd(const QDBusObjectPath& path, const QVariantMap&)
 {
     QString pathStr = path.path();
     if (!d_ptr->modems.contains(pathStr)) {
@@ -117,14 +118,17 @@ bool QOfonoManager::available() const
 
 void QOfonoManager::connectToOfono(const QString &)
 {
-    d_ptr->ofonoManager = new OfonoManager("org.ofono","/",QDBusConnection::systemBus(),this);
-    if (d_ptr->ofonoManager->isValid()) {
-        QDBusPendingReply<ObjectPathPropertiesList> reply = d_ptr->ofonoManager->GetModems();
-        reply.waitForFinished();
+    auto on_done = [this]() {
+        d_ptr->available = true;
+        Q_EMIT availableChanged(true);
+        connect(d_ptr->ofonoManager, SIGNAL(ModemAdded(QDBusObjectPath,QVariantMap)), this, SLOT(onModemAdd(QDBusObjectPath,QVariantMap)));
+        connect(d_ptr->ofonoManager, SIGNAL(ModemRemoved(QDBusObjectPath)), this, SLOT(onModemRemove(QDBusObjectPath)));
+    };
+    auto process_modems = [this, on_done](ObjectPathPropertiesList const &props) {
         // fugly I know... but we need sorted modems
         // with hardware listed first
         QOfonoModem oModem;
-        foreach(ObjectPathProperties modem, reply.value()) {
+        foreach(ObjectPathProperties modem, props) {
             QString modemPath = modem.path.path();
             oModem.setModemPath(modemPath);
             if (oModem.type() == "hardware"
@@ -139,11 +143,15 @@ void QOfonoManager::connectToOfono(const QString &)
             Q_EMIT modemAdded(modemPath);
         }
         Q_EMIT modemsChanged(d_ptr->modems);
+        on_done();
+    };
+
+    d_ptr->ofonoManager = new OfonoManager("org.ofono","/",QDBusConnection::systemBus(),this);
+    if (d_ptr->ofonoManager->isValid()) {
+        qtaround::dbus::async(this, d_ptr->ofonoManager->GetModems(), process_modems);
+    } else {
+        on_done();
     }
-    d_ptr->available = true;
-    Q_EMIT availableChanged(true);
-    connect(d_ptr->ofonoManager, SIGNAL(ModemAdded(QDBusObjectPath,QVariantMap)), this, SLOT(onModemAdd(QDBusObjectPath,QVariantMap)));
-    connect(d_ptr->ofonoManager, SIGNAL(ModemRemoved(QDBusObjectPath)), this, SLOT(onModemRemove(QDBusObjectPath)));
 }
 
 void QOfonoManager::ofonoUnregistered(const QString &)
