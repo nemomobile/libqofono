@@ -4,6 +4,10 @@
 #
 #-------------------------------------------------
 
+# -Wno-psabi is to remove next g++ warning/note:
+# the mangling of 'va_list' has changed in GCC 4.4
+QMAKE_CXXFLAGS += -Wno-psabi
+
 QT       += dbus xmlpatterns
 
 include(version.pri)
@@ -210,8 +214,8 @@ dbusheaders.files = $$DBUS_HEADERS
 
 xmlfiles.files = $$XML_FILES
 
-CONFIG += create_pc create_prl link_pkgconfig
-
+CONFIG += create_pc create_prl link_pkgconfig c++11
+PKGCONFIG += qtaround-dbus
 QMAKE_PKGCONFIG_DESTDIR = pkgconfig
 QMAKE_PKGCONFIG_INCDIR = $$headers.path
 

@@ -13,12 +13,11 @@
 **
 ****************************************************************************/
 
-#include <QDBusPendingCallWatcher>
-
 #include "qofonosimmanager.h"
 #include "qofonomodem.h"
 #include "qofonoutils_p.h"
 #include "dbus/ofonosimmanager.h"
+#include <qtaround/dbus.hpp>
 
 static const int qofonosimmanager_pinRetries = 3;
 static const int qofonosimmanager_pukRetries = 10;
@@ -127,20 +126,17 @@ void QOfonoSimManager::modemInterfacesChanged(const QStringList &list)
 
 void QOfonoSimManager::getAllProperties()
 {
-    QStringList removedProperties = d_ptr->properties.keys();
+    auto process = [this](QVariantMap const &properties) {
+        auto removedProperties = d_ptr->properties.keys();
 
-    QDBusPendingReply<QVariantMap> reply = d_ptr->simManager->GetProperties();
-    reply.waitForFinished();
-    QVariantMap properties = reply.value();
-
-    for (QVariantMap::ConstIterator it = properties.constBegin();
-         it != properties.constEnd(); ++it) {
-        updateProperty(it.key(), it.value());
-        removedProperties.removeOne(it.key());
-    }
-    foreach (const QString &p, removedProperties)
-        updateProperty(p, QVariant());
-
+        for (auto it = properties.constBegin(); it != properties.constEnd(); ++it) {
+            updateProperty(it.key(), it.value());
+            removedProperties.removeOne(it.key());
+        }
+        for (auto const &name : removedProperties)
+            updateProperty(name, QVariant());
+    };
+    qtaround::dbus::async(this, d_ptr->simManager->GetProperties(), process);
 }
 
 QString QOfonoSimManager::modemPath() const
