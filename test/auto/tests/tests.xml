@@ -6,11 +6,13 @@
       <pre_steps>
         <step>/usr/sbin/mcetool --set-never-blank=disabled --set-demo-mode=off --block=1 --set-never-blank=enabled --unblank-screen --block=1 --set-tklock-mode=unlocked</step>
         <step>/usr/sbin/run-blts-root /bin/mv /var/lib/environment/ofono/noplugin.conf /var/lib/environment/ofono/noplugin.conf_LIBQOFONO_TESTS_DISABLED || true</step>
+        <step>/usr/sbin/run-blts-root /bin/sh -c "/bin/echo OFONO_ARGS=--noplugin=ril > /var/lib/environment/ofono/LIBQOFONO_TESTS_noplugin.conf" || true</step>
         <step>/usr/sbin/run-blts-root /bin/systemctl restart ofono.service</step>
         <step>/usr/sbin/run-blts-root /bin/systemctl stop connman.service</step>
       </pre_steps>
       <post_steps>
         <step>/bin/systemctl --user stop phonesim.service</step>
+        <step>/usr/sbin/run-blts-root /bin/rm /var/lib/environment/ofono/LIBQOFONO_TESTS_noplugin.conf || true</step>
         <step>/usr/sbin/run-blts-root /bin/mv /var/lib/environment/ofono/noplugin.conf_LIBQOFONO_TESTS_DISABLED /var/lib/environment/ofono/noplugin.conf || true</step>
         <step>/usr/sbin/run-blts-root /bin/systemctl restart ofono.service</step>
         <step>/usr/sbin/run-blts-root /bin/systemctl start connman.service</step>
