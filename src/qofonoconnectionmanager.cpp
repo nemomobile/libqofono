@@ -249,16 +249,6 @@ void QOfonoConnectionManager::updateProperty(const QString &property, const QVar
         d_ptr->properties.remove(property);
 
     if (property == QLatin1String("Attached")) {
-        if (value.value<bool>()) {
-            if (d_ptr->contextTypes.isEmpty()) {
-                d_ptr->getContexts();
-                Q_EMIT contextsChanged(d_ptr->contexts);
-            }
-        } else {
-            d_ptr->contextTypes.clear();
-            d_ptr->contexts.clear();
-            Q_EMIT contextsChanged(d_ptr->contexts);
-        }
         Q_EMIT attachedChanged(value.value<bool>());
     } else if (property == QLatin1String("Bearer")) {
         Q_EMIT bearerChanged(value.value<QString>());
