@@ -94,6 +94,7 @@ public:
     Q_INVOKABLE void provision(const QString &provider, const QString &mcc, const QString &mnc, const QString &type=QStringLiteral("internet")); // provision context against mbpi
     #endif
     Q_INVOKABLE void provisionForCurrentNetwork(const QString &type);
+    Q_INVOKABLE void disconnect();
 
 Q_SIGNALS:
     void disconnectRequested();
