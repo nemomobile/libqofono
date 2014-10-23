@@ -43,7 +43,6 @@ QOfonoConnectionContext::QOfonoConnectionContext(QObject *parent) :
     QObject(parent),
     d_ptr(new QOfonoConnectionContextPrivate)
 {
-    qDebug() << Q_FUNC_INFO;
 }
 
 QOfonoConnectionContext::~QOfonoConnectionContext()
@@ -72,7 +71,6 @@ void QOfonoConnectionContext::setContextPath(const QString &idPath)
             d_ptr->properties.clear();
         }
 
-qDebug() << Q_FUNC_INFO;
         d_ptr->context = new OfonoConnectionContext("org.ofono", idPath, QDBusConnection::systemBus(),this);
         if (d_ptr->context->isValid()) {
             d_ptr->contextPath = idPath;
@@ -248,14 +246,9 @@ void QOfonoConnectionContext::setActive(const bool value)
 
 void QOfonoConnectionContext::setAccessPointName(const QString &value)
 {
-    if (!active()) {
-        QString str("AccessPointName");
-        QDBusVariant var(value);
-        setOneProperty(str,var);
-    } else {
-     qDebug() << Q_FUNC_INFO  << "is active cannot set APN";
-     Q_EMIT reportError("Context active");
-    }
+    QString str("AccessPointName");
+    QDBusVariant var(value);
+    setOneProperty(str,var);
 }
 
 void QOfonoConnectionContext::setType(const QString &value)
@@ -333,6 +326,12 @@ void QOfonoConnectionContext::setPropertyFinished(QDBusPendingCallWatcher *watch
     }
     Q_EMIT setPropertyFinished();
 
+}
+
+void QOfonoConnectionContext::disconnect()
+{
+    Q_EMIT disconnectRequested();
+    d_ptr->context->SetProperty("Active",QDBusVariant(false)).waitForFinished();
 }
 
 /*
