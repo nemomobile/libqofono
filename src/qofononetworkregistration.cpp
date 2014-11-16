@@ -285,9 +285,7 @@ void QOfonoNetworkRegistration::scanFinish(const QArrayOfPathProps &list)
 
 void QOfonoNetworkRegistration::scanError(QDBusError error)
 {
-    qDebug() << Q_FUNC_INFO << error.message();
     Q_EMIT scanError(error.message());
-    Q_EMIT scanFinished();
 }
 
 QString QOfonoNetworkRegistration::currentOperatorPath()
