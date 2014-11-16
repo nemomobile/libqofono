@@ -40,7 +40,6 @@ Q_DECLARE_METATYPE (QArrayOfPathProps)
 class QOFONOSHARED_EXPORT QOfonoNetworkRegistration : public QObject
 {
     Q_OBJECT
-
     Q_PROPERTY(QString mode READ mode NOTIFY modeChanged)
     Q_PROPERTY(QString status READ status NOTIFY statusChanged)
     Q_PROPERTY(uint locationAreaCode READ locationAreaCode NOTIFY locationAreaCodeChanged)
@@ -101,6 +100,9 @@ Q_SIGNALS:
     void scanError(const QString &message);
     void modemPathChanged(const QString &path);
 
+    void registrationFinished();
+    void registrationError(const QString &errorMessage);
+
 public slots:
 
 private:
@@ -112,6 +114,9 @@ private slots:
     void propertyChanged(const QString &property,const QDBusVariant &value);
     void scanError(QDBusError error);
     void scanFinish(const QArrayOfPathProps &list);
+
+    void registrationComplete(QDBusPendingCallWatcher *);
+
 };
 
 #endif // QOFONONETWORKREGISTRATION_H
