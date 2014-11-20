@@ -16,6 +16,7 @@ BuildRequires:  pkgconfig(Qt5DBus)
 BuildRequires:  pkgconfig(Qt5Quick)
 BuildRequires:  pkgconfig(Qt5Test)
 BuildRequires:  pkgconfig(Qt5XmlPatterns)
+BuildRequires:  pkgconfig(qtaround-dbus) >= 0.2.0
 
 %description
 This package contains Qt bindings for ofono cellular service
