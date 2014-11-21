@@ -86,6 +86,11 @@ QStringList QOfonoManager::modems()
     return d_ptr->modems;
 }
 
+QString QOfonoManager::defaultModem()
+{
+    return d_ptr->modems.isEmpty() ? QString() : d_ptr->modems[0];
+}
+
 bool QOfonoManager::available() const
 {
     return d_ptr->available;
@@ -100,18 +105,28 @@ void QOfonoManager::onModemAdded(const QDBusObjectPath& path, const QVariantMap&
 {
     QString pathStr = path.path();
     if (!d_ptr->modems.contains(pathStr)) {
+        QString prevDefault = defaultModem();
         d_ptr->modems.append(pathStr);
         Q_EMIT modemAdded(pathStr);
         Q_EMIT modemsChanged(d_ptr->modems);
+        QString newDefault = defaultModem();
+        if (newDefault != prevDefault) {
+            Q_EMIT defaultModemChanged(newDefault);
+        }
     }
 }
 
 void QOfonoManager::onModemRemoved(const QDBusObjectPath& path)
 {
     QString pathStr = path.path();
+    QString prevDefault = defaultModem();
     if (d_ptr->modems.removeOne(pathStr)) {
         Q_EMIT modemRemoved(pathStr);
         Q_EMIT modemsChanged(d_ptr->modems);
+        QString newDefault = defaultModem();
+        if (newDefault != prevDefault) {
+            Q_EMIT defaultModemChanged(newDefault);
+        }
     }
 }
 
@@ -121,6 +136,7 @@ void QOfonoManager::onGetModemsFinished(QDBusPendingCallWatcher* watcher)
     if (reply.isValid() && !reply.isError()) {
         // fugly I know... but we need sorted modems
         // with hardware listed first
+        QString prevDefault = defaultModem();
         d_ptr->modems.clear();
         foreach (ObjectPathProperties modem, reply.value()) {
             QString modemPath = modem.path.path();
@@ -134,6 +150,10 @@ void QOfonoManager::onGetModemsFinished(QDBusPendingCallWatcher* watcher)
             Q_EMIT modemAdded(modemPath);
         }
         Q_EMIT modemsChanged(d_ptr->modems);
+        QString newDefault = defaultModem();
+        if (newDefault != prevDefault) {
+            Q_EMIT defaultModemChanged(newDefault);
+        }
     }
     watcher->deleteLater();
 }
@@ -178,6 +198,7 @@ void QOfonoManager::ofonoUnregistered(const QString &)
             }
             d_ptr->modems.clear();
             Q_EMIT modemsChanged(d_ptr->modems);
+            Q_EMIT defaultModemChanged(QString());
         }
     }
 }
