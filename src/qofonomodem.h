@@ -102,15 +102,19 @@ Q_SIGNALS:
     void reportError(const QString &errorMessage);
     void validChanged(bool);
 
+private:
+    void connectOfono();
+    void propertyChanged(const QString &property, const QVariant &value);
+
 protected:
     void setOneProperty(const QString &prop,const QDBusVariant &var);
+
 protected slots:
     void setPropertyFinished(QDBusPendingCallWatcher *watch);
 
 private slots:
-    void connectOfono();
-    void propertyChanged(const QString &property,const QDBusVariant &value);
-    void propertyChanged(const QString &property, const QVariant &value);
+    void onGetPropertiesFinished(QDBusPendingCallWatcher *watch);
+    void onPropertyChanged(const QString &property,const QDBusVariant &value);
 
 private:
     QOfonoModemPrivate *d_ptr;

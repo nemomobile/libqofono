@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Jolla Ltd.
+** Copyright (C) 2013-2014 Jolla Ltd.
 ** Contact: lorn.potter@jollamobile.com
 **
 ** GNU Lesser General Public License Usage
@@ -33,8 +33,7 @@ public:
 };
 
 QOfonoModemPrivate::QOfonoModemPrivate() :
-    modemPath(QString())
-  , modem(0)
+    modem(NULL)
 {
 }
 
@@ -68,28 +67,48 @@ void QOfonoModem::connectOfono()
     bool wasValid = isValid();
     if (d_ptr->modem) {
         delete d_ptr->modem;
-        d_ptr->modem = 0;
-        d_ptr->properties.clear();
+        d_ptr->modem = NULL;
+        if (!d_ptr->properties.isEmpty()) {
+            QStringList keys = d_ptr->properties.keys();
+            d_ptr->properties.clear();
+            for (int i=0; i<keys.size(); i++) {
+                propertyChanged(keys[i], QVariant());
+            }
+        }
     }
+    if (!d_ptr->modemPath.isEmpty()) {
+        OfonoModem* modem = new OfonoModem("org.ofono", d_ptr->modemPath, QDBusConnection::systemBus(), this);
+        if (modem->isValid()) {
+            d_ptr->modem = modem;
+            connect(new QDBusPendingCallWatcher(modem->GetProperties(), modem),
+                SIGNAL(finished(QDBusPendingCallWatcher*)),
+                SLOT(onGetPropertiesFinished(QDBusPendingCallWatcher*)));
+            connect(modem,
+                SIGNAL(PropertyChanged(QString,QDBusVariant)),
+                SLOT(onPropertyChanged(QString,QDBusVariant)));
+        } else {
+            delete modem;
+        }
+    }
+    bool valid = isValid();
+    if (valid != wasValid) {
+        Q_EMIT validChanged(valid);
+    }
+}
 
-    d_ptr->modem = new OfonoModem("org.ofono", d_ptr->modemPath, QDBusConnection::systemBus(),this);
-
-    if (d_ptr->modem->isValid()) {
-        connect(d_ptr->modem,SIGNAL(PropertyChanged(QString,QDBusVariant)),
-                this,SLOT(propertyChanged(QString,QDBusVariant)));
-
-        QDBusPendingReply<QVariantMap> reply;
-        reply = d_ptr->modem->GetProperties();
-        reply.waitForFinished();
+void QOfonoModem::onGetPropertiesFinished(QDBusPendingCallWatcher *watcher)
+{
+    QDBusPendingReply<QVariantMap> reply(*watcher);
+    watcher->deleteLater();
+    if (reply.isValid() && !reply.isError()) {
+        // Ofono modem has a fixed set of properties, there's no need to check
+        // for disappearance or reappearance of individual properties.
         d_ptr->properties = reply.value();
         for (QVariantMap::ConstIterator it = d_ptr->properties.constBegin();
              it != d_ptr->properties.constEnd(); ++it) {
             propertyChanged(it.key(), it.value());
         }
     }
-
-    if (wasValid != isValid())
-        Q_EMIT validChanged(isValid());
 }
 
 bool QOfonoModem::powered() const
@@ -209,7 +228,7 @@ void QOfonoModem::setLockdown(bool lockdown)
     setOneProperty(str,var);
 }
 
-void QOfonoModem::propertyChanged(const QString& property, const QDBusVariant& dbusValue)
+void QOfonoModem::onPropertyChanged(const QString& property, const QDBusVariant& dbusValue)
 {
     QVariant value = dbusValue.variant();
     d_ptr->properties.insert(property,value);
@@ -242,7 +261,6 @@ void QOfonoModem::propertyChanged(const QString& property, const QVariant& value
         Q_EMIT featuresChanged(value.value<QStringList>());
     else if (property == QLatin1String("Interfaces"))
         Q_EMIT interfacesChanged(value.value<QStringList>());
-
 }
 
 bool QOfonoModem::isValid() const
@@ -283,4 +301,3 @@ void QOfonoModem::setPropertyFinished(QDBusPendingCallWatcher *watch)
         Q_EMIT reportError(reply.error().message());
     }
 }
-
