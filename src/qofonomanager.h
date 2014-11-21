@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Jolla Ltd.
+** Copyright (C) 2013-2014 Jolla Ltd.
 ** Contact: lorn.potter@jollamobile.com
 **
 ** GNU Lesser General Public License Usage
@@ -40,8 +40,8 @@ public:
 
     QStringList modems();
     bool available() const;
-
     bool isValid() const;
+
 Q_SIGNALS: // SIGNALS
     void modemAdded(const QString &modem);
     void modemRemoved(const QString &modem);
@@ -49,10 +49,12 @@ Q_SIGNALS: // SIGNALS
     void modemsChanged(const QStringList &modems);
 
 private slots:
-    void onModemAdd(const QDBusObjectPath &path, const QVariantMap &var);
-    void onModemRemove(const QDBusObjectPath &path);
+    void onModemAdded(const QDBusObjectPath &path, const QVariantMap &var);
+    void onModemRemoved(const QDBusObjectPath &path);
+    void onGetModemsFinished(QDBusPendingCallWatcher*);
     void connectToOfono(const QString &);
     void ofonoUnregistered(const QString &);
+
 private:
     QOfonoManagerPrivate *d_ptr;
 };
