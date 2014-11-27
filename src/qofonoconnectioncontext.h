@@ -86,14 +86,15 @@ public:
 
     QString modemPath() const;
 
-    Q_INVOKABLE bool validateProvisioning(); //check provision against mbpi
-    Q_INVOKABLE bool validateProvisioning(const QString &provider, const QString &mcc, const QString &mnc); //check provision against mbpi
+    Q_INVOKABLE QT_DEPRECATED bool validateProvisioning();
+    Q_INVOKABLE QT_DEPRECATED bool validateProvisioning(const QString &provider, const QString &mcc, const QString &mnc);
     #if QT_VERSION < 0x050000
-    Q_INVOKABLE void provision(const QString &provider, const QString &mcc, const QString &mnc, const QString &type="internet");
+    Q_INVOKABLE QT_DEPRECATED void provision(const QString &provider, const QString &mcc, const QString &mnc, const QString &type="internet");
     #else
-    Q_INVOKABLE void provision(const QString &provider, const QString &mcc, const QString &mnc, const QString &type=QStringLiteral("internet")); // provision context against mbpi
+    Q_INVOKABLE QT_DEPRECATED void provision(const QString &provider, const QString &mcc, const QString &mnc, const QString &type=QStringLiteral("internet"));
     #endif
-    Q_INVOKABLE void provisionForCurrentNetwork(const QString &type);
+    Q_INVOKABLE QT_DEPRECATED void provisionForCurrentNetwork(const QString &type);
+
     Q_INVOKABLE void disconnect();
 
 Q_SIGNALS:
