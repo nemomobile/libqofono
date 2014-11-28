@@ -22,11 +22,10 @@
  */
 
 #include <QtTest/QtTest>
-#include <QtCore/QObject>
 
-#include "../../../src/qofonomanager.h"
-#include "../../../src/qofonoconnectionmanager.h"
-#include "../../../src/qofonoconnectioncontext.h"
+#include "qofonomanager.h"
+#include "qofonoconnectionmanager.h"
+#include "qofonoconnectioncontext.h"
 
 #include <QtDebug>
 
@@ -59,6 +58,7 @@ private slots:
 
         QOfonoConnectionContext* context = new QOfonoConnectionContext(this);
         context->setContextPath(contextid);
+        QTRY_COMPARE(context->isValid(), true);
 
         QSignalSpy active(context, SIGNAL(activeChanged(bool)));
         QSignalSpy apn(context,SIGNAL(accessPointNameChanged(QString)));
@@ -142,8 +142,9 @@ private slots:
 
         QOfonoConnectionContext* context = new QOfonoConnectionContext(this);
         context->setContextPath(contextid);
-        QSignalSpy apn(context, SIGNAL(accessPointNameChanged(QString)));
+        QTRY_VERIFY(context->isValid());
 
+        QSignalSpy apn(context, SIGNAL(accessPointNameChanged(QString)));
         context->setAccessPointName("internet");
         QTRY_COMPARE(apn.count(), 1);
         QCOMPARE(apn.takeFirst().at(0).toString(), QString("internet"));

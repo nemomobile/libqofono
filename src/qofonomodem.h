@@ -16,20 +16,15 @@
 #ifndef QOFONOMODEM_H
 #define QOFONOMODEM_H
 
-#include <QObject>
-#include <QStringList>
-#include "dbustypes.h"
+#include "qofonoobject.h"
 
-#include "qofono_global.h"
 //! This class is used to access an oFono modem object and its properties
 /*!
  * oFono modem properties are documented in
  * http://git.kernel.org/?p=network/ofono/ofono.git;a=blob_plain;f=doc/modem-api.txt
  */
 
-class QOfonoModemPrivate;
-
-class QOFONOSHARED_EXPORT QOfonoModem : public QObject
+class QOFONOSHARED_EXPORT QOfonoModem : public QOfonoObject
 {
     Q_OBJECT
 
@@ -49,7 +44,6 @@ class QOFONOSHARED_EXPORT QOfonoModem : public QObject
     Q_PROPERTY(QStringList interfaces READ interfaces NOTIFY interfacesChanged)
 
     Q_PROPERTY(QString modemPath READ modemPath WRITE setModemPath NOTIFY modemPathChanged)
-    Q_PROPERTY(bool valid READ isValid NOTIFY validChanged)
 
 public:
     explicit QOfonoModem(QObject *parent = 0);
@@ -95,29 +89,14 @@ Q_SIGNALS:
     void revisionChanged(const QString &revision);
     void serialChanged(const QString &serial);
     void typeChanged(const QString &type);
-
     void featuresChanged(const QStringList &features);
     void interfacesChanged(const QStringList &interfaces);
     void modemPathChanged(const QString &path);
-    void reportError(const QString &errorMessage);
-    void validChanged(bool);
-
-private:
-    void connectOfono();
-    void propertyChanged(const QString &property, const QVariant &value);
 
 protected:
-    void setOneProperty(const QString &prop,const QDBusVariant &var);
-
-protected slots:
-    void setPropertyFinished(QDBusPendingCallWatcher *watch);
-
-private slots:
-    void onGetPropertiesFinished(QDBusPendingCallWatcher *watch);
-    void onPropertyChanged(const QString &property,const QDBusVariant &value);
-
-private:
-    QOfonoModemPrivate *d_ptr;
+    QDBusAbstractInterface* createDbusInterface(const QString &path);
+    void propertyChanged(const QString &key, const QVariant &value);
+    void objectPathChanged(const QString &path);
 };
 
 #endif // QOFONOMODEM_H
