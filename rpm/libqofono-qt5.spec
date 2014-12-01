@@ -1,7 +1,7 @@
 Name:       libqofono-qt5
 
 Summary:    A library of Qt 5 bindings for ofono
-Version:    0.62
+Version:    0.63
 Release:    1
 Group:      System/Libraries
 License:    LGPLv2.1
