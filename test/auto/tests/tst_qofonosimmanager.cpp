@@ -52,7 +52,7 @@ private slots:
         m = new QOfonoSimManager(this);
         m->setModemPath("/phonesim");
 
-        QCOMPARE(m->isValid(), true);
+        QTRY_COMPARE(m->isValid(), true);
     }
 
     void testQOfonoSimManager()
@@ -130,6 +130,12 @@ private slots:
         modem.setModemPath(m->modemPath());
         QSignalSpy modemOnline(&modem, SIGNAL(onlineChanged(bool)));
         QSignalSpy modemPowered(&modem, SIGNAL(poweredChanged(bool)));
+
+        // Wait for modem to become ready
+        QTRY_COMPARE(modemOnline.count(), 1);
+        QCOMPARE(modemOnline.takeFirst().at(0).toBool(), true);
+        QTRY_COMPARE(modemPowered.count(), 1);
+        QCOMPARE(modemPowered.takeFirst().at(0).toBool(), true);
 
         //SIM hotswap is not testable with phonesim, so we simulate a modem reset
         modem.setOnline(false);
