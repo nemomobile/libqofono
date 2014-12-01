@@ -24,9 +24,9 @@
 #include <QtTest/QtTest>
 #include  <QtCore/QObject>
 
-#include "../../../src/qofonoconnectioncontext.h"
-#include "../../../src/qofonoconnectionmanager.h"
-#include "../../../src/qofonomanager.h"
+#include "qofonoconnectioncontext.h"
+#include "qofonoconnectionmanager.h"
+#include "qofonomanager.h"
 
 #include <QtDebug>
 
@@ -47,6 +47,12 @@ private slots:
 
     void testOfonoConnMan()
     {
+        // Set initial values
+        m->setPowered(true);
+        QTRY_COMPARE(m->powered(), true);
+        m->setRoamingAllowed(true);
+        QTRY_COMPARE(m->roamingAllowed(), true);
+
         QSignalSpy attch(m, SIGNAL(attachedChanged(bool)));
         QSignalSpy sus(m,SIGNAL(suspendedChanged(bool)));
         QSignalSpy ber(m, SIGNAL(bearerChanged(QString)));
@@ -63,6 +69,7 @@ private slots:
         QTRY_COMPARE(pow.count(), 1);
         QCOMPARE(pow.takeFirst().at(0).toBool(), true);
         QCOMPARE(m->powered(), true);
+
         m->setRoamingAllowed(false);
         QTRY_COMPARE(roam.count(), 1);
         QCOMPARE(roam.takeFirst().at(0).toBool(), false);
@@ -71,6 +78,7 @@ private slots:
         QTRY_COMPARE(roam.count(), 1);
         QCOMPARE(roam.takeFirst().at(0).toBool(), true);
         QCOMPARE(m->roamingAllowed(), true);
+
         m->addContext(QString("internet"));
         QTRY_COMPARE(add.count(), 1);
 
