@@ -126,6 +126,7 @@ private slots:
 
     }
 
+#ifdef QOFONO_PROVISIONING
     void tst_provisioning()
     {
         QSignalSpy conadd(m, SIGNAL(contextAdded(QString)));
@@ -174,6 +175,7 @@ private slots:
         QCOMPARE(apn.takeFirst().at(0).toString(), QString("test"));
         QCOMPARE(context->validateProvisioning(operatorString, mcc, mnc),false);
     }
+#endif // QOFONO_PROVISIONING
 
 private:
     QOfonoConnectionManager *m;

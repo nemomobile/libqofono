@@ -12,7 +12,6 @@ Requires(post): /sbin/ldconfig
 Requires(postun): /sbin/ldconfig
 BuildRequires:  pkgconfig(QtCore)
 BuildRequires:  pkgconfig(QtDBus)
-BuildRequires:  pkgconfig(QtXmlPatterns)
 
 %description
 This package contains Qt bindings for ofono cellular service

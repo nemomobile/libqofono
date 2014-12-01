@@ -13,7 +13,9 @@
 **
 ****************************************************************************/
 
+#ifdef QOFONO_PROVISIONING
 #include <QtXmlPatterns/QXmlQuery>
+#endif
 
 #include "qofonoconnectioncontext.h"
 #include "dbus/ofonoconnectioncontext.h"
@@ -101,13 +103,6 @@ void QOfonoConnectionContext::setContextPath(const QString &idPath)
                 }
             }
         }
-/*        if (!validateProvisioning()) {
-            provisionForCurrentNetwork(this->type());
-        } else {
-            Q_EMIT reportError("Context provision is not valid");
-            qDebug() << Q_FUNC_INFO << "error Context provision is not valid";
-        }
-*/
     }
 }
 
@@ -343,30 +338,27 @@ void QOfonoConnectionContext::disconnect()
 /*
  * Tries to validate the context against the current registered network
  **/
-//check provision against mbpi
 bool QOfonoConnectionContext::validateProvisioning()
 {
+#ifdef QOFONO_PROVISIONING
     qDebug() << Q_FUNC_INFO << d_ptr->modemPath;
     if (d_ptr->modemPath.isEmpty())
         return false;
-
-    QString provider;
-    QString mcc;
-    QString mnc;
 
     QOfonoNetworkRegistration netReg;
     netReg.setModemPath(d_ptr->modemPath);
     if (netReg.status() == "registered")
         return validateProvisioning(netReg.networkOperators().at(0),netReg.mcc(),netReg.mnc());
+#endif // QOFONO_PROVISIONING
     return false;
 }
 
 /*
  * Tries to validate the context using the provider, mcc and mnc arguments
  **/
-//check provision against mbpi
 bool QOfonoConnectionContext::validateProvisioning(const QString &providerString, const QString &mcc, const QString &mnc)
 {
+#ifdef QOFONO_PROVISIONING
     qDebug() << Q_FUNC_INFO << providerString;
     QXmlQuery query;
     QString provider = providerString;
@@ -449,10 +441,14 @@ bool QOfonoConnectionContext::validateProvisioning(const QString &providerString
 
     //we got here, must be ok
     return true;
+#else // QOFONO_PROVISIONING
+    return false;
+#endif
 }
 
 void QOfonoConnectionContext::provisionForCurrentNetwork(const QString &type)
 {
+#ifdef QOFONO_PROVISIONING
     if (d_ptr->modemPath.isEmpty())
         return;
 
@@ -461,6 +457,7 @@ void QOfonoConnectionContext::provisionForCurrentNetwork(const QString &type)
 
     if (netReg.status() == "registered")
         provision(netReg.name(), netReg.mcc(),netReg.mnc(), type);
+#endif // QOFONO_PROVISIONING
 }
 
 /*
@@ -472,9 +469,9 @@ void QOfonoConnectionContext::provisionForCurrentNetwork(const QString &type)
  * The only way to see if this is a working context is to try to activate the context.
  *
  **/
-// provision context against mbpi
 void QOfonoConnectionContext::provision(const QString &provider, const QString &mcc, const QString &mnc, const QString &type)
 {
+#ifdef QOFONO_PROVISIONING
     QXmlQuery query;
     query.setFocus(QUrl("/usr/share/mobile-broadband-provider-info/serviceproviders.xml"));
 
@@ -583,5 +580,6 @@ void QOfonoConnectionContext::provision(const QString &provider, const QString &
     }
     Q_EMIT setPropertyFinished();
     Q_EMIT provisioningFinished();
+#endif // QOFONO_PROVISIONING
 }
 
