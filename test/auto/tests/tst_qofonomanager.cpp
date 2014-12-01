@@ -24,8 +24,8 @@
 #include <QtTest/QtTest>
 #include <QtCore/QObject>
 
-#include "../../../src/qofonomanager.h"
-#include "../../../src/qofonomodem.h"
+#include "qofonomanager.h"
+#include "qofonomodem.h"
 
 #include <QtDebug>
 
@@ -39,6 +39,9 @@ private slots:
     void initTestCase()
     {
         mm = new QOfonoManager(this);
+        QCOMPARE(mm->modems(), QStringList());
+        QSignalSpy defaultModem(mm, SIGNAL(defaultModemChanged(QString)));
+        QTRY_COMPARE(defaultModem.count(), 1);
     }
 
     void testQOfonoManager()
