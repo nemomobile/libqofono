@@ -54,6 +54,10 @@ private slots:
         QSignalSpy mailboxNumber(m, SIGNAL(voicemailMailboxNumberChanged(QString)));
         QSignalSpy setNumberComplete(m, SIGNAL(voicemailMailboxComplete(bool)));
 
+        // Wait for modem to become ready
+        QTRY_COMPARE(modemOnline.count(), 1);
+        QCOMPARE(modemOnline.takeFirst().at(0).toBool(), true);
+
         QCOMPARE(m->voicemailWaiting(), true);
         QCOMPARE(m->voicemailMessageCount(), 1);
         QCOMPARE(m->voicemailMailboxNumber(), QString("6789"));
