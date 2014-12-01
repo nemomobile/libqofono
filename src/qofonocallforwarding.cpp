@@ -230,7 +230,7 @@ void QOfonoCallForwarding::disableAll(const QString &type)
 
 bool QOfonoCallForwarding::isValid() const
 {
-    return d_ptr->callForward->isValid();
+    return d_ptr->callForward && d_ptr->callForward->isValid();
 }
 
 bool QOfonoCallForwarding::isReady() const
