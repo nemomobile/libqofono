@@ -101,6 +101,14 @@ private slots:
         QCOMPARE(voiceNotReachableComplete.takeFirst().at(0).toBool(), true);
         QTRY_COMPARE(voiceNotReachableChanged.count(), 1);
         QCOMPARE(voiceNotReachableChanged.takeFirst().at(0).toString(), QString("12345678"));
+
+        QCOMPARE(m->voiceBusy(), QString("12345678"));
+        QCOMPARE(m->voiceNoReply(), QString("12345678"));
+        QCOMPARE(m->voiceNoReplyTimeout(), quint16(30));
+        QCOMPARE(m->voiceNotReachable(), QString("12345678"));
+        QCOMPARE(m->voiceUnconditional(), QString(""));
+        QCOMPARE(m->forwardingFlagOnSim(), false);
+
         m->setVoiceUnconditional("12345678");
         QTRY_COMPARE(voiceUnconditionalComplete.count(), 1);
         QCOMPARE(voiceUnconditionalComplete.takeFirst().at(0).toBool(), true);
@@ -110,16 +118,45 @@ private slots:
         QTRY_COMPARE(forwardingFlagOnSimChanged.count(), 1);
         QCOMPARE(forwardingFlagOnSimChanged.takeFirst().at(0).toBool(), true);
 
-        QCOMPARE(m->voiceBusy(), QString("12345678"));
-        QCOMPARE(m->voiceNoReply(), QString("12345678"));
-        QCOMPARE(m->voiceNoReplyTimeout(), quint16(30));
-        QCOMPARE(m->voiceNotReachable(), QString("12345678"));
+        // When VoiceUnconditional is active, all other CF is cleared and enabled again when
+        // VoiceUnconditional is deactivated
+        QTRY_COMPARE(voiceBusyChanged.count(), 1);
+        QCOMPARE(voiceBusyChanged.takeFirst().at(0).toString(), QString(""));
+        QTRY_COMPARE(voiceNoReplyChanged.count(), 1);
+        QCOMPARE(voiceNoReplyChanged.takeFirst().at(0).toString(), QString(""));
+        QTRY_COMPARE(voiceNotReachableChanged.count(), 1);
+        QCOMPARE(voiceNotReachableChanged.takeFirst().at(0).toString(), QString(""));
+
+        QCOMPARE(m->voiceBusy(), QString(""));
+        QCOMPARE(m->voiceNoReply(), QString(""));
+        QCOMPARE(m->voiceNotReachable(), QString(""));
         QCOMPARE(m->voiceUnconditional(), QString("12345678"));
         QCOMPARE(m->forwardingFlagOnSim(), true);
 
-        m->disableAll("all");
+        m->setVoiceUnconditional("");
+        QTRY_COMPARE(voiceUnconditionalComplete.count(), 1);
+        QCOMPARE(voiceUnconditionalComplete.takeFirst().at(0).toBool(), true);
         QTRY_COMPARE(voiceUnconditionalChanged.count(), 1);
         QCOMPARE(voiceUnconditionalChanged.takeFirst().at(0).toString(), QString(""));
+
+        QTRY_COMPARE(forwardingFlagOnSimChanged.count(), 1);
+        QCOMPARE(forwardingFlagOnSimChanged.takeFirst().at(0).toBool(), false);
+
+        QTRY_COMPARE(voiceBusyChanged.count(), 1);
+        QCOMPARE(voiceBusyChanged.takeFirst().at(0).toString(), QString("12345678"));
+        QTRY_COMPARE(voiceNoReplyChanged.count(), 1);
+        QCOMPARE(voiceNoReplyChanged.takeFirst().at(0).toString(), QString("12345678"));
+        QTRY_COMPARE(voiceNotReachableChanged.count(), 1);
+        QCOMPARE(voiceNotReachableChanged.takeFirst().at(0).toString(), QString("12345678"));
+
+        QCOMPARE(m->voiceBusy(), QString("12345678"));
+        QCOMPARE(m->voiceNoReply(), QString("12345678"));
+        QCOMPARE(m->voiceNotReachable(), QString("12345678"));
+        QCOMPARE(m->voiceUnconditional(), QString(""));
+        QCOMPARE(m->forwardingFlagOnSim(), false);
+
+        m->disableAll("all");
+        QTRY_COMPARE(voiceUnconditionalChanged.count(), 0);
         QTRY_COMPARE(voiceBusyChanged.count(), 1);
         QCOMPARE(voiceBusyChanged.takeFirst().at(0).toString(), QString(""));
         QTRY_COMPARE(voiceNoReplyChanged.count(), 1);
@@ -128,8 +165,7 @@ private slots:
         QCOMPARE(voiceNoReplyTimeoutChanged.takeFirst().at(0).toUInt(), uint(20));
         QTRY_COMPARE(voiceNotReachableChanged.count(), 1);
         QCOMPARE(voiceNotReachableChanged.takeFirst().at(0).toString(), QString(""));
-        QTRY_COMPARE(forwardingFlagOnSimChanged.count(), 1);
-        QCOMPARE(forwardingFlagOnSimChanged.takeFirst().at(0).toBool(), false);
+        QTRY_COMPARE(forwardingFlagOnSimChanged.count(), 0);
 
         QCOMPARE(m->voiceUnconditional(), QString(""));
         QCOMPARE(m->voiceBusy(), QString(""));
