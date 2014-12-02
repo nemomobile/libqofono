@@ -16,9 +16,8 @@
 #ifndef QOFONOCONNECTIONCONTEXT_H
 #define QOFONOCONNECTIONCONTEXT_H
 
-#include <QObject>
-#include "dbustypes.h"
-#include "qofono_global.h"
+#include "qofonoobject.h"
+
 //! This class is used to access ofono connman context API
 /*!
  * The API is documented in
@@ -27,7 +26,7 @@
 
 class QOfonoConnectionContextPrivate;
 
-class QOFONOSHARED_EXPORT QOfonoConnectionContext : public QObject
+class QOFONOSHARED_EXPORT QOfonoConnectionContext : public QOfonoObject
 {
     Q_OBJECT
     Q_PROPERTY(bool active READ active WRITE setActive NOTIFY activeChanged)
@@ -109,22 +108,15 @@ Q_SIGNALS:
     void messageCenterChanged(const QString &msc);
     void settingsChanged(const QVariantMap &settingsMap);
     void IPv6SettingsChanged(const QVariantMap &ipv6SettingsMap);
-
     void contextPathChanged(const QString &contextPath);
-
-    void reportError(const QString &errorString);
-    void setPropertyFinished();
     void provisioningFinished();
     void modemPathChanged(const QString &path);
 
-
 protected:
-    void setOneProperty(const QString &prop,const QDBusVariant &var);
-protected slots:
-    void setPropertyFinished(QDBusPendingCallWatcher *watch);
-
-private slots:
-    void propertyChanged(const QString &property,const QDBusVariant &value);
+    QDBusAbstractInterface* createDbusInterface(const QString &path);
+    QVariant convertProperty(const QString &key, const QVariant &value);
+    void propertyChanged(const QString &key, const QVariant &value);
+    void objectPathChanged(const QString &path);
 
 private:
     QOfonoConnectionContextPrivate *d_ptr;

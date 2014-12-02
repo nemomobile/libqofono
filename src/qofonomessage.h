@@ -16,18 +16,14 @@
 #ifndef QOFONOMessage_H
 #define QOFONOMessage_H
 
-#include <QObject>
-#include <QDBusVariant>
+#include "qofonoobject.h"
 
-#include "qofono_global.h"
 //! This class is used to access ofono message API
 /*!
  * oFono message API is documented in
  * http://git.kernel.org/?p=network/ofono/ofono.git;a=blob_plain;f=doc/message-api.txt
  */
-
-class QOfonoMessagePrivate;
-class QOFONOSHARED_EXPORT QOfonoMessage : public QObject
+class QOFONOSHARED_EXPORT QOfonoMessage : public QOfonoObject
 {
     Q_OBJECT
     Q_PROPERTY(QString messagePath READ messagePath WRITE setMessagePath NOTIFY messagePathChanged)
@@ -44,16 +40,18 @@ public:
     Q_INVOKABLE void cancel();
 
     bool isValid() const;
-Q_SIGNALS:
 
+Q_SIGNALS:
     void stateChanged(const QString &state);
     void messagePathChanged(const QString &path);
-public slots:
-    
+
+protected:
+    QDBusAbstractInterface* createDbusInterface(const QString &path);
+    void propertyChanged(const QString &key, const QVariant &value);
+    void objectPathChanged(const QString &path);
+
 private:
-    QOfonoMessagePrivate *d_ptr;
-private slots:
-    void propertyChanged(const QString &property,const QDBusVariant &value);
+    void *d_ptr;
 };
 
 #endif // QOFONOMessage_H

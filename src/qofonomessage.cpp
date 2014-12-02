@@ -16,87 +16,58 @@
 #include "qofonomessage.h"
 #include "dbus/ofonomessage.h"
 
-class QOfonoMessagePrivate
-{
-public:
-    QOfonoMessagePrivate();
-    QString messagePath;
-    OfonoMessage *oMessage;
-    QVariantMap properties;
-
-};
-
-QOfonoMessagePrivate::QOfonoMessagePrivate() :
-    messagePath(QString())
-  , oMessage(0)
-{
-}
-
 QOfonoMessage::QOfonoMessage(QObject *parent) :
-    QObject(parent)
-  , d_ptr(new QOfonoMessagePrivate)
+    QOfonoObject(parent),
+    d_ptr(NULL)
 {
 }
 
 QOfonoMessage::~QOfonoMessage()
 {
-    delete d_ptr;
+}
+
+QDBusAbstractInterface* QOfonoMessage::createDbusInterface(const QString &path)
+{
+    return new OfonoMessage("org.ofono", path, QDBusConnection::systemBus(), this);
+}
+
+void QOfonoMessage::objectPathChanged(const QString &path)
+{
+    Q_EMIT messagePathChanged(path);
 }
 
 void QOfonoMessage::setMessagePath(const QString &path)
 {
-    if (path != messagePath()) {
-        if (d_ptr->oMessage) {
-            delete d_ptr->oMessage;
-            d_ptr->oMessage = 0;
-            d_ptr->properties.clear();
-        }
-        d_ptr->oMessage = new OfonoMessage("org.ofono", path, QDBusConnection::systemBus(),this);
-        d_ptr->messagePath = path;
-
-        if (d_ptr->oMessage) {
-            connect(d_ptr->oMessage,SIGNAL(PropertyChanged(QString,QDBusVariant)),
-                    this,SLOT(propertyChanged(QString,QDBusVariant)));
-
-            QDBusPendingReply<QVariantMap> reply;
-            reply = d_ptr->oMessage->GetProperties();
-            reply.waitForFinished();
-            d_ptr->properties = reply.value();
-            Q_EMIT messagePathChanged(path);
-        }
-    }
+    setObjectPath(path);
 }
 
 QString QOfonoMessage::messagePath() const
 {
-    return d_ptr->messagePath;
+    return objectPath();
 }
 
-void QOfonoMessage::propertyChanged(const QString& property, const QDBusVariant& dbusvalue)
+void QOfonoMessage::propertyChanged(const QString &property, const QVariant &value)
 {
-    QVariant value = dbusvalue.variant();
-    d_ptr->properties.insert(property,value);
-
     if (property == QLatin1String("State")) {
         Q_EMIT stateChanged(value.value<QString>());
-   }
+    }
+    QOfonoObject::propertyChanged(property, value);
 }
 
 QString QOfonoMessage::state() const
 {
-    if (d_ptr->oMessage)
-        return d_ptr->properties["State"].value<QString>();
-    else
-        return QString();
+    return getString("State");
 }
 
 void QOfonoMessage::cancel()
 {
-    if (d_ptr->oMessage)
-        d_ptr->oMessage->Cancel();
+    QDBusAbstractInterface* dbus = dbusInterface();
+    if (dbus) {
+        ((OfonoMessage*)dbus)->Cancel();
+    }
 }
 
 bool QOfonoMessage::isValid() const
 {
-    return d_ptr->oMessage->isValid();
+    return QOfonoObject::isValid();
 }

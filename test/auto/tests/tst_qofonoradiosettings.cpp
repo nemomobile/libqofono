@@ -22,9 +22,8 @@
  */
 
 #include <QtTest/QtTest>
-#include <QtCore/QObject>
 
-#include "../../../src/qofonoradiosettings.h"
+#include "qofonoradiosettings.h"
 
 #include <QtDebug>
 
@@ -37,11 +36,10 @@ private slots:
     {
         m = new QOfonoRadioSettings(this);
         m->setModemPath("/phonesim");
-        QCOMPARE(m->isValid(), true);
 
         QEXPECT_FAIL("", "FIXME: radio settings interface is not supported by AT modems, "
                 "and consequently, phonesim", Abort);
-        QVERIFY(false);
+        QTRY_VERIFY(m->isValid());
     }
 
     void testQOfonoRadioSettings()
