@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Jolla Ltd.
+** Copyright (C) 2013-2014 Jolla Ltd.
 ** Contact: lorn.potter@jollamobile.com
 **
 ** GNU Lesser General Public License Usage
@@ -49,9 +49,6 @@ protected:
     QDBusAbstractInterface* createDbusInterface(const QString &path);
     void propertyChanged(const QString &key, const QVariant &value);
     void objectPathChanged(const QString &path);
-
-private:
-    void *d_ptr;
 };
 
 #endif // QOFONOMessage_H
