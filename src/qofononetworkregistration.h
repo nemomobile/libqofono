@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Jolla Ltd.
+** Copyright (C) 2013-2014 Jolla Ltd.
 ** Contact: lorn.potter@jollamobile.com
 **
 ** GNU Lesser General Public License Usage
@@ -16,30 +16,19 @@
 #ifndef QOFONONETWORKREGISTRATION_H
 #define QOFONONETWORKREGISTRATION_H
 
-#include <QObject>
-#include "dbustypes.h"
-
+#include "qofonomodeminterface.h"
+#include "qofononetworkoperator.h"
 #include "qofono_global.h"
+
 //! This class is used to access ofono network operator API
 /*!
  * The API is documented in
  * http://git.kernel.org/?p=network/ofono/ofono.git;a=blob_plain;f=doc/network-api.txt
  */
-
-class QOfonoNetworkRegistrationPrivate;
-
-struct OfonoPathProps
-{
-    QDBusObjectPath path;
-    QVariantMap properties;
-};
-typedef QList<OfonoPathProps> QArrayOfPathProps;
-Q_DECLARE_METATYPE(OfonoPathProps)
-Q_DECLARE_METATYPE (QArrayOfPathProps)
-
-class QOFONOSHARED_EXPORT QOfonoNetworkRegistration : public QObject
+class QOFONOSHARED_EXPORT QOfonoNetworkRegistration : public QOfonoModemInterface
 {
     Q_OBJECT
+    Q_PROPERTY(bool scanning READ scanning NOTIFY scanningChanged)
     Q_PROPERTY(QString mode READ mode NOTIFY modeChanged)
     Q_PROPERTY(QString status READ status NOTIFY statusChanged)
     Q_PROPERTY(uint locationAreaCode READ locationAreaCode NOTIFY locationAreaCodeChanged)
@@ -54,15 +43,10 @@ class QOFONOSHARED_EXPORT QOfonoNetworkRegistration : public QObject
     Q_PROPERTY(QStringList networkOperators READ networkOperators NOTIFY networkOperatorsChanged)
     Q_PROPERTY(QString currentOperatorPath READ currentOperatorPath NOTIFY currentOperatorPathChanged)
 
-    Q_PROPERTY(QString modemPath READ modemPath WRITE setModemPath)
-
 public:
     explicit QOfonoNetworkRegistration(QObject *parent = 0);
     ~QOfonoNetworkRegistration();
     
-    QString modemPath() const;
-    void setModemPath(const QString &path);
-
     QString mode() const;
     QString status() const;
     uint locationAreaCode() const;
@@ -74,7 +58,8 @@ public:
     uint strength() const;
     QString baseStation() const;
 
-    QStringList networkOperators();
+    QStringList networkOperators() const;
+    QOfonoNetworkOperator* networkOperator(const QString &path) const;
 
     Q_INVOKABLE void registration();
     Q_INVOKABLE void scan();
@@ -82,6 +67,8 @@ public:
     QString currentOperatorPath();
 
     bool isValid() const;
+    bool scanning() const;
+
 Q_SIGNALS:
     void modeChanged(const QString &mode);
     void statusChanged(const QString &status);
@@ -98,25 +85,28 @@ Q_SIGNALS:
     void currentOperatorPathChanged(const QString &);
     void scanFinished();
     void scanError(const QString &message);
-    void modemPathChanged(const QString &path);
+    void scanningChanged(bool value);
 
     void registrationFinished();
     void registrationError(const QString &errorMessage);
 
-public slots:
+private slots:
+    void onOperatorStatusChanged(const QString &status);
+    void onScanFinished(QDBusPendingCallWatcher *watch);
+    void onGetOperatorsFinished(QDBusPendingCallWatcher *watch);
+    void onRegistrationFinished(QDBusPendingCallWatcher *watch);
+
+protected:
+    QDBusAbstractInterface *createDbusInterface(const QString &path);
+    void dbusInterfaceDropped();
+    void propertyChanged(const QString &property, const QVariant &value);
 
 private:
-    void updateProperty(const QString &property, const QVariant &value);
+    void setOperators(const ObjectPathPropertiesList &operators);
 
-    QOfonoNetworkRegistrationPrivate *d_ptr;
-
-private slots:
-    void propertyChanged(const QString &property,const QDBusVariant &value);
-    void scanError(QDBusError error);
-    void scanFinish(const QArrayOfPathProps &list);
-
-    void registrationComplete(QDBusPendingCallWatcher *);
-
+private:
+    class Private;
+    Private *d_ptr;
 };
 
 #endif // QOFONONETWORKREGISTRATION_H

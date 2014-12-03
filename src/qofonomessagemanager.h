@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Jolla Ltd.
+** Copyright (C) 2013-2014 Jolla Ltd.
 ** Contact: lorn.potter@jollamobile.com
 **
 ** GNU Lesser General Public License Usage
@@ -16,21 +16,17 @@
 #ifndef QOFONOMessageManager_H
 #define QOFONOMessageManager_H
 
-#include <QObject>
-#include <QDBusVariant>
-#include <QStringList>
+#include "qofonomodeminterface.h"
 #include "qofono_global.h"
+
 //! This class is used to access ofono message manager API
 /*!
  * oFono message manager API is documented in
  * http://git.kernel.org/?p=network/ofono/ofono.git;a=blob_plain;f=doc/messagemanager-api.txt
  */
-
-class QOfonoMessageManagerPrivate;
-class QOFONOSHARED_EXPORT QOfonoMessageManager : public QObject
+class QOFONOSHARED_EXPORT QOfonoMessageManager : public QOfonoModemInterface
 {
     Q_OBJECT
-    Q_PROPERTY(QString modemPath READ modemPath WRITE setModemPath NOTIFY modemPathChanged)
     Q_PROPERTY(QString serviceCenterAddress READ serviceCenterAddress WRITE setServiceCenterAddress NOTIFY serviceCenterAddressChanged)
     Q_PROPERTY(bool useDeliveryReports READ useDeliveryReports WRITE setUseDeliveryReports NOTIFY useDeliveryReportsChanged)
     Q_PROPERTY(QString bearer READ bearer WRITE setBearer NOTIFY bearerChanged)
@@ -39,9 +35,6 @@ class QOFONOSHARED_EXPORT QOfonoMessageManager : public QObject
 public:
     explicit QOfonoMessageManager(QObject *parent = 0);
     ~QOfonoMessageManager();
-
-    QString modemPath() const;
-    void setModemPath(const QString &path);
 
     QString serviceCenterAddress();
     void setServiceCenterAddress(const QString &address);
@@ -59,6 +52,7 @@ public:
     Q_INVOKABLE QStringList messages();
 
     bool isValid() const;
+
 Q_SIGNALS:
     void serviceCenterAddressChanged(const QString &address);
     void useDeliveryReportsChanged(const bool &useDeliveryReports);
@@ -70,7 +64,6 @@ Q_SIGNALS:
 
     void messageAdded(const QString &message);
     void messageRemoved(const QString &message);
-    void modemPathChanged(const QString &path);
 
     void messagesFinished();
 
@@ -80,21 +73,24 @@ Q_SIGNALS:
     void setBearerComplete(bool success);
     void setAlphabetComplete(bool success);
 
-private:
-    QOfonoMessageManagerPrivate *d_ptr;
 private slots:
     void onMessageAdded(const QDBusObjectPath &path, const QVariantMap &properties);
     void onMessageRemoved(const QDBusObjectPath &path);
+    void onGetMessagesFinished(QDBusPendingCallWatcher *watch);
+    void onSendMessageFinished(QDBusPendingCallWatcher *watch);
 
-    void propertyChanged(const QString &property,const QDBusVariant &value);
-    void getMessagesFinished(const ObjectPathPropertiesList &list);
-    void messagesError(const QDBusError &error);
+protected:
+    QDBusAbstractInterface *createDbusInterface(const QString &path);
+    void dbusInterfaceDropped();
+    void propertyChanged(const QString &property, const QVariant &value);
+    void setPropertyFinished(const QString &property, const QDBusError *error);
 
-    void sendMessageFinished(QDBusPendingCallWatcher *call);
-    void setServiceCenterAddressFinished(QDBusPendingCallWatcher*);
-    void setUseDeliveryReportsFinished(QDBusPendingCallWatcher*);
-    void setBearerFinished(QDBusPendingCallWatcher*);
-    void setAlphabetFinished(QDBusPendingCallWatcher*);
+private:
+    void addMessage(const QString &messagePath);
+
+private:
+    class Private;
+    Private* d_ptr;
 };
 
 #endif // QOFONOMessageManager_H

@@ -14,26 +14,27 @@
 ****************************************************************************/
 
 #include "qofonoobject.h"
-#include <QDBusPendingCallWatcher>
+#include "qofonoutils_p.h"
 
 class QOfonoObject::Private
 {
 public:
-    Private();
-    QDBusPendingCall setProperty(const QString &key, const QVariant &value);
-
-public:
-    QDBusAbstractInterface* interface;
+    QDBusAbstractInterface *interface;
     bool initialized;
     QString objectPath;
     QVariantMap properties;
-};
 
-QOfonoObject::Private::Private() :
-    interface(NULL),
-    initialized(false)
-{
-}
+    Private() : interface(NULL), initialized(false) {}
+    QDBusPendingCall setProperty(const QString &key, const QVariant &value);
+
+    class SetPropertyWatcher : public QDBusPendingCallWatcher {
+    public:
+        QString property;
+        SetPropertyWatcher(QDBusAbstractInterface *parent, const QString &name,
+            const QDBusPendingCall &call) : QDBusPendingCallWatcher(call, parent),
+            property(name) {}
+    };
+};
 
 QDBusPendingCall QOfonoObject::Private::setProperty(const QString &key, const QVariant &value)
 {
@@ -59,13 +60,17 @@ QString QOfonoObject::objectPath() const
     return d_ptr->objectPath;
 }
 
-void QOfonoObject::setObjectPath(const QString &path)
+void QOfonoObject::setObjectPath(const QString &path, const QVariantMap *properties)
 {
     if (d_ptr->objectPath != path) {
         d_ptr->objectPath = path;
-        setDbusInterface(path.isEmpty() ? NULL : createDbusInterface(path));
-        objectPathChanged(d_ptr->objectPath);
+        objectPathChanged(path, properties);
     }
+}
+
+void QOfonoObject::objectPathChanged(const QString &, const QVariantMap *properties)
+{
+    resetDbusInterface(properties);
 }
 
 bool QOfonoObject::isValid() const
@@ -73,38 +78,46 @@ bool QOfonoObject::isValid() const
     return d_ptr->interface && d_ptr->interface->isValid() && d_ptr->initialized;
 }
 
-QDBusAbstractInterface* QOfonoObject::dbusInterface() const
+QDBusAbstractInterface *QOfonoObject::dbusInterface() const
 {
     return d_ptr->interface;
 }
 
-void QOfonoObject::setDbusInterface(QDBusAbstractInterface* interface)
+void QOfonoObject::resetDbusInterface(const QVariantMap *properties)
+{
+    setDbusInterface(d_ptr->objectPath.isEmpty() ? NULL :
+        createDbusInterface(d_ptr->objectPath), properties);
+}
+
+void QOfonoObject::setDbusInterface(QDBusAbstractInterface *iface, const QVariantMap *properties)
 {
     bool wasValid = isValid();
     d_ptr->initialized = false;
     if (d_ptr->interface) {
         delete d_ptr->interface;
         d_ptr->interface = NULL;
-        if (!d_ptr->properties.isEmpty()) {
-            QStringList keys = d_ptr->properties.keys();
-            d_ptr->properties.clear();
-            for (int i=0; i<keys.size(); i++) {
-                propertyChanged(keys[i], QVariant());
-            }
-        }
+        dbusInterfaceDropped();
     }
-    if (interface) {
-        if (interface->isValid()) {
-            d_ptr->interface = interface;
-            connect(new QDBusPendingCallWatcher(interface->asyncCall("GetProperties"), interface),
+    if (iface) {
+        d_ptr->interface = iface;
+        if (properties) {
+            d_ptr->initialized = true;
+            // Ofono objects have fixed sets of properties, there's no need to check
+            // for disappearance or reappearance of individual properties.
+            for (QVariantMap::ConstIterator it = properties->constBegin();
+                it != properties->constEnd(); ++it) {
+                updateProperty(it.key(), it.value());
+            }
+        } else {
+            d_ptr->initialized = false;
+            connect(new QDBusPendingCallWatcher(
+                iface->asyncCall("GetProperties"), iface),
                 SIGNAL(finished(QDBusPendingCallWatcher*)),
                 SLOT(onGetPropertiesFinished(QDBusPendingCallWatcher*)));
-            connect(interface,
-                SIGNAL(PropertyChanged(QString,QDBusVariant)),
-                SLOT(onPropertyChanged(QString,QDBusVariant)));
-        } else {
-            delete interface;
         }
+        connect(iface,
+            SIGNAL(PropertyChanged(QString,QDBusVariant)),
+            SLOT(onPropertyChanged(QString,QDBusVariant)));
     }
     bool valid = isValid();
     if (valid != wasValid) {
@@ -112,40 +125,53 @@ void QOfonoObject::setDbusInterface(QDBusAbstractInterface* interface)
     }
 }
 
-void QOfonoObject::resetDbusInterface()
+void QOfonoObject::dbusInterfaceDropped()
 {
-    setDbusInterface(d_ptr->objectPath.isEmpty() ? NULL : createDbusInterface(d_ptr->objectPath));
+    if (!d_ptr->properties.isEmpty()) {
+        QStringList keys = d_ptr->properties.keys();
+        for (int i=0; i<keys.size(); i++) {
+            updateProperty(keys[i], QVariant());
+        }
+    }
 }
 
-void QOfonoObject::onGetPropertiesFinished(QDBusPendingCallWatcher *watcher)
+void QOfonoObject::onGetPropertiesFinished(QDBusPendingCallWatcher *watch)
 {
-    QDBusPendingReply<QVariantMap> reply(*watcher);
-    watcher->deleteLater();
+    watch->deleteLater();
+    QDBusPendingReply<QVariantMap> reply(*watch);
     if (!reply.isError()) {
-        // Ofono objects have fixed sets of properties, there's no need to check
-        // for disappearance or reappearance of individual properties.
-        d_ptr->properties = reply.value();
-        QVariantMap properties = reply.value();
+        getPropertiesFinished(reply.value(), NULL);
+    } else {
+        QDBusError error = reply.error();
+        getPropertiesFinished(QVariantMap(), &error);
+    }
+}
+
+void QOfonoObject::getPropertiesFinished(const QVariantMap &properties, const QDBusError *error)
+{
+    if (!error) {
         for (QVariantMap::ConstIterator it = properties.constBegin();
              it != properties.constEnd(); ++it) {
-            QVariant value = convertProperty(it.key(), it.value());
-            d_ptr->properties.insert(it.key(), value);
-            propertyChanged(it.key(), value);
+            updateProperty(it.key(), it.value());
         }
         d_ptr->initialized = true;
         if (isValid()) {
             Q_EMIT validChanged(true);
         }
     } else {
-        QString message(reply.error().message());
-        qDebug() << message;
-        Q_EMIT reportError(message);
+        qDebug() << *error;
+        Q_EMIT reportError(error->message());
     }
+}
+
+QVariantMap QOfonoObject::getProperties() const
+{
+    return d_ptr->properties;
 }
 
 QVariant QOfonoObject::getProperty(const QString &key) const
 {
-    return d_ptr->interface ? d_ptr->properties[key] : QVariant();
+    return d_ptr->properties[key];
 }
 
 QVariant QOfonoObject::convertProperty(const QString &key, const QVariant &value)
@@ -153,15 +179,30 @@ QVariant QOfonoObject::convertProperty(const QString &key, const QVariant &value
     return value;
 }
 
+void QOfonoObject::propertyChanged(const QString &key, const QVariant &value)
+{
+}
+
+void QOfonoObject::updateProperty(const QString &key, const QVariant &value)
+{
+    QVariant oldValue = getProperty(key);
+    QVariant newValue;
+    if (value.isValid()) {
+        newValue = convertProperty(key, value);
+    }
+    if (!qofono::safeVariantEq(oldValue, newValue)) {
+        if (newValue.isValid()) {
+            d_ptr->properties.insert(key, newValue);
+        } else {
+            d_ptr->properties.remove(key);
+        }
+        propertyChanged(key, newValue);
+    }
+}
+
 void QOfonoObject::onPropertyChanged(const QString &key, const QDBusVariant &value)
 {
-    QVariant variant = convertProperty(key, value.variant());
-    if (variant.isValid()) {
-        d_ptr->properties.insert(key, variant);
-    } else {
-        d_ptr->properties.remove(key);
-    }
-    propertyChanged(key, variant);
+    updateProperty(key, value.variant());
 }
 
 bool QOfonoObject::setPropertySync(const QString &key, const QVariant &value)
@@ -178,24 +219,33 @@ bool QOfonoObject::setPropertySync(const QString &key, const QVariant &value)
 void QOfonoObject::setProperty(const QString &key, const QVariant &value)
 {
     if (d_ptr->interface) {
-        connect(new QDBusPendingCallWatcher(d_ptr->setProperty(key, value),
-            d_ptr->interface), SIGNAL(finished(QDBusPendingCallWatcher*)),
+        connect(new Private::SetPropertyWatcher(d_ptr->interface,
+            key, d_ptr->setProperty(key, value)),
+            SIGNAL(finished(QDBusPendingCallWatcher*)),
             SLOT(onSetPropertyFinished(QDBusPendingCallWatcher*)));
     }
 }
 
 void QOfonoObject::onSetPropertyFinished(QDBusPendingCallWatcher *watch)
 {
-    QDBusPendingReply<> reply(*watch);
     watch->deleteLater();
-    if (reply.isError()) {
-        QString message(reply.error().message());
-        qDebug() << message;
-        Q_EMIT reportError(message);
+    QDBusPendingReply<> reply(*watch);
+    QDBusError dbusError;
+    const QDBusError *error;
+    if (!reply.isError()) {
+        error = NULL;
+    } else {
+        dbusError = reply.error();
+        error = &dbusError;
     }
-    Q_EMIT setPropertyFinished();
+    setPropertyFinished(((Private::SetPropertyWatcher*)watch)->property, error);
 }
 
-void QOfonoObject::propertyChanged(const QString &key, const QVariant &value)
+void QOfonoObject::setPropertyFinished(const QString &property, const QDBusError *error)
 {
+    if (error) {
+        qDebug() << qPrintable(property) << ": " << *error;
+        Q_EMIT reportError(error->message());
+    }
+    Q_EMIT setPropertyFinished();
 }

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Jolla Ltd.
+** Copyright (C) 2013-2014 Jolla Ltd.
 ** Contact: lorn.potter@jollamobile.com
 **
 ** GNU Lesser General Public License Usage
@@ -16,87 +16,56 @@
 #include "qofonosmartmessaging.h"
 #include "dbus/ofonosmartmessaging.h"
 
-class QOfonoSmartMessagingPrivate
-{
-public:
-    QOfonoSmartMessagingPrivate();
-    QString modemPath;
-    OfonoSmartMessaging *smartMessaging;
-};
-
-QOfonoSmartMessagingPrivate::QOfonoSmartMessagingPrivate() :
-    modemPath(QString())
-  , smartMessaging(0)
-{
-}
-
 QOfonoSmartMessaging::QOfonoSmartMessaging(QObject *parent) :
-    QObject(parent)
-  , d_ptr(new QOfonoSmartMessagingPrivate)
+    QOfonoModemInterface2(OfonoSmartMessaging::staticInterfaceName(), parent)
 {
 }
 
 QOfonoSmartMessaging::~QOfonoSmartMessaging()
 {
-    delete d_ptr;
 }
 
-void QOfonoSmartMessaging::setModemPath(const QString &path)
+QDBusAbstractInterface *QOfonoSmartMessaging::createDbusInterface(const QString &path)
 {
-    if (path == d_ptr->modemPath ||
-            path.isEmpty())
-        return;
-
-    if (path != modemPath()) {
-        if (d_ptr->smartMessaging) {
-            delete d_ptr->smartMessaging;
-            d_ptr->smartMessaging = 0;
-        }
-        d_ptr->smartMessaging = new OfonoSmartMessaging("org.ofono", path, QDBusConnection::systemBus(),this);
-        if (d_ptr->smartMessaging->isValid()) {
-            d_ptr->modemPath = path;
-            Q_EMIT modemPathChanged(path);
-        }
-    }
-
-}
-
-QString QOfonoSmartMessaging::modemPath() const
-{
-    return d_ptr->modemPath;
+    return new OfonoSmartMessaging("org.ofono", path, QDBusConnection::systemBus(), this);
 }
 
 QDBusObjectPath QOfonoSmartMessaging::sendAppointment(const QString &toPhoneNumber, const QByteArray &appointment)
 {
-    if (d_ptr->smartMessaging) {
-         QDBusPendingReply<QDBusObjectPath> returnPath = d_ptr->smartMessaging->SendAppointment(toPhoneNumber, appointment);
-    return returnPath;
+    OfonoSmartMessaging *iface = (OfonoSmartMessaging*)dbusInterface();
+    if (iface) {
+        // BLOCKING CALL!
+        QDBusPendingReply<QDBusObjectPath> returnPath = iface->SendAppointment(toPhoneNumber, appointment);
+        returnPath.waitForFinished();
+        return returnPath.value();
     }
     return QDBusObjectPath();
 }
 
 QDBusObjectPath QOfonoSmartMessaging::sendBusinessCard(const QString &toPhoneNumber, const QByteArray &card)
 {
-    if (d_ptr->smartMessaging) {
-        QDBusPendingReply<QDBusObjectPath> returnPath = d_ptr->smartMessaging->SendBusinessCard(toPhoneNumber,card);
-        return returnPath;
+    OfonoSmartMessaging *iface = (OfonoSmartMessaging*)dbusInterface();
+    if (iface) {
+        // BLOCKING CALL!
+        QDBusPendingReply<QDBusObjectPath> returnPath = iface->SendBusinessCard(toPhoneNumber,card);
+        returnPath.waitForFinished();
+        return returnPath.value();
     }
     return QDBusObjectPath();
 }
 
 void QOfonoSmartMessaging::registerAgent(const QString &objectPath)
 {
-    if (d_ptr->smartMessaging)
-        d_ptr->smartMessaging->RegisterAgent(QDBusObjectPath(objectPath));
+    OfonoSmartMessaging *iface = (OfonoSmartMessaging*)dbusInterface();
+    if (iface) {
+        iface->RegisterAgent(QDBusObjectPath(objectPath));
+    }
 }
 
 void QOfonoSmartMessaging::unregisterAgent(const QString &objectPath)
 {
-    if (d_ptr->smartMessaging)
-        d_ptr->smartMessaging->UnregisterAgent(QDBusObjectPath(objectPath));
-}
-
-bool QOfonoSmartMessaging::isValid() const
-{
-    return d_ptr->smartMessaging->isValid();
+    OfonoSmartMessaging *iface = (OfonoSmartMessaging*)dbusInterface();
+    if (iface) {
+        iface->UnregisterAgent(QDBusObjectPath(objectPath));
+    }
 }

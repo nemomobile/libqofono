@@ -17,15 +17,13 @@
 #define QOFONOCONNECTIONCONTEXT_H
 
 #include "qofonoobject.h"
+#include "qofono_global.h"
 
 //! This class is used to access ofono connman context API
 /*!
  * The API is documented in
  * http://git.kernel.org/?p=network/ofono/ofono.git;a=blob;f=doc/connman-api.txt
  */
-
-class QOfonoConnectionContextPrivate;
-
 class QOFONOSHARED_EXPORT QOfonoConnectionContext : public QOfonoObject
 {
     Q_OBJECT
@@ -81,8 +79,6 @@ public:
     QVariantMap settings() const;
     QVariantMap IPv6Settings() const;
 
-    bool isValid() const;
-
     QString modemPath() const;
 
     Q_INVOKABLE bool validateProvisioning(); //check provision against mbpi
@@ -113,10 +109,10 @@ Q_SIGNALS:
     void modemPathChanged(const QString &path);
 
 protected:
-    QDBusAbstractInterface* createDbusInterface(const QString &path);
+    QDBusAbstractInterface *createDbusInterface(const QString &path);
     QVariant convertProperty(const QString &key, const QVariant &value);
     void propertyChanged(const QString &key, const QVariant &value);
-    void objectPathChanged(const QString &path);
+    void objectPathChanged(const QString &path, const QVariantMap *properties);
 };
 
 #endif // QOFONOCONNECTIONCONTEXT_H

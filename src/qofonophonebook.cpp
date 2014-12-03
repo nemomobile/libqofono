@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Jolla Ltd.
+** Copyright (C) 2013-2014 Jolla Ltd.
 ** Contact: lorn.potter@jollamobile.com
 **
 ** GNU Lesser General Public License Usage
@@ -16,25 +16,16 @@
 #include "qofonophonebook.h"
 #include "dbus/ofonophonebook.h"
 
-class QOfonoPhonebookPrivate
+class QOfonoPhonebook::Private
 {
 public:
-    QOfonoPhonebookPrivate();
-    QString modemPath;
-    OfonoPhonebook *phonebook;
     bool importing;
+    Private() : importing(false) {}
 };
 
-QOfonoPhonebookPrivate::QOfonoPhonebookPrivate() :
-    modemPath(QString())
-  , phonebook(0)
-  , importing(false)
-{
-}
-
 QOfonoPhonebook::QOfonoPhonebook(QObject *parent) :
-    QObject(parent)
-  , d_ptr(new QOfonoPhonebookPrivate)
+    QOfonoModemInterface2(OfonoPhonebook::staticInterfaceName(), parent),
+    d_ptr(new Private)
 {
 }
 
@@ -43,28 +34,18 @@ QOfonoPhonebook::~QOfonoPhonebook()
     delete d_ptr;
 }
 
-void QOfonoPhonebook::setModemPath(const QString &path)
+QDBusAbstractInterface *QOfonoPhonebook::createDbusInterface(const QString &path)
 {
-    if (path == d_ptr->modemPath ||
-            path.isEmpty())
-        return;
-
-    if (path != modemPath()) {
-        if (d_ptr->phonebook) {
-            delete d_ptr->phonebook;
-            d_ptr->phonebook = 0;
-        }
-        d_ptr->phonebook = new OfonoPhonebook("org.ofono", path, QDBusConnection::systemBus(),this);
-        if (d_ptr->phonebook->isValid()) {
-            d_ptr->modemPath = path;
-            Q_EMIT modemPathChanged(path);
-        }
-    }
+    return new OfonoPhonebook("org.ofono", path, QDBusConnection::systemBus(), this);
 }
 
-QString QOfonoPhonebook::modemPath() const
+void QOfonoPhonebook::dbusInterfaceDropped()
 {
-    return d_ptr->modemPath;
+    QOfonoModemInterface2::dbusInterfaceDropped();
+    if (d_ptr->importing) {
+        d_ptr->importing = false;
+        Q_EMIT importingChanged();
+    }
 }
 
 bool QOfonoPhonebook::importing() const
@@ -74,32 +55,27 @@ bool QOfonoPhonebook::importing() const
 
 void QOfonoPhonebook::beginImport()
 {
-    if (d_ptr->phonebook) {
-        QDBusPendingReply<QString> result = d_ptr->phonebook->Import();
-        QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(result, this);
-        connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
-                SLOT(importComplete(QDBusPendingCallWatcher*)));
-        d_ptr->importing = true;
-        emit importingChanged();
+    if (!d_ptr->importing) {
+        OfonoPhonebook *iface = (OfonoPhonebook*)dbusInterface();
+        if (iface) {
+            connect(new QDBusPendingCallWatcher(iface->Import(), iface),
+                SIGNAL(finished(QDBusPendingCallWatcher*)),
+                SLOT(onImportFinished(QDBusPendingCallWatcher*)));
+            d_ptr->importing = true;
+            Q_EMIT importingChanged();
+        }
     }
 }
 
-void QOfonoPhonebook::importComplete(QDBusPendingCallWatcher *call)
+void QOfonoPhonebook::onImportFinished(QDBusPendingCallWatcher *watch)
 {
-    call->deleteLater();
-    QDBusPendingReply<QString> reply = *call;
+    watch->deleteLater();
+    QDBusPendingReply<QString> reply(*watch);
     if (!reply.isError()) {
-        QString data = reply.value();
-        emit importReady(data);
+        Q_EMIT importReady(reply.value());
     } else {
-        emit importFailed();
+        Q_EMIT importFailed();
     }
     d_ptr->importing = false;
-    emit importingChanged();
+    Q_EMIT importingChanged();
 }
-
-bool QOfonoPhonebook::isValid() const
-{
-    return d_ptr->phonebook->isValid();
-}
-

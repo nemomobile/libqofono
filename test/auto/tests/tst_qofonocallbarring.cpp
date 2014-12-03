@@ -22,11 +22,9 @@
  */
 
 #include <QtTest/QtTest>
-#include <QtCore/QObject>
 
-#include "../../../src/qofonocallbarring.h"
+#include "qofonocallbarring.h"
 
-#include <QtDebug>
 
 class TestQOfonoCallBarring : public QObject
 {
@@ -37,11 +35,11 @@ private slots:
     {
         m = new QOfonoCallBarring(this);
         m->setModemPath("/phonesim");
-        QCOMPARE(m->isValid(), true);
 
         QSignalSpy ready(m, SIGNAL(readyChanged()));
-        QTRY_COMPARE(ready.count(), 1);
-        QCOMPARE(m->isReady(), true);
+        QTRY_VERIFY(m->isValid());
+        QTRY_VERIFY(m->isReady());
+        QCOMPARE(ready.count(), 1);
     }
 
     void testQOfonoCallBarring()

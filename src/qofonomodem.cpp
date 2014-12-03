@@ -32,13 +32,14 @@ QOfonoModem::~QOfonoModem()
 {
 }
 
-QDBusAbstractInterface* QOfonoModem::createDbusInterface(const QString &path)
+QDBusAbstractInterface *QOfonoModem::createDbusInterface(const QString &path)
 {
     return new OfonoModem("org.ofono", path, QDBusConnection::systemBus(), this);
 }
 
-void QOfonoModem::objectPathChanged(const QString &path)
+void QOfonoModem::objectPathChanged(const QString &path, const QVariantMap *properties)
 {
+    QOfonoObject::objectPathChanged(path, properties);
     Q_EMIT modemPathChanged(path);
 }
 
@@ -129,6 +130,7 @@ void QOfonoModem::setLockdown(bool lockdown)
 
 void QOfonoModem::propertyChanged(const QString &property, const QVariant &value)
 {
+    QOfonoObject::propertyChanged(property, value);
     if (property == QLatin1String("Online")) {
         Q_EMIT onlineChanged(value.value<bool>());
     } else if (property == QLatin1String("Powered")) {
@@ -154,12 +156,6 @@ void QOfonoModem::propertyChanged(const QString &property, const QVariant &value
     } else if (property == QLatin1String("Interfaces")) {
         Q_EMIT interfacesChanged(value.value<QStringList>());
     }
-    QOfonoObject::propertyChanged(property, value);
-}
-
-bool QOfonoModem::isValid() const
-{
-    return QOfonoObject::isValid();
 }
 
 QSharedPointer<QOfonoModem> QOfonoModem::instance(const QString &modemPath)

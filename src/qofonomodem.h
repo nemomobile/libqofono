@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Jolla Ltd.
+** Copyright (C) 2013-2014 Jolla Ltd.
 ** Contact: lorn.potter@jollamobile.com
 **
 ** GNU Lesser General Public License Usage
@@ -17,13 +17,13 @@
 #define QOFONOMODEM_H
 
 #include "qofonoobject.h"
+#include "qofono_global.h"
 
 //! This class is used to access an oFono modem object and its properties
 /*!
  * oFono modem properties are documented in
  * http://git.kernel.org/?p=network/ofono/ofono.git;a=blob_plain;f=doc/modem-api.txt
  */
-
 class QOFONOSHARED_EXPORT QOfonoModem : public QOfonoObject
 {
     Q_OBJECT
@@ -73,8 +73,6 @@ public:
     QStringList features() const;
     QStringList interfaces() const;
 
-    bool isValid() const;
-
     // If you use this, remember to keep a QSharedPointer to it, otherwise it may be destroyed.
     static QSharedPointer<QOfonoModem> instance(const QString &modemPath);
 
@@ -94,9 +92,9 @@ Q_SIGNALS:
     void modemPathChanged(const QString &path);
 
 protected:
-    QDBusAbstractInterface* createDbusInterface(const QString &path);
+    QDBusAbstractInterface *createDbusInterface(const QString &path);
     void propertyChanged(const QString &key, const QVariant &value);
-    void objectPathChanged(const QString &path);
+    void objectPathChanged(const QString &path, const QVariantMap *properties);
 };
 
 #endif // QOFONOMODEM_H

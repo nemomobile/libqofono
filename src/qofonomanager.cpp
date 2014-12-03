@@ -15,51 +15,23 @@
 
 #include "qofonomanager.h"
 #include "dbus/ofonomanager.h"
-#include <QVariant>
-#include <QTimer>
-#include "dbustypes.h"
 
-QDBusArgument &operator<<(QDBusArgument &argument, const ObjectPathProperties &modem)
-{
-    argument.beginStructure();
-    argument << modem.path << modem.properties;
-    argument.endStructure();
-    return argument;
-}
-
-const QDBusArgument &operator>>(const QDBusArgument &argument, ObjectPathProperties &modem)
-{
-    argument.beginStructure();
-    argument >> modem.path >> modem.properties;
-    argument.endStructure();
-    return argument;
-}
-
-class QOfonoManagerPrivate
+class QOfonoManager::Private
 {
 public:
-    QOfonoManagerPrivate();
     OfonoManager *ofonoManager;
     QStringList modems;
     bool available;
     QDBusServiceWatcher *ofonoWatcher;
+
+    Private() : ofonoManager(NULL), available(false), ofonoWatcher(NULL) {}
 };
 
-QOfonoManagerPrivate::QOfonoManagerPrivate() :
- ofonoManager(0)
-, available(false)
-, ofonoWatcher(0)
-{
-    qDBusRegisterMetaType<ObjectPathProperties>();
-    qDBusRegisterMetaType<ObjectPathPropertiesList>();
-    qRegisterMetaType<ObjectPathProperties>("ObjectPathProperties");
-    qRegisterMetaType<ObjectPathPropertiesList>("ObjectPathPropertiesList");
-}
-
 QOfonoManager::QOfonoManager(QObject *parent) :
-    QObject(parent)
-  , d_ptr(new QOfonoManagerPrivate)
+    QObject(parent),
+    d_ptr(new Private)
 {
+    QOfonoDbusTypes::registerObjectPathProperties();
     QDBusConnection systemBus(QDBusConnection::systemBus());
     d_ptr->ofonoWatcher = new QDBusServiceWatcher("org.ofono", systemBus,
             QDBusServiceWatcher::WatchForRegistration |

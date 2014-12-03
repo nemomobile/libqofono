@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Jolla Ltd.
+** Copyright (C) 2013-2014 Jolla Ltd.
 ** Contact: lorn.potter@jollamobile.com
 **
 ** GNU Lesser General Public License Usage
@@ -15,99 +15,29 @@
 
 #include "qofonocallsettings.h"
 #include "dbus/ofonocallsettings.h"
-#include "qofonomodem.h"
-
-class QOfonoCallSettingsPrivate
-{
-public:
-    QOfonoCallSettingsPrivate();
-    QString modemPath;
-    OfonoCallSettings *callSettings;
-    QVariantMap properties;
-    bool propertiesPending;
-    QSharedPointer<QOfonoModem> modem;
-};
-
-QOfonoCallSettingsPrivate::QOfonoCallSettingsPrivate() :
-    modemPath(QString())
-  , callSettings(0)
-  , propertiesPending(false)
-{
-}
 
 QOfonoCallSettings::QOfonoCallSettings(QObject *parent) :
-    QObject(parent)
-  , d_ptr(new QOfonoCallSettingsPrivate)
+    QOfonoModemInterface(OfonoCallSettings::staticInterfaceName(), parent)
 {
 }
 
 QOfonoCallSettings::~QOfonoCallSettings()
 {
-    delete d_ptr;
-}
-
-void QOfonoCallSettings::setModemPath(const QString &path)
-{
-    if (path == d_ptr->modemPath || path.isEmpty())
-        return;
-
-    if (!d_ptr->modem.isNull())
-        disconnect(d_ptr->modem.data(), SIGNAL(interfacesChanged(QStringList)),
-                   this, SLOT(modemInterfacesChanged(QStringList)));
-
-    d_ptr->modemPath = path;
-    connectOfono();
-
-    d_ptr->modem = QOfonoModem::instance(path);
-    connect(d_ptr->modem.data(), SIGNAL(interfacesChanged(QStringList)),
-            this, SLOT(modemInterfacesChanged(QStringList)));
-
-    Q_EMIT modemPathChanged(path);
-}
-
-QString QOfonoCallSettings::modemPath() const
-{
-    return d_ptr->modemPath;
-}
-
-void QOfonoCallSettings::modemInterfacesChanged(const QStringList &interfaces)
-{
-    bool haveIface = interfaces.contains("org.ofono.CallSettings");
-    if (haveIface != (isValid() && (isReady() || d_ptr->propertiesPending)))
-        connectOfono();
 }
 
 void QOfonoCallSettings::connectOfono()
 {
-    if (d_ptr->callSettings) {
-        bool wasReady = isReady();
-        delete d_ptr->callSettings;
-        d_ptr->callSettings = 0;
-        d_ptr->properties.clear();
-        d_ptr->propertiesPending = false;
-        if (wasReady != isReady())
-            Q_EMIT readyChanged();
-    }
-
-    d_ptr->callSettings = new OfonoCallSettings("org.ofono", d_ptr->modemPath, QDBusConnection::systemBus(),this);
-
-    if (d_ptr->callSettings->isValid()) {
-        connect(d_ptr->callSettings,SIGNAL(PropertyChanged(QString,QDBusVariant)),
-                this,SLOT(propertyChanged(QString,QDBusVariant)));
-        d_ptr->propertiesPending = true;
-        QDBusPendingReply<QVariantMap> reply = d_ptr->callSettings->GetProperties();
-        QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(reply, this);
-        connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
-                SLOT(getPropertiesComplete(QDBusPendingCallWatcher*)));
-    }
+    resetDbusInterface();
 }
 
-
-void QOfonoCallSettings::propertyChanged(const QString& property, const QDBusVariant& dbusvalue)
+QDBusAbstractInterface *QOfonoCallSettings::createDbusInterface(const QString &path)
 {
-    QVariant value = dbusvalue.variant();
-    d_ptr->properties.insert(property,value);
+    return new OfonoCallSettings("org.ofono", path, QDBusConnection::systemBus(), this);
+}
 
+void QOfonoCallSettings::propertyChanged(const QString &property, const QVariant &value)
+{
+    QOfonoModemInterface::propertyChanged(property, value);
     if (property == QLatin1String("CallingLinePresentation")) {
         Q_EMIT callingLinePresentationChanged(value.value<QString>());
     } else if (property == QLatin1String("CalledLinePresentation")) {
@@ -129,129 +59,68 @@ void QOfonoCallSettings::propertyChanged(const QString& property, const QDBusVar
 
 QString QOfonoCallSettings::callingLinePresentation()
 {
-    if (d_ptr->callSettings)
-        return d_ptr->properties.value("CallingLinePresentation").value<QString>();
-    else
-        return QString();
+    return getString("CallingLinePresentation");
 }
 
 QString QOfonoCallSettings::calledLinePresentation()
 {
-    if (d_ptr->callSettings)
-        return d_ptr->properties.value("CalledLinePresentation").value<QString>();
-    else
-        return QString();
+    return getString("CalledLinePresentation");
 }
 
 QString QOfonoCallSettings::callingNamePresentation()
 {
-    if (d_ptr->callSettings)
-        return d_ptr->properties.value("CallingNamePresentation").value<QString>();
-    else
-        return QString();
+    return getString("CallingNamePresentation");
 }
 
 QString QOfonoCallSettings::connectedLinePresentation()
 {
-    if (d_ptr->callSettings)
-        return d_ptr->properties.value("ConnectedLinePresentation").value<QString>();
-    else
-        return QString();
+    return getString("ConnectedLinePresentation");
 }
 
 QString QOfonoCallSettings::connectedLineRestriction()
 {
-    if (d_ptr->callSettings)
-        return d_ptr->properties.value("ConnectedLineRestriction").value<QString>();
-    else
-        return QString();
+    return getString("ConnectedLineRestriction");
 }
 
 QString QOfonoCallSettings::callingLineRestriction()
 {
-    if (d_ptr->callSettings)
-        return d_ptr->properties.value("CallingLineRestriction").value<QString>();
-    else
-        return QString();
+    return getString("CallingLineRestriction");
 }
 
 QString QOfonoCallSettings::hideCallerId()
 {
-    if (d_ptr->callSettings)
-        return d_ptr->properties.value("HideCallerId").value<QString>();
-    else
-        return QString();
+    return getString("HideCallerId");
 }
 
 void QOfonoCallSettings::setHideCallerId(const QString &setting)
 {
-    if (d_ptr->callSettings) {
-        QDBusPendingReply<> reply = d_ptr->callSettings->SetProperty("HideCallerId", QDBusVariant(setting));
-        QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(reply, this);
-        connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
-                SLOT(setHideCallerIdComplete(QDBusPendingCallWatcher*)));
-    }
+    setProperty("HideCallerId", setting);
 }
 
 QString QOfonoCallSettings::voiceCallWaiting()
 {
-    if (d_ptr->callSettings)
-        return d_ptr->properties.value("VoiceCallWaiting").value<QString>();
-    else
-        return QString();
+    return getString("VoiceCallWaiting");
 }
 
 void QOfonoCallSettings::setVoiceCallWaiting(const QString &setting)
 {
-    if (d_ptr->callSettings) {
-        QDBusPendingReply<> reply = d_ptr->callSettings->SetProperty("VoiceCallWaiting", QDBusVariant(setting));
-        QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(reply, this);
-        connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
-                SLOT(setVoiceCallWaitingComplete(QDBusPendingCallWatcher*)));
-    }
+    setProperty("VoiceCallWaiting", setting);
 }
 
-bool QOfonoCallSettings::isValid() const
+void QOfonoCallSettings::getPropertiesFinished(const QVariantMap &properties, const QDBusError *error)
 {
-    return d_ptr->callSettings->isValid();
-}
-
-bool QOfonoCallSettings::isReady() const
-{
-    return !d_ptr->properties.isEmpty();
-}
-
-void QOfonoCallSettings::getPropertiesComplete(QDBusPendingCallWatcher *call)
-{
-    call->deleteLater();
-    QDBusPendingReply<QVariantMap> reply = *call;
-    if (!reply.isError()) {
-        d_ptr->properties = reply.value();
-        Q_EMIT callingLinePresentationChanged(callingLinePresentation());
-        Q_EMIT calledLinePresentationChanged(calledLinePresentation());
-        Q_EMIT callingNamePresentationChanged(callingNamePresentation());
-        Q_EMIT connectedLinePresentationChanged(connectedLinePresentation());
-        Q_EMIT connectedLineRestrictionChanged(connectedLineRestriction());
-        Q_EMIT callingLineRestrictionChanged(callingLineRestriction());
-        Q_EMIT hideCallerIdChanged(hideCallerId());
-        Q_EMIT voiceCallWaitingChanged(voiceCallWaiting());
-        Q_EMIT readyChanged();
-    } else {
+    QOfonoModemInterface::getPropertiesFinished(properties, error);
+    if (error) {
         Q_EMIT getPropertiesFailed();
     }
-    d_ptr->propertiesPending = false;
 }
 
-void QOfonoCallSettings::setHideCallerIdComplete(QDBusPendingCallWatcher *call)
+void QOfonoCallSettings::setPropertyFinished(const QString &property, const QDBusError *error)
 {
-    call->deleteLater();
-    QDBusPendingReply<> reply = *call;
-    Q_EMIT hideCallerIdComplete(!reply.isError());
-}
-
-void QOfonoCallSettings::setVoiceCallWaitingComplete(QDBusPendingCallWatcher *call)
-{
-    call->deleteLater();
-    QDBusPendingReply<> reply = *call;
-    Q_EMIT voiceCallWaitingComplete(!reply.isError());
+    QOfonoModemInterface::setPropertyFinished(property, error);
+    if (property == "HideCallerId") {
+        Q_EMIT hideCallerIdComplete(!error);
+    } else if (property == "VoiceCallWaiting") {
+        Q_EMIT voiceCallWaitingComplete(!error);
+    }
 }

@@ -23,12 +23,8 @@
  */
 
 #include <QtTest/QtTest>
-#include <QtCore/QObject>
 
-#include "../../../src/qofonocallvolume.h"
-#include "../../../src/qofonomodem.h"
-
-#include <QtDebug>
+#include "qofonocallvolume.h"
 
 class TestQOfonoCallVolume : public QObject
 {
@@ -42,7 +38,7 @@ private slots:
     {
         m = new QOfonoCallVolume(this);
         m->setModemPath("/phonesim");
-        QCOMPARE(m->isValid(), true);
+        QTRY_VERIFY(m->isValid());
     }
 
     void testQOfonoCallVolume()
@@ -75,7 +71,6 @@ private slots:
 
     void cleanupTestCase()
     {
-
     }
 
 private:

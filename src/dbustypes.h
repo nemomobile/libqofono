@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Jolla Ltd.
+** Copyright (C) 2013-2014 Jolla Ltd.
 ** Contact: lorn.potter@jollamobile.com
 **
 ** GNU Lesser General Public License Usage
@@ -15,6 +15,7 @@
 
 #ifndef DBUSTYPES_H
 #define DBUSTYPES_H
+
 #include <QtDBus>
 #include <QVariant>
 
@@ -23,8 +24,17 @@ struct ObjectPathProperties
     QDBusObjectPath path;
     QVariantMap properties;
 };
+
+typedef QList<QDBusObjectPath> ObjectPathList;
 typedef QList<ObjectPathProperties> ObjectPathPropertiesList;
 Q_DECLARE_METATYPE(ObjectPathProperties)
 Q_DECLARE_METATYPE(ObjectPathPropertiesList)
+
+QDBusArgument &operator<<(QDBusArgument &, const ObjectPathProperties &);
+const QDBusArgument &operator>>(const QDBusArgument &, ObjectPathProperties &);
+
+namespace QOfonoDbusTypes {
+    void registerObjectPathProperties();
+}
 
 #endif // DBUSTYPES_H

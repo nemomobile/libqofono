@@ -24,8 +24,8 @@
 #include <QtTest/QtTest>
 #include <QtCore/QObject>
 
-#include "../../../src/qofonovoicecallmanager.h"
-#include "../../../src/qofonomodem.h"
+#include "qofonovoicecallmanager.h"
+#include "qofonomodem.h"
 
 #include <QtDebug>
 
@@ -39,8 +39,7 @@ private slots:
     {
         m = new QOfonoVoiceCallManager(this);
         m->setModemPath("/phonesim");
-
-        QCOMPARE(m->isValid(), true);
+        QTRY_VERIFY(m->isValid());
     }
 
     void testQOfonoVoiceCallManager()
@@ -57,14 +56,17 @@ private slots:
         QOfonoModem modem;
         modem.setModemPath(m->modemPath());
         modem.setPowered(false);
-        QTest::qWait(5000);
+        QTRY_VERIFY(!modem.powered());
         modem.setPowered(true);
-        QTest::qWait(5000);
+        QTRY_VERIFY(modem.powered());
         modem.setOnline(true);
-        QTest::qWait(5000);
+        QTRY_VERIFY(modem.online());
 
-        QCOMPARE(emergencyNumbers.count(), 1);
-        QVERIFY(emergencyNumbers.takeFirst().at(0).toStringList().count() > 0);
+        QTRY_COMPARE(emergencyNumbers.count(), 3);
+        QVERIFY(emergencyNumbers.takeFirst().at(0).toStringList().isEmpty());
+        QVERIFY(!emergencyNumbers.takeFirst().at(0).toStringList().isEmpty());
+        QVERIFY(!emergencyNumbers.takeFirst().at(0).toStringList().isEmpty());
+
         //Dial testing
         m->dial("123","");
         qDebug() << "Please find a call in 'Dialing' state in phonesim window and press 'Active' button";
@@ -114,12 +116,10 @@ private slots:
 
         QTest::qWait(10000);
         QCOMPARE(hspy.count(), 1);
-
     }
 
     void cleanupTestCase()
     {
-
     }
 
 

@@ -22,11 +22,9 @@
  */
 
 #include <QtTest/QtTest>
-#include <QtCore/QObject>
 
-#include  "../../../src/qofonovoicecallmanager.h"
-#include  "../../../src/qofonovoicecall.h"
-#include <QtDebug>
+#include  "qofonovoicecallmanager.h"
+#include  "qofonovoicecall.h"
 
 // FIXME: Not aligned with the current API
 class TestQOfonoVoiceCall : public QObject
@@ -38,8 +36,7 @@ private slots:
     {
         m = new QOfonoVoiceCallManager( this);
         m->setModemPath("/phonesim");
-
-        QCOMPARE(m->isValid(), true);
+        QTRY_VERIFY(m->isValid());
     }
 
     void testQOfonoVoiceCall()
@@ -58,6 +55,7 @@ private slots:
 
         QOfonoVoiceCall* call = new QOfonoVoiceCall(this);
         call->setVoiceCallPath(callid);
+        QTRY_VERIFY(call->isValid());
 
         QSignalSpy state(call, SIGNAL(stateChanged(QString)));
         QSignalSpy discreason(call,SIGNAL(disconnectReason(QString)));
@@ -176,6 +174,7 @@ private slots:
         delete call;
 
     }
+
     void testQOfonoVoiceCallStep4()
     {
         //Deflect
@@ -202,11 +201,10 @@ private slots:
         delete call;
 
     }
+
     void cleanupTestCase()
     {
-
     }
-
 
 private:
     QOfonoVoiceCallManager *m;

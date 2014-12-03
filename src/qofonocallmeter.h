@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Jolla Ltd.
+** Copyright (C) 2013-2014 Jolla Ltd.
 ** Contact: lorn.potter@jollamobile.com
 **
 ** GNU Lesser General Public License Usage
@@ -16,22 +16,18 @@
 #ifndef QOFONOCallMeter_H
 #define QOFONOCallMeter_H
 
-#include <QObject>
-#include <QDBusVariant>
-
+#include "qofonomodeminterface.h"
 #include "qofono_global.h"
+
 //! This class is used to access ofono call meter API
 /*!
  * The API is documented in
  * http://git.kernel.org/?p=network/ofono/ofono.git;a=blob_plain;f=doc/call-meter-api.txt
  */
-
-class QOfonoCallMeterPrivate;
-class QOFONOSHARED_EXPORT QOfonoCallMeter : public QObject
+class QOFONOSHARED_EXPORT QOfonoCallMeter : public QOfonoModemInterface
 {
     Q_OBJECT
     Q_ENUMS(Error)
-    Q_PROPERTY(QString modemPath READ modemPath WRITE setModemPath NOTIFY modemPathChanged)
     Q_PROPERTY(quint32 callMeter READ callMeter CONSTANT)
     Q_PROPERTY(quint32 accumulatedCallMeter READ accumulatedCallMeter CONSTANT)
     Q_PROPERTY(quint32 accumulatedCallMeterMaximum READ accumulatedCallMeterMaximum NOTIFY accumulatedCallMeterMaximumChanged)
@@ -52,9 +48,6 @@ public:
     explicit QOfonoCallMeter(QObject *parent = 0);
     ~QOfonoCallMeter();
 
-    QString modemPath() const;
-    void setModemPath(const QString &path);
-
     quint32 callMeter() const;
     quint32 accumulatedCallMeter() const;
 
@@ -68,24 +61,21 @@ public:
 
     Q_INVOKABLE void reset(const QString &password);
 
-    bool isValid() const;
 Q_SIGNALS:
     void nearMaximumWarning();
     void accumulatedCallMeterMaximumChanged(quint32);
     void pricePerUnitChanged(qreal);
-    void modemPathChanged(const QString &path);
     void resetComplete(QOfonoCallMeter::Error error,const QString &errorString);
 
-public slots:
-    
 private:
-    QOfonoCallMeterPrivate *d_ptr;
-    Error errorNameToEnum(const QString &errorName);
+    static Error errorNameToEnum(const QString &errorName);
 
 private slots:
-    void propertyChanged(const QString &property,const QDBusVariant &value);
-    void resetFinished(QDBusPendingCallWatcher *call);
+    void onResetFinished(QDBusPendingCallWatcher *call);
 
+protected:
+    QDBusAbstractInterface *createDbusInterface(const QString &path);
+    void propertyChanged(const QString &property, const QVariant &value);
 };
 
 #endif // QOFONOCallMeter_H

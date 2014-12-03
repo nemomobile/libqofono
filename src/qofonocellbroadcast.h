@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Jolla Ltd.
+** Copyright (C) 2013-2014 Jolla Ltd.
 ** Contact: lorn.potter@jollamobile.com
 **
 ** GNU Lesser General Public License Usage
@@ -16,22 +16,18 @@
 #ifndef QOFONOCELLBROADCAST_H
 #define QOFONOCELLBROADCAST_H
 
-#include <QObject>
-#include <QDBusVariant>
-
+#include "qofonoobject.h"
 #include "qofono_global.h"
+
 //! This class is used to access ofono cell broadcast API
 /*!
  * The API is documented in
  * http://git.kernel.org/?p=network/ofono/ofono.git;a=blob_plain;f=doc/cell-broadcast-api.txt
  */
-
-class QOfonoCellBroadcastPrivate;
-class QOFONOSHARED_EXPORT QOfonoCellBroadcast : public QObject
+class QOFONOSHARED_EXPORT QOfonoCellBroadcast : public QOfonoObject
 {
     Q_OBJECT
     Q_PROPERTY(QString modemPath READ modemPath WRITE setModemPath NOTIFY modemPathChanged)
-
     Q_PROPERTY(bool enabled READ enabled WRITE setEnabled NOTIFY enabledChanged)
     Q_PROPERTY(QString topics READ topics NOTIFY topicsChanged)
 
@@ -46,9 +42,8 @@ public:
     void setEnabled(bool b);
 
     QString topics() const;
-    void setTopics(const QString &) const;
+    void setTopics(const QString &);
 
-    bool isValid() const;
 Q_SIGNALS:
     void enabledChanged(bool);
     void topicsChanged(const QString &);
@@ -56,12 +51,10 @@ Q_SIGNALS:
     void emergencyBroadcast(const QString &, const QVariantMap &);
     void modemPathChanged(const QString &path);
 
-public slots:
-    
-private:
-    QOfonoCellBroadcastPrivate *d_ptr;
-private slots:
-    void propertyChanged(const QString &property,const QDBusVariant &value);
+protected:
+    QDBusAbstractInterface *createDbusInterface(const QString &path);
+    void propertyChanged(const QString &key, const QVariant &value);
+    void objectPathChanged(const QString &path, const QVariantMap *properties);
 };
 
 #endif // QOFONOCELLBROADCAST_H

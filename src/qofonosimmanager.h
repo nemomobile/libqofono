@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Jolla Ltd.
+** Copyright (C) 2013-2014 Jolla Ltd.
 ** Contact: lorn.potter@jollamobile.com
 **
 ** GNU Lesser General Public License Usage
@@ -16,26 +16,19 @@
 #ifndef QOFONOSimManager_H
 #define QOFONOSimManager_H
 
-#include <QObject>
-#include <QDBusVariant>
-#include <QStringList>
-
+#include "qofonomodeminterface.h"
 #include "qofono_global.h"
+
 //! This class is used to access ofono SIM API
 /*!
  * The API is documented in
  * http://git.kernel.org/?p=network/ofono/ofono.git;a=blob_plain;f=doc/sim-api.txt
  */
-
-class QOfonoSimManagerPrivate;
-class QDBusPendingCallWatcher;
-
-class QOFONOSHARED_EXPORT QOfonoSimManager : public QObject
+class QOFONOSHARED_EXPORT QOfonoSimManager : public QOfonoModemInterface
 {
     Q_OBJECT
     Q_ENUMS(Error)
     Q_ENUMS(PinType)
-    Q_PROPERTY(QString modemPath READ modemPath WRITE setModemPath NOTIFY modemPathChanged)
     Q_PROPERTY(bool present READ present NOTIFY presenceChanged)
     Q_PROPERTY(QString subscriberIdentity READ subscriberIdentity NOTIFY subscriberIdentityChanged)
     Q_PROPERTY(QString mobileCountryCode READ mobileCountryCode NOTIFY mobileCountryCodeChanged)
@@ -82,9 +75,6 @@ public:
     explicit QOfonoSimManager(QObject *parent = 0);
     ~QOfonoSimManager();
 
-    QString modemPath() const;
-    void setModemPath(const QString &path);
-
     bool present() const;
     QString subscriberIdentity() const;
     QString mobileCountryCode() const;
@@ -98,66 +88,59 @@ public:
     QVariantMap pinRetries() const; //
     bool fixedDialing() const;
     bool barredDialing() const;
-    bool isValid() const;
 
 Q_SIGNALS:
-      void modemPathChanged(const QString &modemPath);
-      void presenceChanged(bool ispresent);
-      void subscriberIdentityChanged(const QString &imsi);
-      void mobileCountryCodeChanged(const QString &mcc);
-      void mobileNetworkCodeChanged(const QString &mnc);
-      void subscriberNumbersChanged(const QStringList &msisdns);
-      void serviceNumbersChanged(const QVariantMap &sdns);
-      void pinRequiredChanged(int pinType);
-      void lockedPinsChanged(const QVariantList &pins);
-      void cardIdentifierChanged(const QString &iccid);
-      void preferredLanguagesChanged(const QStringList &languages);
-      void pinRetriesChanged(const QVariantMap &pinRetries);
-      void fixedDialingChanged(bool fixedDialing);
-      void barredDialingChanged(bool barredDialing);
+    void presenceChanged(bool ispresent);
+    void subscriberIdentityChanged(const QString &imsi);
+    void mobileCountryCodeChanged(const QString &mcc);
+    void mobileNetworkCodeChanged(const QString &mnc);
+    void subscriberNumbersChanged(const QStringList &msisdns);
+    void serviceNumbersChanged(const QVariantMap &sdns);
+    void pinRequiredChanged(int pinType);
+    void lockedPinsChanged(const QVariantList &pins);
+    void cardIdentifierChanged(const QString &iccid);
+    void preferredLanguagesChanged(const QStringList &languages);
+    void pinRetriesChanged(const QVariantMap &pinRetries);
+    void fixedDialingChanged(bool fixedDialing);
+    void barredDialingChanged(bool barredDialing);
 
-      void enterPinComplete(QOfonoSimManager::Error error, const QString &errorString);
-      void resetPinComplete(QOfonoSimManager::Error error, const QString &errorString);
-      void changePinComplete(QOfonoSimManager::Error error, const QString &errorString);
-      void lockPinComplete(QOfonoSimManager::Error error, const QString &errorString);
-      void unlockPinComplete(QOfonoSimManager::Error error, const QString &errorString);
+    void enterPinComplete(QOfonoSimManager::Error error, const QString &errorString);
+    void resetPinComplete(QOfonoSimManager::Error error, const QString &errorString);
+    void changePinComplete(QOfonoSimManager::Error error, const QString &errorString);
+    void lockPinComplete(QOfonoSimManager::Error error, const QString &errorString);
+    void unlockPinComplete(QOfonoSimManager::Error error, const QString &errorString);
 
 public slots:
-      void changePin(QOfonoSimManager::PinType pinType, const QString &oldpin, const QString &newpin);
-      void enterPin(QOfonoSimManager::PinType pinType, const QString &pin);
-      void resetPin(QOfonoSimManager::PinType pinType, const QString &puk, const QString &newpin);
-      void lockPin(QOfonoSimManager::PinType pinType, const QString &pin);
-      void unlockPin(QOfonoSimManager::PinType pinType, const QString &pin);
-      QByteArray getIcon(quint8 id);
+    void changePin(QOfonoSimManager::PinType pinType, const QString &oldpin, const QString &newpin);
+    void enterPin(QOfonoSimManager::PinType pinType, const QString &pin);
+    void resetPin(QOfonoSimManager::PinType pinType, const QString &puk, const QString &newpin);
+    void lockPin(QOfonoSimManager::PinType pinType, const QString &pin);
+    void unlockPin(QOfonoSimManager::PinType pinType, const QString &pin);
+    QByteArray getIcon(quint8 id);
 
-      void setSubscriberNumbers(const QStringList &numbers);
+    void setSubscriberNumbers(const QStringList &numbers);
 
-      static int minimumPinLength(QOfonoSimManager::PinType pinType);
-      static int maximumPinLength(QOfonoSimManager::PinType pinType);
-      static QString pinTypeToString(QOfonoSimManager::PinType pinType);
-      static int pinTypeFromString(const QString &s);
-      static bool isPukType(QOfonoSimManager::PinType pinType);
-      static int pukToPin(QOfonoSimManager::PinType puk);
+    static int minimumPinLength(QOfonoSimManager::PinType pinType);
+    static int maximumPinLength(QOfonoSimManager::PinType pinType);
+    static QString pinTypeToString(QOfonoSimManager::PinType pinType);
+    static int pinTypeFromString(const QString &s);
+    static bool isPukType(QOfonoSimManager::PinType pinType);
+    static int pukToPin(QOfonoSimManager::PinType puk);
 
 private:
-      void updateProperty(const QString& property, const QVariant& value);
-      Error errorNameToEnum(const QString &errorName);
+    Error errorNameToEnum(const QString &errorName);
 
-    QOfonoSimManagerPrivate *d_ptr;
-
+protected:
+    QDBusAbstractInterface *createDbusInterface(const QString &path);
+    QVariant convertProperty(const QString &property, const QVariant &value);
+    void propertyChanged(const QString &property, const QVariant &value);
 
 private slots:
-    void propertyChanged(const QString &property,const QDBusVariant &value);
     void changePinCallFinished(QDBusPendingCallWatcher *call);
     void enterPinCallFinished(QDBusPendingCallWatcher *call);
     void resetPinCallFinished(QDBusPendingCallWatcher *call);
     void lockPinCallFinished(QDBusPendingCallWatcher *call);
     void unlockPinCallFinished(QDBusPendingCallWatcher *call);
-
-    void getAllProperties();
-    void initialize();
-    void modemInterfacesChanged(const QStringList &);
-
 };
 
 #endif // QOFONOSimManager_H

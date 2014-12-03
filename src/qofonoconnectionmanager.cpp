@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Jolla Ltd.
+** Copyright (C) 2013-2014 Jolla Ltd.
 ** Contact: lorn.potter@jollamobile.com
 **
 ** GNU Lesser General Public License Usage
@@ -15,44 +15,23 @@
 
 #include "qofonoconnectionmanager.h"
 #include "dbus/ofonoconnectionmanager.h"
-#include "dbustypes.h"
 
-class QOfonoConnectionManagerPrivate
+class QOfonoConnectionManager::Private
 {
 public:
-    QOfonoConnectionManagerPrivate();
-    QString modemPath;
-    OfonoConnectionManager *connman;
-    QVariantMap properties;
+    bool initialized;
     QStringList contexts;
     QHash<QString,QString> contextTypes;
     QString filter;
-
-    void getContexts();
+public:
+    Private() : initialized(false) {}
     void filterContexts();
 };
-
-QOfonoConnectionManagerPrivate::QOfonoConnectionManagerPrivate() :
-    modemPath(QString())
-   , connman(0)
-  ,contexts(QStringList())
-{
-}
-
-void QOfonoConnectionManagerPrivate::getContexts()
-{
-    contextTypes.clear();
-    QDBusReply<ObjectPathPropertiesList> reply2 = connman->GetContexts();
-    foreach(ObjectPathProperties context, reply2.value()) {
-        contextTypes.insert(context.path.path(), context.properties.value("Type").toString());
-    }
-    filterContexts();
-}
 
 // FILTER = [!]NAMES
 // NAMES = NAME [,NAMES]
 // Spaces and tabs are ignored
-void QOfonoConnectionManagerPrivate::filterContexts()
+void QOfonoConnectionManager::Private::filterContexts()
 {
     if (contextTypes.isEmpty()) {
         contexts.clear();
@@ -82,9 +61,10 @@ void QOfonoConnectionManagerPrivate::filterContexts()
 }
 
 QOfonoConnectionManager::QOfonoConnectionManager(QObject *parent) :
-    QObject(parent),
-    d_ptr(new QOfonoConnectionManagerPrivate)
+    QOfonoModemInterface(OfonoConnectionManager::staticInterfaceName(), parent),
+    d_ptr(new Private)
 {
+    QOfonoDbusTypes::registerObjectPathProperties();
 }
 
 QOfonoConnectionManager::~QOfonoConnectionManager()
@@ -92,162 +72,109 @@ QOfonoConnectionManager::~QOfonoConnectionManager()
     delete d_ptr;
 }
 
-void QOfonoConnectionManager::setModemPath(const QString &path)
+bool QOfonoConnectionManager::isValid() const
 {
-    if (path == d_ptr->modemPath ||
-            path.isEmpty())
-        return;
-
-    QStringList removedProperties = d_ptr->properties.keys();
-
-    delete d_ptr->connman;
-    d_ptr->connman = new OfonoConnectionManager("org.ofono", path, QDBusConnection::systemBus(),this);
-
-    if (d_ptr->connman->isValid()) {
-        d_ptr->modemPath = path;
-
-        connect(d_ptr->connman,SIGNAL(PropertyChanged(QString,QDBusVariant)),
-                this,SLOT(propertyChanged(QString,QDBusVariant)));
-        connect(d_ptr->connman,SIGNAL(ContextAdded(QDBusObjectPath,QVariantMap)),
-                this,SLOT(onContextAdd(QDBusObjectPath,QVariantMap)));
-        connect(d_ptr->connman,SIGNAL(ContextRemoved(QDBusObjectPath)),
-                this,SLOT(onContextRemove(QDBusObjectPath)));
-
-        QVariantMap properties = d_ptr->connman->GetProperties().value();
-        for (QVariantMap::ConstIterator it = properties.constBegin();
-             it != properties.constEnd(); ++it) {
-            updateProperty(it.key(), it.value());
-            removedProperties.removeOne(it.key());
-        }
-
-        d_ptr->getContexts();
-        Q_EMIT modemPathChanged(path);
-        Q_EMIT contextsChanged(d_ptr->contexts);
-    }
-
-    foreach (const QString &p, removedProperties)
-        updateProperty(p, QVariant());
+    return d_ptr->initialized && QOfonoModemInterface::isValid();
 }
 
-QString QOfonoConnectionManager::modemPath() const
+QDBusAbstractInterface *QOfonoConnectionManager::createDbusInterface(const QString &path)
 {
-    return d_ptr->modemPath;
+    OfonoConnectionManager* iface = new OfonoConnectionManager("org.ofono", path, QDBusConnection::systemBus(), this);
+    connect(new QDBusPendingCallWatcher(iface->GetContexts(), iface),
+        SIGNAL(finished(QDBusPendingCallWatcher*)),
+        SLOT(onGetContextsFinished(QDBusPendingCallWatcher*)));
+    connect(iface,
+        SIGNAL(ContextAdded(QDBusObjectPath,QVariantMap)),
+        SLOT(onContextAdded(QDBusObjectPath,QVariantMap)));
+    connect(iface,
+        SIGNAL(ContextRemoved(QDBusObjectPath)),
+        SLOT(onContextRemoved(QDBusObjectPath)));
+    return iface;
+}
+
+void QOfonoConnectionManager::dbusInterfaceDropped()
+{
+    QOfonoModemInterface::dbusInterfaceDropped();
+    d_ptr->initialized = false;
+    if (!d_ptr->contexts.isEmpty()) {
+        QStringList list = d_ptr->contexts;
+        d_ptr->contexts.clear();
+        d_ptr->contextTypes.clear();
+        for (int i=0; i<list.count(); i++) {
+            Q_EMIT contextRemoved(list[i]);
+        }
+    }
 }
 
 void QOfonoConnectionManager::deactivateAll()
 {
-    if (!d_ptr->connman)
-        return;
-    d_ptr->connman->DeactivateAll();
+    OfonoConnectionManager *iface = (OfonoConnectionManager*)dbusInterface();
+    if (iface) {
+        iface->DeactivateAll();
+    }
 }
 
 void QOfonoConnectionManager::addContext(const QString &type)
 {
-    if (!d_ptr->connman)
-        return;
-
-    QStringList allowedTypes;
-    allowedTypes << "internet";
-    allowedTypes << "mms";
-    allowedTypes << "wap";
-    allowedTypes << "ims";
-
-    if(!allowedTypes.contains(type)) {
-        Q_EMIT reportError("Type not allowed");
-        return;
+    OfonoConnectionManager *iface = (OfonoConnectionManager*)dbusInterface();
+    if (iface) {
+        connect(new QDBusPendingCallWatcher(
+            iface->AddContext(type), iface),
+            SIGNAL(finished(QDBusPendingCallWatcher*)),
+            SLOT(onAddContextFinished(QDBusPendingCallWatcher*)));
     }
-    QDBusPendingReply<QDBusObjectPath> reply = d_ptr->connman->AddContext(type);
-    QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(reply, this);
-    connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
-            SLOT(addContextFinished(QDBusPendingCallWatcher*)));
 }
 
 void QOfonoConnectionManager::removeContext(const QString &path)
 {
-    if (!d_ptr->connman)
-        return;
-    QDBusPendingReply<> reply = d_ptr->connman->RemoveContext(QDBusObjectPath(path));
-    QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(reply, this);
-    connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
-            SLOT(removeContextFinished(QDBusPendingCallWatcher*)));
+    OfonoConnectionManager *iface = (OfonoConnectionManager*)dbusInterface();
+    if (iface) {
+        connect(new QDBusPendingCallWatcher(
+            iface->RemoveContext(QDBusObjectPath(path)), iface),
+            SIGNAL(finished(QDBusPendingCallWatcher*)),
+            SLOT(onRemoveContextFinished(QDBusPendingCallWatcher*)));
+    }
 }
 
 bool QOfonoConnectionManager::attached() const
 {
-    if (d_ptr->connman)
-        return d_ptr->properties["Attached"].value<bool>();
-    else
-        return false;
+    return getBool("Attached");
 }
 
 QString QOfonoConnectionManager::bearer() const
 {
-    if (d_ptr->connman)
-        return d_ptr->properties["Bearer"].value<QString>();
-    else
-        return QString();
+    return getString("Bearer");
 }
 
 bool QOfonoConnectionManager::suspended() const
 {
-    if (d_ptr->connman)
-        return d_ptr->properties["Suspended"].value<bool>();
-    else
-        return false;
+    return getBool("Suspended");
 }
 
 
 bool QOfonoConnectionManager::roamingAllowed() const
 {
-    if (d_ptr->connman)
-        return d_ptr->properties["RoamingAllowed"].value<bool>();
-    else
-        return false;
+    return getBool("RoamingAllowed");
 }
 
 void QOfonoConnectionManager::setRoamingAllowed(bool value)
 {
-    if (roamingAllowed() == value)
-        return;
-
-    QString str("RoamingAllowed");
-    QDBusVariant var(value);
-    setOneProperty(str,var);
+    setProperty("RoamingAllowed", value);
 }
 
 bool QOfonoConnectionManager::powered() const
 {
-    if (d_ptr->connman)
-        return d_ptr->properties["Powered"].value<bool>();
-    else
-        return false;
+    return getBool("Powered");
 }
 
 void QOfonoConnectionManager::setPowered(bool value)
 {
-    if (powered() == value)
-        return;
-
-    QString str("Powered");
-    QDBusVariant var(value);
-    setOneProperty(str,var);
+    setProperty("Powered", value);
 }
 
-void QOfonoConnectionManager::propertyChanged(const QString& property, const QDBusVariant& dbusvalue)
+void QOfonoConnectionManager::propertyChanged(const QString &property, const QVariant &value)
 {
-    updateProperty(property, dbusvalue.variant());
-}
-
-void QOfonoConnectionManager::updateProperty(const QString &property, const QVariant &value)
-{
-    if (d_ptr->properties.value(property) == value)
-        return;
-
-    if (value.isValid())
-        d_ptr->properties.insert(property, value);
-    else
-        d_ptr->properties.remove(property);
-
+    QOfonoModemInterface::propertyChanged(property, value);
     if (property == QLatin1String("Attached")) {
         Q_EMIT attachedChanged(value.value<bool>());
     } else if (property == QLatin1String("Bearer")) {
@@ -266,21 +193,25 @@ QStringList QOfonoConnectionManager::contexts()
     return d_ptr->contexts;
 }
 
-void QOfonoConnectionManager::onContextAdd(const QDBusObjectPath &path, const QVariantMap &propertyMap)
+void QOfonoConnectionManager::onContextAdded(const QDBusObjectPath &path, const QVariantMap &properties)
 {
-    Q_UNUSED(propertyMap);
-    d_ptr->contextTypes.insert(path.path(), propertyMap.value("Type").toString());
+    QString contextPath(path.path());
+    d_ptr->contextTypes.insert(contextPath, properties.value("Type").toString());
     d_ptr->filterContexts();
-    Q_EMIT contextAdded(path.path());
-    Q_EMIT contextsChanged(d_ptr->contexts);
+    if (d_ptr->contexts.contains(contextPath)) {
+        Q_EMIT contextAdded(contextPath);
+        Q_EMIT contextsChanged(d_ptr->contexts);
+    }
 }
 
-void QOfonoConnectionManager::onContextRemove(const QDBusObjectPath &path)
+void QOfonoConnectionManager::onContextRemoved(const QDBusObjectPath &path)
 {
-    d_ptr->contextTypes.remove(path.path());
-    d_ptr->filterContexts();
-    Q_EMIT contextRemoved(path.path());
-    Q_EMIT contextsChanged(d_ptr->contexts);
+    QString contextPath(path.path());
+    d_ptr->contextTypes.remove(contextPath);
+    if (d_ptr->contexts.removeOne(contextPath)) {
+        Q_EMIT contextRemoved(contextPath);
+        Q_EMIT contextsChanged(d_ptr->contexts);
+    }
 }
 
 QString QOfonoConnectionManager::filter() const
@@ -298,48 +229,51 @@ void QOfonoConnectionManager::setFilter(const QString &filter)
     }
 }
 
-bool QOfonoConnectionManager::isValid() const
+void QOfonoConnectionManager::onGetContextsFinished(QDBusPendingCallWatcher *watch)
 {
-    return d_ptr->connman->isValid();
-}
-
-void QOfonoConnectionManager::setOneProperty(const QString &prop, const QDBusVariant &var)
-{
-    if (d_ptr->connman) {
-        QDBusPendingReply <> reply = d_ptr->connman->SetProperty(prop,var);
-        QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(reply, this);
-        connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
-                SLOT(setPropertyFinished(QDBusPendingCallWatcher*)));
+    watch->deleteLater();
+    QDBusPendingReply<ObjectPathPropertiesList> reply(*watch);
+    if (reply.isError()) {
+        qDebug() << reply.error();
+        Q_EMIT reportError(reply.error().message());
+    } else {
+        QStringList old = d_ptr->contexts;
+        d_ptr->contextTypes.clear();
+        foreach (ObjectPathProperties context, reply.value()) {
+            QString contextPath(context.path.path());
+            bool contextWasThere = d_ptr->contexts.contains(contextPath);
+            d_ptr->contextTypes.insert(contextPath, context.properties.value("Type").toString());
+            d_ptr->filterContexts();
+            bool contextIsThere = d_ptr->contexts.contains(contextPath);
+            if (contextWasThere && !contextIsThere) {
+                Q_EMIT contextRemoved(contextPath);
+            } else if (!contextWasThere && contextIsThere) {
+                Q_EMIT contextAdded(contextPath);
+            }
+        }
+        d_ptr->initialized = true;
+        if (d_ptr->contexts != old) {
+            Q_EMIT contextsChanged(d_ptr->contexts);
+        }
     }
 }
 
-void QOfonoConnectionManager::addContextFinished(QDBusPendingCallWatcher *watch)
+void QOfonoConnectionManager::onAddContextFinished(QDBusPendingCallWatcher *watch)
 {
     watch->deleteLater();
-    QDBusPendingReply<QDBusObjectPath> reply = *watch;
+    QDBusPendingReply<QDBusObjectPath> reply(*watch);
     if (reply.isError()) {
-        qDebug() << Q_FUNC_INFO << reply.error();
+        qDebug() << reply.error();
         Q_EMIT reportError(reply.error().message());
     }
 }
 
-void QOfonoConnectionManager::removeContextFinished(QDBusPendingCallWatcher *watch)
+void QOfonoConnectionManager::onRemoveContextFinished(QDBusPendingCallWatcher *watch)
 {
     watch->deleteLater();
-    QDBusPendingReply<> reply = *watch;
+    QDBusPendingReply<> reply(*watch);
     if (reply.isError()) {
-        qDebug() << Q_FUNC_INFO << reply.error();
+        qDebug() << reply.error();
         Q_EMIT reportError(reply.error().message());
     }
 }
-
-void QOfonoConnectionManager::setPropertyFinished(QDBusPendingCallWatcher *watch)
-{
-    watch->deleteLater();
-    QDBusPendingReply<> reply = *watch;
-    if (reply.isError()) {
-        qDebug() << Q_FUNC_INFO << reply.error();
-        Q_EMIT reportError(reply.error().message());
-    }
-}
-

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Jolla Ltd.
+** Copyright (C) 2013-2014 Jolla Ltd.
 ** Contact: lorn.potter@jollamobile.com
 **
 ** GNU Lesser General Public License Usage
@@ -16,21 +16,17 @@
 #ifndef QOFONOCallSettings_H
 #define QOFONOCallSettings_H
 
-#include <QObject>
-#include <QDBusVariant>
-
+#include "qofonomodeminterface.h"
 #include "qofono_global.h"
+
 //! This class is used to access ofono call settings API
 /*!
  * The API is documented in
  * http://git.kernel.org/?p=network/ofono/ofono.git;a=blob_plain;f=doc/call-settings-api.txt
  */
-
-class QOfonoCallSettingsPrivate;
-class QOFONOSHARED_EXPORT QOfonoCallSettings : public QObject
+class QOFONOSHARED_EXPORT QOfonoCallSettings : public QOfonoModemInterface
 {
     Q_OBJECT
-    Q_PROPERTY(QString modemPath READ modemPath WRITE setModemPath NOTIFY modemPathChanged)
     Q_PROPERTY(QString hideCallerId READ hideCallerId WRITE setHideCallerId NOTIFY hideCallerIdChanged)
     Q_PROPERTY(QString voiceCallWaiting READ voiceCallWaiting WRITE setVoiceCallWaiting NOTIFY voiceCallWaitingChanged)
     Q_PROPERTY(QString callingLinePresentation READ callingLinePresentation NOTIFY callingLinePresentationChanged)
@@ -39,14 +35,10 @@ class QOFONOSHARED_EXPORT QOfonoCallSettings : public QObject
     Q_PROPERTY(QString connectedLinePresentation READ connectedLinePresentation NOTIFY connectedLinePresentationChanged)
     Q_PROPERTY(QString connectedLineRestriction READ connectedLineRestriction NOTIFY connectedLineRestrictionChanged)
     Q_PROPERTY(QString callingLineRestriction READ callingLineRestriction NOTIFY callingLineRestrictionChanged)
-    Q_PROPERTY(bool ready READ isReady NOTIFY readyChanged)
 
 public:
     explicit QOfonoCallSettings(QObject *parent = 0);
     ~QOfonoCallSettings();
-
-    QString modemPath() const;
-    void setModemPath(const QString &path);
 
     QString callingLinePresentation();
     QString calledLinePresentation();
@@ -61,9 +53,6 @@ public:
     QString voiceCallWaiting();
     void setVoiceCallWaiting(const QString &setting);
 
-    bool isValid() const;
-    bool isReady() const;
-
     void connectOfono();
 
 Q_SIGNALS:
@@ -75,21 +64,15 @@ Q_SIGNALS:
     void callingLineRestrictionChanged(const QString &setting);
     void hideCallerIdChanged(const QString &setting);
     void voiceCallWaitingChanged(const QString &setting);
-    void modemPathChanged(const QString &path);
-    void readyChanged();
     void getPropertiesFailed();
     void hideCallerIdComplete(bool success);
     void voiceCallWaitingComplete(bool success);
     
-private:
-    QOfonoCallSettingsPrivate *d_ptr;
-
-private slots:
-    void modemInterfacesChanged(const QStringList &interfaces);
-    void propertyChanged(const QString &property,const QDBusVariant &value);
-    void getPropertiesComplete(QDBusPendingCallWatcher*);
-    void setHideCallerIdComplete(QDBusPendingCallWatcher *call);
-    void setVoiceCallWaitingComplete(QDBusPendingCallWatcher *call);
+protected:
+    QDBusAbstractInterface *createDbusInterface(const QString &path);
+    void getPropertiesFinished(const QVariantMap &properties, const QDBusError *error);
+    void setPropertyFinished(const QString &property, const QDBusError *error);
+    void propertyChanged(const QString &key, const QVariant &value);
 };
 
 #endif // QOFONOCallSettings_H

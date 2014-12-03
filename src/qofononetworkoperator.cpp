@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Jolla Ltd.
+** Copyright (C) 2013-2014 Jolla Ltd.
 ** Contact: lorn.potter@jollamobile.com
 **
 ** GNU Lesser General Public License Usage
@@ -16,25 +16,27 @@
 #include "qofononetworkoperator.h"
 #include "dbus/ofononetworkoperator.h"
 
-class QOfonoNetworkOperatorPrivate
+class QOfonoNetworkOperator::Private
 {
 public:
-    QOfonoNetworkOperatorPrivate();
-    QString modemPath;
-    OfonoNetworkOperator *networkOperator;
-    QVariantMap properties;
+    bool registering;
+    Private() : registering(false) {}
 };
 
-QOfonoNetworkOperatorPrivate::QOfonoNetworkOperatorPrivate() :
-    modemPath(QString())
-  , networkOperator(0)
+QOfonoNetworkOperator::QOfonoNetworkOperator(QObject *parent) :
+    QOfonoObject(parent),
+    d_ptr(new Private)
 {
 }
 
-QOfonoNetworkOperator::QOfonoNetworkOperator(QObject *parent) :
-    QObject(parent),
-    d_ptr(new QOfonoNetworkOperatorPrivate)
+// Constructs the object with known set of properties, saves a roundtrip
+// via D-Bus and makes the object valid immediately
+QOfonoNetworkOperator::QOfonoNetworkOperator(const QString &path,
+    const QVariantMap &properties, QObject *parent) :
+    QOfonoObject(parent),
+    d_ptr(new Private)
 {
+    setObjectPath(path, &properties);
 }
 
 QOfonoNetworkOperator::~QOfonoNetworkOperator()
@@ -42,47 +44,56 @@ QOfonoNetworkOperator::~QOfonoNetworkOperator()
     delete d_ptr;
 }
 
-void QOfonoNetworkOperator::setOperatorPath(const QString &path)
-{
-    if (path != operatorPath()) {
-        if (d_ptr->networkOperator) {
-            delete d_ptr->networkOperator;
-            d_ptr->networkOperator = 0;
-        }
-        d_ptr->networkOperator = new OfonoNetworkOperator("org.ofono", path, QDBusConnection::systemBus(),this);
-        if (d_ptr->networkOperator->isValid()) {
-            d_ptr->modemPath = path;
-
-            connect(d_ptr->networkOperator,SIGNAL(PropertyChanged(QString,QDBusVariant)),
-                    this,SLOT(propertyChanged(QString,QDBusVariant)));
-
-            QDBusPendingReply<QVariantMap> reply;
-            reply = d_ptr->networkOperator->GetProperties();
-            reply.waitForFinished();
-            d_ptr->properties = reply.value();
-            Q_EMIT operatorPathChanged(path);
-        }
-    }
-}
-
 QString QOfonoNetworkOperator::operatorPath() const
 {
-    return d_ptr->modemPath;
+    return objectPath();
+}
+
+void QOfonoNetworkOperator::setOperatorPath(const QString &path)
+{
+    setObjectPath(path);
+}
+
+void QOfonoNetworkOperator::objectPathChanged(const QString &path, const QVariantMap *properties)
+{
+    QOfonoObject::objectPathChanged(path, properties);
+    Q_EMIT operatorPathChanged(path);
+}
+
+QDBusAbstractInterface *QOfonoNetworkOperator::createDbusInterface(const QString &path)
+{
+    OfonoNetworkOperator *iface = new OfonoNetworkOperator("org.ofono", path, QDBusConnection::systemBus(), this);
+    iface->setTimeout(120*1000); //increase dbus timeout as registration can take a long time
+    return iface;
+}
+
+void QOfonoNetworkOperator::dbusInterfaceDropped()
+{
+    QOfonoObject::dbusInterfaceDropped();
+    if (d_ptr->registering) {
+        d_ptr->registering = false;
+        Q_EMIT registeringChanged(d_ptr->registering);
+    }
 }
 
 void QOfonoNetworkOperator::registerOperator()
 {
-    QDBusPendingReply<void> result = d_ptr->networkOperator->Register();
-
-    QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(result, this);
-    connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
-            SLOT(registerFinished(QDBusPendingCallWatcher*)));
+    if (!d_ptr->registering) {
+        OfonoNetworkOperator *iface = (OfonoNetworkOperator*)dbusInterface();
+        if (iface) {
+            d_ptr->registering = true;
+            Q_EMIT registeringChanged(d_ptr->registering);
+            connect(new QDBusPendingCallWatcher(iface->Register(), iface),
+                SIGNAL(finished(QDBusPendingCallWatcher*)),
+                SLOT(onRegisterFinished(QDBusPendingCallWatcher*)));
+        }
+    }
 }
 
-void QOfonoNetworkOperator::registerFinished(QDBusPendingCallWatcher *call)
+void QOfonoNetworkOperator::onRegisterFinished(QDBusPendingCallWatcher *watch)
 {
-    call->deleteLater();
-    QDBusPendingReply<> reply = *call;
+    watch->deleteLater();
+    QDBusPendingReply<> reply(*watch);
     QOfonoNetworkOperator::Error error = NoError;
     QString errorString;
 
@@ -91,64 +102,49 @@ void QOfonoNetworkOperator::registerFinished(QDBusPendingCallWatcher *call)
          error = errorNameToEnum(reply.error().name());
          errorString = reply.error().name() + " " + reply.error().message();
     }
-    Q_EMIT registerComplete(error,errorString);
+    d_ptr->registering = false;
+    Q_EMIT registerComplete(error, errorString);
+    Q_EMIT registeringChanged(d_ptr->registering);
+}
+
+bool QOfonoNetworkOperator::registering() const
+{
+    return d_ptr->registering;
 }
 
 QString QOfonoNetworkOperator::name() const
 {
-    if (d_ptr->networkOperator)
-        return d_ptr->properties["Name"].value<QString>();
-    else
-        return QString();
+    return getString("Name");
 }
 
 QString QOfonoNetworkOperator::status() const
 {
-    if (d_ptr->networkOperator)
-        return d_ptr->properties["Status"].value<QString>();
-    else
-        return QString();
+    return getString("Status");
 }
 
 QString QOfonoNetworkOperator::mcc() const
 {
-    if (d_ptr->networkOperator)
-        return d_ptr->properties["MobileCountryCode"].value<QString>();
-    else
-        return QString();
+    return getString("MobileCountryCode");
 }
 
 QString QOfonoNetworkOperator::mnc() const
 {
-    if (d_ptr->networkOperator)
-        return d_ptr->properties["MobileNetworkCode"].value<QString>();
-    else
-        return QString();
+    return getString("MobileNetworkCode");
 }
 
 QStringList QOfonoNetworkOperator::technologies() const
 {
-    if (d_ptr->networkOperator) {
-        return d_ptr->properties["Technologies"].value<QStringList>();
-    } else {
-        return QStringList();
-    }
+    return getStringList("Technologies");
 }
 
 QString QOfonoNetworkOperator::additionalInfo() const
 {
-    if (d_ptr->networkOperator)
-        return d_ptr->properties["AdditionalInformation"].value<QString>();
-    else
-        return QString();
+    return getString("AdditionalInformation");
 }
 
-
-void QOfonoNetworkOperator::propertyChanged(const QString &property, const QDBusVariant &dbusvalue)
+void QOfonoNetworkOperator::propertyChanged(const QString &property, const QVariant &value)
 {
-    QVariant value = dbusvalue.variant();
-    d_ptr->properties.insert(property,value);
-
+    QOfonoObject::propertyChanged(property, value);
     if (property == QLatin1String("Name")) {
         Q_EMIT nameChanged(value.value<QString>());
     } else if (property == QLatin1String("Status")) {
@@ -162,11 +158,6 @@ void QOfonoNetworkOperator::propertyChanged(const QString &property, const QDBus
     } else if (property == QLatin1String("AdditionalInformation")) {
         Q_EMIT additionalInfoChanged(value.value<QString>());
     }
-}
-
-bool QOfonoNetworkOperator::isValid() const
-{
-    return d_ptr->networkOperator->isValid();
 }
 
 QOfonoNetworkOperator::Error QOfonoNetworkOperator::errorNameToEnum(const QString &errorName)

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Jolla Ltd.
+** Copyright (C) 2013-2014 Jolla Ltd.
 ** Contact: lorn.potter@jollamobile.com
 **
 ** GNU Lesser General Public License Usage
@@ -13,54 +13,27 @@
 **
 ****************************************************************************/
 
-#include <QtDBus/QDBusPendingReply>
-
 #include "qofononetworkregistration.h"
+#include "qofononetworkoperator.h"
 #include "dbus/ofononetworkregistration.h"
 
-
-QDBusArgument &operator<<(QDBusArgument &argument, const OfonoPathProps &op)
-{
-    argument.beginStructure();
-    argument << op.path << op.properties;
-    argument.endStructure();
-    return argument;
-}
-
-const QDBusArgument &operator>>(const QDBusArgument &argument, OfonoPathProps &op)
-{
-    argument.beginStructure();
-    argument >> op.path >> op.properties;
-    argument.endStructure();
-    return argument;
-}
-
-
-
-class QOfonoNetworkRegistrationPrivate
+class QOfonoNetworkRegistration::Private
 {
 public:
-    QOfonoNetworkRegistrationPrivate();
-    OfonoNetworkRegistration *networkRegistration;
-    QString modemPath;
-    QVariantMap properties;
-    QStringList networkOperators;
-    QArrayOfPathProps operatorArray;
+    bool initialized;
+    bool scanning;
+    QOfonoNetworkOperator* currentOperator;
+    QHash<QString,QOfonoNetworkOperator*> networkOperators;
+    QStringList operatorPaths;
+
+    Private() : initialized(false), scanning(false), currentOperator(NULL) {}
 };
 
-QOfonoNetworkRegistrationPrivate::QOfonoNetworkRegistrationPrivate() :
-    networkRegistration(0)
-  , modemPath(QString())
-  ,  networkOperators(QStringList())
-{
-    qDBusRegisterMetaType<OfonoPathProps>();
-    qDBusRegisterMetaType<QArrayOfPathProps>();
-}
-
 QOfonoNetworkRegistration::QOfonoNetworkRegistration(QObject *parent) :
-    QObject(parent),
-    d_ptr(new QOfonoNetworkRegistrationPrivate)
+    QOfonoModemInterface(OfonoNetworkRegistration::staticInterfaceName(), parent),
+    d_ptr(new Private)
 {
+    QOfonoDbusTypes::registerObjectPathProperties();
 }
 
 QOfonoNetworkRegistration::~QOfonoNetworkRegistration()
@@ -68,63 +41,59 @@ QOfonoNetworkRegistration::~QOfonoNetworkRegistration()
     delete d_ptr;
 }
 
-void QOfonoNetworkRegistration::setModemPath(const QString &path)
+bool QOfonoNetworkRegistration::isValid() const
 {
-    if (path == d_ptr->modemPath ||
-            path.isEmpty())
-        return;
-
-    QStringList removedProperties = d_ptr->properties.keys();
-
-    delete d_ptr->networkRegistration;
-    d_ptr->networkRegistration = new OfonoNetworkRegistration("org.ofono", path, QDBusConnection::systemBus(),this);
-
-    if (d_ptr->networkRegistration->isValid()) {
-        d_ptr->modemPath = path;
-        d_ptr->networkRegistration->setTimeout(1000 * 120); //increase dbus timeout as scanning can take a long time
-
-        connect(d_ptr->networkRegistration,SIGNAL(PropertyChanged(QString,QDBusVariant)),
-                this,SLOT(propertyChanged(QString,QDBusVariant)));
-        QDBusPendingReply<QVariantMap> reply;
-        reply = d_ptr->networkRegistration->GetProperties();
-        reply.waitForFinished();
-        if (!reply.isError()) {
-            QVariantMap properties = reply.value();
-            for (QVariantMap::ConstIterator it = properties.constBegin();
-                 it != properties.constEnd(); ++it) {
-                updateProperty(it.key(), it.value());
-                removedProperties.removeOne(it.key());
-            }
-        }
-
-        Q_EMIT modemPathChanged(path);
-    }
-
-    foreach (const QString &p, removedProperties)
-        updateProperty(p, QVariant());
+    return d_ptr->initialized && QOfonoModemInterface::isValid();
 }
 
-QString QOfonoNetworkRegistration::modemPath() const
+bool QOfonoNetworkRegistration::scanning() const
 {
-    return d_ptr->modemPath;
+    return d_ptr->scanning;
+}
+
+QDBusAbstractInterface *QOfonoNetworkRegistration::createDbusInterface(const QString &path)
+{
+    OfonoNetworkRegistration* iface = new OfonoNetworkRegistration("org.ofono", path, QDBusConnection::systemBus(), this);
+    iface->setTimeout(120*1000); //increase dbus timeout as scanning can take a long time
+    connect(new QDBusPendingCallWatcher(iface->GetOperators(), iface),
+        SIGNAL(finished(QDBusPendingCallWatcher*)),
+        SLOT(onGetOperatorsFinished(QDBusPendingCallWatcher*)));
+    return iface;
+}
+
+void QOfonoNetworkRegistration::dbusInterfaceDropped()
+{
+    QOfonoModemInterface::dbusInterfaceDropped();
+    d_ptr->initialized = false;
+    if (d_ptr->scanning) {
+        d_ptr->scanning = false;
+        scanningChanged(false);
+    }
+    if (!d_ptr->networkOperators.isEmpty()) {
+        qDeleteAll(d_ptr->networkOperators.values());
+        d_ptr->operatorPaths.clear();
+        d_ptr->networkOperators.clear();
+        d_ptr->currentOperator = NULL;
+        Q_EMIT networkOperatorsChanged(d_ptr->operatorPaths);
+    }
 }
 
 void QOfonoNetworkRegistration::registration()
 {
-    if (d_ptr->networkRegistration) {
-        QDBusPendingReply<> reply = d_ptr->networkRegistration->Register();
-        QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(reply, this);
-        connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
-                SLOT(registrationComplete(QDBusPendingCallWatcher*)));
+    OfonoNetworkRegistration *iface = (OfonoNetworkRegistration*)dbusInterface();
+    if (iface) {
+        connect(new QDBusPendingCallWatcher(iface->Register(), iface),
+            SIGNAL(finished(QDBusPendingCallWatcher*)),
+            SLOT(onRegistrationFinished(QDBusPendingCallWatcher*)));
     } else {
         Q_EMIT registrationError(QStringLiteral("Error.ServiceUnknown"));
     }
 }
 
-void QOfonoNetworkRegistration::registrationComplete(QDBusPendingCallWatcher *call)
+void QOfonoNetworkRegistration::onRegistrationFinished(QDBusPendingCallWatcher *watch)
 {
-    call->deleteLater();
-    QDBusPendingReply<> reply = *call;
+    watch->deleteLater();
+    QDBusPendingReply<> reply(*watch);
     if (!reply.isError()) {
         Q_EMIT registrationFinished();
     } else {
@@ -132,191 +101,213 @@ void QOfonoNetworkRegistration::registrationComplete(QDBusPendingCallWatcher *ca
     }
 }
 
-QStringList QOfonoNetworkRegistration::networkOperators()
+QStringList QOfonoNetworkRegistration::networkOperators() const
 {
-    if (d_ptr->networkRegistration) {
-        QDBusPendingReply<QArrayOfPathProps> pending = d_ptr->networkRegistration->GetOperators();
-        pending.waitForFinished();
+    return d_ptr->operatorPaths;
+}
 
-        if (!pending.isError()) {
-            scanFinish(pending.value());
-        } else {
-            qDebug() << Q_FUNC_INFO << pending.error().message();
-        }
-    }
-    return d_ptr->networkOperators;
+QOfonoNetworkOperator* QOfonoNetworkRegistration::networkOperator(const QString &path) const
+{
+    return d_ptr->networkOperators[path];
+}
+
+QString QOfonoNetworkRegistration::currentOperatorPath()
+{
+    return d_ptr->currentOperator ? d_ptr->currentOperator->operatorPath() : QString();
 }
 
 void QOfonoNetworkRegistration::scan()
 {
-    if (d_ptr->networkRegistration) {
-        QList<QVariant> arguments;
-        if (!d_ptr->networkRegistration->callWithCallback(QLatin1String("Scan"),
-                                                          arguments,
-                                                          this,
-                                                          SLOT(scanFinish(QArrayOfPathProps)),
-                                                          SLOT(scanError(const QDBusError&)))) {
-            qDebug() << "Failed to queue scan call";
+    if (!d_ptr->scanning) {
+        OfonoNetworkRegistration *iface = (OfonoNetworkRegistration*)dbusInterface();
+        if (iface) {
+            d_ptr->scanning = true;
+            scanningChanged(true);
+            connect(new QDBusPendingCallWatcher(iface->Scan(), iface),
+                SIGNAL(finished(QDBusPendingCallWatcher*)),
+                SLOT(onScanFinished(QDBusPendingCallWatcher*)));
         }
     }
 }
 
 QString QOfonoNetworkRegistration::mode() const
 {
-    if ( d_ptr->networkRegistration)
-        return d_ptr->properties["Mode"].value<QString>();
-    else
-        return QString();
+    return getString("Mode");
 }
 
 QString QOfonoNetworkRegistration::status() const
 {
-    if ( d_ptr->networkRegistration)
-        return d_ptr->properties["Status"].value<QString>();
-    else
-        return QString();
+    return getString("Status");
 }
 
 uint QOfonoNetworkRegistration::locationAreaCode() const
 {
-    if ( d_ptr->networkRegistration)
-        return d_ptr->properties["LocalAreaCode"].value<uint>();
-    else
-        return 0;
+    return getUInt("LocalAreaCode");
 }
 
 uint QOfonoNetworkRegistration::cellId() const
 {
-    if ( d_ptr->networkRegistration)
-        return d_ptr->properties["CellId"].value<uint>();
-    else
-        return 0;
+    return getUInt("CellId");
 }
 
 QString QOfonoNetworkRegistration::mcc() const
 {
-    if ( d_ptr->networkRegistration)
-        return d_ptr->properties["MobileCountryCode"].value<QString>();
-    else
-        return QString();
-
+    return getString("MobileCountryCode");
 }
 
 QString QOfonoNetworkRegistration::mnc() const
 {
-    if ( d_ptr->networkRegistration)
-        return d_ptr->properties["MobileNetworkCode"].value<QString>();
-    else
-        return QString();
-
+    return getString("MobileNetworkCode");
 }
 
 QString QOfonoNetworkRegistration::technology() const
 {
-    if ( d_ptr->networkRegistration)
-        return d_ptr->properties["Technology"].value<QString>();
-    else
-        return QString();
+    return getString("Technology");
 }
 
 QString QOfonoNetworkRegistration::name() const
 {
-    if ( d_ptr->networkRegistration)
-        return d_ptr->properties["Name"].value<QString>();
-    else
-        return QString();
+    return getString("Name");
 }
 
 uint QOfonoNetworkRegistration::strength() const
 {
-    if ( d_ptr->networkRegistration)
-        return d_ptr->properties["Strength"].value<uint>();
-    else
-        return 0;
+    return getUInt("Strength");
 }
 
 QString QOfonoNetworkRegistration::baseStation() const
 {
-    if ( d_ptr->networkRegistration)
-        return d_ptr->properties["BaseStation"].value<QString>();
-    else
-        return QString();
+    return getString("BaseStation");
 }
 
-void QOfonoNetworkRegistration::propertyChanged(const QString &property, const QDBusVariant &dbusvalue)
+void QOfonoNetworkRegistration::propertyChanged(const QString &property, const QVariant &value)
 {
-    updateProperty(property, dbusvalue.variant());
-}
-
-void QOfonoNetworkRegistration::updateProperty(const QString &property, const QVariant &value)
-{
-    if (d_ptr->properties.value(property) == value)
-        return;
-
-    if (value.isValid())
-        d_ptr->properties.insert(property, value);
-    else
-        d_ptr->properties.remove(property);
-
+    QOfonoModemInterface::propertyChanged(property, value);
     if (property == QLatin1String("Mode")) {
-        Q_EMIT modeChanged(value.value<QString>());
+        Q_EMIT modeChanged(value.toString());
     } else if (property == QLatin1String("Status")) {
-        Q_EMIT statusChanged(value.value<QString>());
+        Q_EMIT statusChanged(value.toString());
     } else if (property == QLatin1String("LocationAreaCode")) {
-        Q_EMIT locationAreaCodeChanged(value.value<uint>());
+        Q_EMIT locationAreaCodeChanged(value.toUInt());
     } else if (property == QLatin1String("CellId")) {
-        Q_EMIT cellIdChanged(value.value<uint>());
+        Q_EMIT cellIdChanged(value.toUInt());
     } else if (property == QLatin1String("MobileCountryCode")) {
-        Q_EMIT mccChanged(value.value<QString>());
+        Q_EMIT mccChanged(value.toString());
     } else if (property == QLatin1String("MobileNetworkCode")) {
-        Q_EMIT mncChanged(value.value<QString>());
+        Q_EMIT mncChanged(value.toString());
     } else if (property == QLatin1String("Technology")) {
-        Q_EMIT technologyChanged(value.value<QString>());
+        Q_EMIT technologyChanged(value.toString());
     } else if (property == QLatin1String("Name")) {
-        Q_EMIT nameChanged(value.value<QString>());
+        Q_EMIT nameChanged(value.toString());
     } else if (property == QLatin1String("Strength")) {
-        Q_EMIT strengthChanged(value.value<uint>());
+        Q_EMIT strengthChanged(value.toUInt());
     } else if (property == QLatin1String("BaseStation")) {
-        Q_EMIT baseStationChanged(value.value<QString>());
+        Q_EMIT baseStationChanged(value.toString());
     }
 }
 
-void QOfonoNetworkRegistration::scanFinish(const QArrayOfPathProps &list)
+void QOfonoNetworkRegistration::setOperators(const ObjectPathPropertiesList &list)
 {
-    bool changed = false;
-    d_ptr->operatorArray = list;
-    QString current;
-    foreach(OfonoPathProps netop, list) {
-        if (!d_ptr->networkOperators.contains(netop.path.path())) {
-            d_ptr->networkOperators.append(netop.path.path());
-            current == netop.path.path();
-            changed = true;
+    QString oldPath = currentOperatorPath();
+
+    QStringList paths;
+    QList<QOfonoNetworkOperator*> newOperators;
+    QOfonoNetworkOperator* currentOperator = NULL;
+    bool listChanged = false;
+    int i;
+
+    // Find new operators
+    for (i=0; i<list.count(); i++) {
+        QString path = list[i].path.path();
+        paths.append(path);
+        if (!d_ptr->networkOperators.contains(path)) {
+            // No need to query the properties as we already have the.
+            // The object becomes valid immediately.
+            QOfonoNetworkOperator* op = new QOfonoNetworkOperator(path,
+                list[i].properties, this);
+            newOperators.append(op);
+            connect(op, SIGNAL(statusChanged(QString)),
+                SLOT(onOperatorStatusChanged(QString)));
+            if (op->status() == "current") {
+                currentOperator = op;
+            }
+            listChanged = true;
         }
     }
-    if (changed) {
-        Q_EMIT networkOperatorsChanged(d_ptr->networkOperators);
-        Q_EMIT currentOperatorPathChanged(current);
-    }
-    Q_EMIT scanFinished();
-}
 
-void QOfonoNetworkRegistration::scanError(QDBusError error)
-{
-    Q_EMIT scanError(error.message());
-}
-
-QString QOfonoNetworkRegistration::currentOperatorPath()
-{
-
-    foreach(OfonoPathProps netop, d_ptr->operatorArray) {
-        if (netop.properties["Status"].toString() == QLatin1String("current")) {
-            return netop.path.path();
+    // Remove operators that are no longer on the list
+    for (i=d_ptr->operatorPaths.count()-1; i>=0; i--) {
+        QString path = d_ptr->operatorPaths[i];
+        if (!paths.contains(path)) {
+            QOfonoNetworkOperator* op = d_ptr->networkOperators[path];
+            if (op == d_ptr->currentOperator) d_ptr->currentOperator = NULL;
+            d_ptr->operatorPaths.removeAt(i);
+            d_ptr->networkOperators.remove(path);
+            delete op;
+            listChanged = true;
         }
     }
-    return QString();
+
+    // Append new operators to the end of the list
+    for (i=0; i<newOperators.count(); i++) {
+        QOfonoNetworkOperator* op = newOperators[i];
+        d_ptr->operatorPaths.append(op->operatorPath());
+        d_ptr->networkOperators.insert(op->operatorPath(), op);
+    }
+
+    // Replace the current operator if it has changed
+    if (currentOperator) d_ptr->currentOperator = currentOperator;
+
+    // Fire necessary events
+    if (listChanged) {
+        Q_EMIT networkOperatorsChanged(d_ptr->operatorPaths);
+    }
+    QString currentPath = currentOperatorPath();
+    if (currentPath != oldPath) {
+        Q_EMIT currentOperatorPathChanged(currentPath);
+    }
 }
 
-bool QOfonoNetworkRegistration::isValid() const
+void QOfonoNetworkRegistration::onGetOperatorsFinished(QDBusPendingCallWatcher *watch)
 {
-    return d_ptr->networkRegistration->isValid();
+    watch->deleteLater();
+    QDBusPendingReply<ObjectPathPropertiesList> reply(*watch);
+    if (reply.isError()) {
+        qDebug() << reply.error();
+        Q_EMIT reportError(reply.error().message());
+    } else {
+        d_ptr->initialized = true;
+        setOperators(reply.value());
+        if (isValid()) validChanged(true);
+    }
+}
+
+void QOfonoNetworkRegistration::onScanFinished(QDBusPendingCallWatcher *watch)
+{
+    watch->deleteLater();
+    QDBusPendingReply<ObjectPathPropertiesList> reply(*watch);
+    if (reply.isError()) {
+        qDebug() << reply.error();
+        Q_EMIT scanError(reply.error().message());
+    } else {
+        setOperators(reply.value());
+        Q_EMIT scanFinished();
+    }
+    d_ptr->scanning = false;
+    scanningChanged(false);
+}
+
+void QOfonoNetworkRegistration::onOperatorStatusChanged(const QString &status)
+{
+    QString oldPath = currentOperatorPath();
+    QOfonoNetworkOperator *op = (QOfonoNetworkOperator*)sender();
+    if (status == "current") {
+        d_ptr->currentOperator = op;
+    } else if (d_ptr->currentOperator == op) {
+        d_ptr->currentOperator = NULL;
+    }
+    QString currentPath = currentOperatorPath();
+    if (currentPath != oldPath) {
+        Q_EMIT currentOperatorPathChanged(currentPath);
+    }
 }

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Jolla Ltd.
+** Copyright (C) 2013-2014 Jolla Ltd.
 ** Contact: lorn.potter@jollamobile.com
 **
 ** GNU Lesser General Public License Usage
@@ -16,18 +16,15 @@
 #ifndef QOFONOCONNECTIONMANAGER_H
 #define QOFONOCONNECTIONMANAGER_H
 
-#include <QObject>
-#include "dbustypes.h"
+#include "qofonomodeminterface.h"
 #include "qofono_global.h"
+
 //! This class is used to access ofono connman context API
 /*!
  * The API is documented in
  * http://git.kernel.org/?p=network/ofono/ofono.git;a=blob;f=doc/connman-api.txt
  */
-
-class QOfonoConnectionManagerPrivate;
-
-class QOFONOSHARED_EXPORT QOfonoConnectionManager : public QObject
+class QOFONOSHARED_EXPORT QOfonoConnectionManager : public QOfonoModemInterface
 {
     Q_OBJECT
     Q_PROPERTY(bool attached READ attached NOTIFY attachedChanged)
@@ -36,16 +33,12 @@ class QOFONOSHARED_EXPORT QOfonoConnectionManager : public QObject
     Q_PROPERTY(bool roamingAllowed READ roamingAllowed WRITE setRoamingAllowed NOTIFY roamingAllowedChanged)
     Q_PROPERTY(bool powered READ powered WRITE setPowered NOTIFY poweredChanged)
 
-    Q_PROPERTY(QString modemPath READ modemPath WRITE setModemPath NOTIFY modemPathChanged)
     Q_PROPERTY(QStringList contexts READ contexts NOTIFY contextsChanged)
     Q_PROPERTY(QString filter READ filter WRITE setFilter NOTIFY filterChanged)
 
 public:
     explicit QOfonoConnectionManager(QObject *parent = 0);
     ~QOfonoConnectionManager();
-
-    QString modemPath() const;
-    void setModemPath(const QString &path);
 
     bool attached() const;
     QString bearer() const;
@@ -73,33 +66,28 @@ Q_SIGNALS:
     void contextAdded(const QString &path);
     void contextRemoved(const QString &path);
     void contextsChanged(const QStringList &contexts);
-    void modemPathChanged(const QString &path);
     void filterChanged(const QString &filter);
-
-    void messagesFinished();
-    void reportError(const QString &errorMessage);
 
 public slots:
     void deactivateAll();
     void addContext(const QString &type);
     void removeContext(const QString &path);
 
-protected slots:
-    void addContextFinished(QDBusPendingCallWatcher *watch);
-    void removeContextFinished(QDBusPendingCallWatcher *watch);
-    void setPropertyFinished(QDBusPendingCallWatcher *watch);
-protected:
-    void setOneProperty(const QString &prop,const QDBusVariant &var);
-
 private slots:
-    void propertyChanged(const QString &property,const QDBusVariant &value);
-    void onContextAdd(const QDBusObjectPath &path, const QVariantMap &propertyMap);
-    void onContextRemove(const QDBusObjectPath &path);
+    void onAddContextFinished(QDBusPendingCallWatcher *watch);
+    void onRemoveContextFinished(QDBusPendingCallWatcher *watch);
+    void onGetContextsFinished(QDBusPendingCallWatcher *watch);
+    void onContextAdded(const QDBusObjectPath &path, const QVariantMap &propertyMap);
+    void onContextRemoved(const QDBusObjectPath &path);
+
+protected:
+    QDBusAbstractInterface *createDbusInterface(const QString &path);
+    void dbusInterfaceDropped();
+    void propertyChanged(const QString &property, const QVariant &value);
 
 private:
-    void updateProperty(const QString &property, const QVariant &value);
-
-    QOfonoConnectionManagerPrivate *d_ptr;
+    class Private;
+    Private* d_ptr;
 };
 
 #endif // QOFONOCONNECTIONMANAGER_H

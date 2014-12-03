@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Jolla Ltd.
+** Copyright (C) 2013-2014 Jolla Ltd.
 ** Contact: lorn.potter@jollamobile.com
 **
 ** GNU Lesser General Public License Usage
@@ -25,13 +25,14 @@ QOfonoRadioSettings::~QOfonoRadioSettings()
 {
 }
 
-QDBusAbstractInterface* QOfonoRadioSettings::createDbusInterface(const QString &path)
+QDBusAbstractInterface *QOfonoRadioSettings::createDbusInterface(const QString &path)
 {
     return new OfonoRadioSettings("org.ofono", path, QDBusConnection::systemBus(), this);
 }
 
-void QOfonoRadioSettings::objectPathChanged(const QString &path)
+void QOfonoRadioSettings::objectPathChanged(const QString &path, const QVariantMap *properties)
 {
+    QOfonoObject::objectPathChanged(path, properties);
     Q_EMIT modemPathChanged(path);
 }
 
@@ -47,6 +48,7 @@ QString QOfonoRadioSettings::modemPath() const
 
 void QOfonoRadioSettings::propertyChanged(const QString &property, const QVariant &value)
 {
+    QOfonoObject::propertyChanged(property, value);
     if (property == QLatin1String("TechnologyPreference")) {
         Q_EMIT technologyPreferenceChanged(value.value<QString>());
     } else if (property == QLatin1String("GsmBand")) {
@@ -56,7 +58,6 @@ void QOfonoRadioSettings::propertyChanged(const QString &property, const QVarian
     } else if (property == QLatin1String("FastDormancy")) {
         Q_EMIT fastDormancyChanged(value.value<bool>());
     }
-    QOfonoObject::propertyChanged(property, value);
 }
 
 QString QOfonoRadioSettings::technologyPreference() const
@@ -97,9 +98,4 @@ bool QOfonoRadioSettings::fastDormancy() const
 void QOfonoRadioSettings::setFastDormancy(bool fastDormancy)
 {
     setProperty("FastDormancy", fastDormancy);
-}
-
-bool QOfonoRadioSettings::isValid() const
-{
-    return QOfonoObject::isValid();
 }

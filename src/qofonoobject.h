@@ -16,25 +16,21 @@
 #ifndef QOFONOOBJECT_H
 #define QOFONOOBJECT_H
 
-#include <QObject>
-#include <QStringList>
-#include <QVariantMap>
-#include "qofono_global.h"
+#include "dbustypes.h"
 
 class QOfonoObject : public QObject
 {
-    class Private;
     Q_OBJECT
     Q_PROPERTY(bool valid READ isValid NOTIFY validChanged)
 
 protected:
-    explicit QOfonoObject(QObject *parent = NULL);
+    QOfonoObject(QObject *parent = NULL);
     ~QOfonoObject();
 
 public:
     QString objectPath() const;
-    void setObjectPath(const QString &path);
-    bool isValid() const;
+    void setObjectPath(const QString &path, const QVariantMap *properties = NULL);
+    virtual bool isValid() const;
 
 Q_SIGNALS:
     void validChanged(bool valid);
@@ -42,25 +38,31 @@ Q_SIGNALS:
     void reportError(const QString &message);
 
 protected:
-    virtual void objectPathChanged(const QString &name) = 0;
-    virtual QDBusAbstractInterface* createDbusInterface(const QString &path) = 0;
+    virtual void objectPathChanged(const QString &path, const QVariantMap *properties) = 0;
+    virtual QDBusAbstractInterface *createDbusInterface(const QString &path) = 0;
+    virtual void dbusInterfaceDropped();
     virtual QVariant convertProperty(const QString &key, const QVariant &value);
-    virtual void propertyChanged(const QString &key,const QVariant &value);
+    virtual void updateProperty(const QString &key, const QVariant &value);
+    virtual void propertyChanged(const QString &key, const QVariant &value);
+    virtual void getPropertiesFinished(const QVariantMap &properties, const QDBusError *error);
+    virtual void setPropertyFinished(const QString &property, const QDBusError *error);
 
-    void setProperty(const QString &key,const QVariant &value);
-    bool setPropertySync(const QString &key,const QVariant &value);
+    void setProperty(const QString &key, const QVariant &value);
+    bool setPropertySync(const QString &key, const QVariant &value);
 
+    QVariantMap getProperties() const;
     QVariant getProperty(const QString &key) const;
     QString getString(const QString &key) const;
     QStringList getStringList(const QString &key) const;
     QVariantMap getVariantMap(const QString &key) const;
+    QVariantList getVariantList(const QString &key) const;
     bool getBool(const QString &key) const;
+    uint getUInt(const QString &key) const;
+    int getInt(const QString &key) const;
 
-    QDBusAbstractInterface* dbusInterface() const;
-    void resetDbusInterface();
-
-private:
-    void setDbusInterface(QDBusAbstractInterface* dbus);
+    QDBusAbstractInterface *dbusInterface() const;
+    void setDbusInterface(QDBusAbstractInterface *dbus, const QVariantMap *properties = NULL);
+    void resetDbusInterface(const QVariantMap *properties = NULL);
 
 private slots:
     void onGetPropertiesFinished(QDBusPendingCallWatcher *watch);
@@ -68,16 +70,23 @@ private slots:
     void onPropertyChanged(const QString &key, const QDBusVariant &value);
 
 private:
+    class Private;
     Private *d_ptr;
 };
 
 inline QString QOfonoObject::getString(const QString &key) const
-    { return getProperty(key).value<QString>(); }
+    { return getProperty(key).toString(); }
 inline QStringList QOfonoObject::getStringList(const QString &key) const
-    { return getProperty(key).value<QStringList>(); }
+    { return getProperty(key).toStringList(); }
 inline QVariantMap QOfonoObject::getVariantMap(const QString &key) const
     { return getProperty(key).value<QVariantMap>(); }
+inline QVariantList QOfonoObject::getVariantList(const QString &key) const
+    { return getProperty(key).value<QVariantList>(); }
 inline bool QOfonoObject::getBool(const QString &key) const
-    { return getProperty(key).value<bool>(); }
+    { return getProperty(key).toBool(); }
+inline uint QOfonoObject::getUInt(const QString &key) const
+    { return getProperty(key).toUInt(); }
+inline int QOfonoObject::getInt(const QString &key) const
+    { return getProperty(key).toInt(); }
 
 #endif // QOFONOOBJECT_H

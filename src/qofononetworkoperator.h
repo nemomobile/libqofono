@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Jolla Ltd.
+** Copyright (C) 2013-2014 Jolla Ltd.
 ** Contact: lorn.potter@jollamobile.com
 **
 ** GNU Lesser General Public License Usage
@@ -16,29 +16,26 @@
 #ifndef QOFONONETWORKOPERATOR_H
 #define QOFONONETWORKOPERATOR_H
 
-#include <QObject>
-#include <QDBusVariant>
-#include <QStringList>
+#include "qofonoobject.h"
 #include "qofono_global.h"
+
 //! This class is used to access ofono network operator API
 /*!
  * The API is documented in
  * http://git.kernel.org/?p=network/ofono/ofono.git;a=blob_plain;f=doc/network-api.txt
  */
-
-class QOfonoNetworkOperatorPrivate;
-class QOFONOSHARED_EXPORT QOfonoNetworkOperator : public QObject
+class QOFONOSHARED_EXPORT QOfonoNetworkOperator : public QOfonoObject
 {
     Q_OBJECT
     Q_ENUMS(Error)
     Q_PROPERTY(QString operatorPath READ operatorPath WRITE setOperatorPath NOTIFY operatorPathChanged)
-
     Q_PROPERTY(QString name READ name NOTIFY nameChanged)
     Q_PROPERTY(QString status READ status NOTIFY statusChanged)
     Q_PROPERTY(QString mcc READ mcc NOTIFY mccChanged)
     Q_PROPERTY(QString mnc READ mnc NOTIFY mncChanged)
     Q_PROPERTY(QStringList technologies READ technologies NOTIFY technologiesChanged)
     Q_PROPERTY(QString additionalInfo READ additionalInfo NOTIFY additionalInfoChanged)
+    Q_PROPERTY(bool registering READ registering NOTIFY registeringChanged)
 
 public:
     enum Error {
@@ -52,6 +49,7 @@ public:
     };
 
     explicit QOfonoNetworkOperator(QObject *parent = 0);
+    QOfonoNetworkOperator(const QString &path, const QVariantMap &properties, QObject *parent = 0);
     ~QOfonoNetworkOperator();
 
     QString operatorPath() const;
@@ -65,7 +63,7 @@ public:
     QString additionalInfo() const;
 
     Q_INVOKABLE void registerOperator();
-    bool isValid() const;
+    bool registering() const;
 
 Q_SIGNALS:
 
@@ -76,18 +74,25 @@ Q_SIGNALS:
     void technologiesChanged(const QStringList &technologies);
     void additionalInfoChanged(const QString &additionalInfo);
     void operatorPathChanged(const QString &path);
+    void registeringChanged(bool value);
 
     void registerComplete(QOfonoNetworkOperator::Error error, const QString &errorString);
 
-public slots:
-
 private:
-    QOfonoNetworkOperatorPrivate *d_ptr;
-    Error errorNameToEnum(const QString &errorName);
+    static Error errorNameToEnum(const QString &errorName);
 
 private slots:
-    void propertyChanged(const QString &property, const QDBusVariant &value);
-    void registerFinished(QDBusPendingCallWatcher *call);
+    void onRegisterFinished(QDBusPendingCallWatcher *call);
+
+protected:
+    QDBusAbstractInterface *createDbusInterface(const QString &path);
+    void dbusInterfaceDropped();
+    void propertyChanged(const QString &key, const QVariant &value);
+    void objectPathChanged(const QString &path, const QVariantMap *properties);
+
+private:
+    class Private;
+    Private *d_ptr;
 };
 
 #endif // QOFONONETWORKOPERATOR_H

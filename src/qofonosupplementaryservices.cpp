@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Jolla Ltd.
+** Copyright (C) 2013-2014 Jolla Ltd.
 ** Contact: lorn.potter@jollamobile.com
 **
 ** GNU Lesser General Public License Usage
@@ -16,117 +16,61 @@
 #include "qofonosupplementaryservices.h"
 #include "dbus/ofonosupplementaryservices.h"
 
-class QOfonoSupplementaryServicesPrivate
-{
-public:
-    QOfonoSupplementaryServicesPrivate();
-    QString modemPath;
-    OfonoSupplementaryServices *supplementaryServices;
-    QVariantMap properties;
-
-};
-
-QOfonoSupplementaryServicesPrivate::QOfonoSupplementaryServicesPrivate() :
-    modemPath(QString())
-  , supplementaryServices(0)
-{
-}
-
 QOfonoSupplementaryServices::QOfonoSupplementaryServices(QObject *parent) :
-    QObject(parent)
-  , d_ptr(new QOfonoSupplementaryServicesPrivate)
+    QOfonoModemInterface(OfonoSupplementaryServices::staticInterfaceName(), parent)
 {
 }
 
 QOfonoSupplementaryServices::~QOfonoSupplementaryServices()
 {
-    delete d_ptr;
 }
 
-void QOfonoSupplementaryServices::setModemPath(const QString &path)
+QDBusAbstractInterface *QOfonoSupplementaryServices::createDbusInterface(const QString &path)
 {
-    if (path == d_ptr->modemPath ||
-            path.isEmpty())
-        return;
-
-    if (path != modemPath()) {
-        if (d_ptr->supplementaryServices) {
-            delete d_ptr->supplementaryServices;
-            d_ptr->supplementaryServices = 0;
-            d_ptr->properties.clear();
-        }
-        d_ptr->supplementaryServices = new OfonoSupplementaryServices("org.ofono", path, QDBusConnection::systemBus(),this);
-
-        if (d_ptr->supplementaryServices->isValid()) {
-            d_ptr->modemPath = path;
-
-            connect(d_ptr->supplementaryServices,SIGNAL(PropertyChanged(QString,QDBusVariant)),
-                    this,SLOT(propertyChanged(QString,QDBusVariant)));
-
-            connect(d_ptr->supplementaryServices,SIGNAL(NotificationReceived(QString)),
-                    this,SIGNAL(notificationReceived(QString)));
-            connect(d_ptr->supplementaryServices,SIGNAL(RequestReceived(QString)),
-                    this,SIGNAL(requestReceived(QString)));
-            QDBusPendingReply<QVariantMap> reply;
-            reply = d_ptr->supplementaryServices->GetProperties();
-            reply.waitForFinished();
-            d_ptr->properties = reply.value();
-            Q_EMIT modemPathChanged(path);
-        }
-    }
-}
-
-QString QOfonoSupplementaryServices::modemPath() const
-{
-    return d_ptr->modemPath;
+    return new OfonoSupplementaryServices("org.ofono", path, QDBusConnection::systemBus(), this);
 }
 
 void QOfonoSupplementaryServices::initiate(const QString &command)
 {
-    QDBusPendingReply<QString, QDBusVariant> result = d_ptr->supplementaryServices->Initiate(command);
-    QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(result, this);
-    connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
+    OfonoSupplementaryServices *iface = (OfonoSupplementaryServices*)dbusInterface();
+    if (iface) {
+        connect(new QDBusPendingCallWatcher(iface->Initiate(command), iface),
+            SIGNAL(finished(QDBusPendingCallWatcher*)),
             SLOT(initiateResponseReceived(QDBusPendingCallWatcher*)));
+    }
 }
 
 void QOfonoSupplementaryServices::respond(const QString &command)
 {
-    QDBusPendingReply<QString> result = d_ptr->supplementaryServices->Respond(command);
-    QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(result, this);
-    connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
+    OfonoSupplementaryServices *iface = (OfonoSupplementaryServices*)dbusInterface();
+    if (iface) {
+        connect(new QDBusPendingCallWatcher(iface->Respond(command), iface),
+            SIGNAL(finished(QDBusPendingCallWatcher*)),
             SLOT(respondResponseReceived(QDBusPendingCallWatcher*)));
+    }
 }
 
 void QOfonoSupplementaryServices::cancel()
 {
-    QDBusPendingReply<> result = d_ptr->supplementaryServices->Cancel();
-    QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(result, this);
-    connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
+    OfonoSupplementaryServices *iface = (OfonoSupplementaryServices*)dbusInterface();
+    if (iface) {
+        connect(new QDBusPendingCallWatcher(iface->Cancel(), iface),
+            SIGNAL(finished(QDBusPendingCallWatcher*)),
             SLOT(cancelResponseReceived(QDBusPendingCallWatcher*)));
+    }
 }
 
-void QOfonoSupplementaryServices::propertyChanged(const QString& property, const QDBusVariant& dbusvalue)
+void QOfonoSupplementaryServices::propertyChanged(const QString &property, const QVariant &value)
 {
-    QVariant value = dbusvalue.variant();
-    d_ptr->properties.insert(property,value);
-
+    QOfonoModemInterface::propertyChanged(property, value);
     if (property == QLatin1String("State")) {
         Q_EMIT stateChanged(value.value<QString>());
     }
 }
 
-
 QString QOfonoSupplementaryServices::state() const
 {
-    if (d_ptr->supplementaryServices)
-        return d_ptr->properties["State"].value<QString>();
-    else
-        return QString();
-}
-
-bool QOfonoSupplementaryServices::isValid() const
-{
-    return d_ptr->supplementaryServices->isValid();
+    return getString("State");
 }
 
 void QOfonoSupplementaryServices::initiateResponseReceived(QDBusPendingCallWatcher *call)

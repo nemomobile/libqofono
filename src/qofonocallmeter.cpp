@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Jolla Ltd.
+** Copyright (C) 2013-2014 Jolla Ltd.
 ** Contact: lorn.potter@jollamobile.com
 **
 ** GNU Lesser General Public License Usage
@@ -16,73 +16,25 @@
 #include "qofonocallmeter.h"
 #include "dbus/ofonocallmeter.h"
 
-class QOfonoCallMeterPrivate
-{
-public:
-    QOfonoCallMeterPrivate();
-    QString modemPath;
-    OfonoCallMeter *callMeter;
-    QVariantMap properties;
-
-};
-
-QOfonoCallMeterPrivate::QOfonoCallMeterPrivate() :
-    modemPath(QString())
-  , callMeter(0)
-{
-}
-
 QOfonoCallMeter::QOfonoCallMeter(QObject *parent) :
-    QObject(parent)
-  , d_ptr(new QOfonoCallMeterPrivate)
+    QOfonoModemInterface(OfonoCallMeter::staticInterfaceName(), parent)
 {
 }
 
 QOfonoCallMeter::~QOfonoCallMeter()
 {
-    delete d_ptr;
 }
 
-void QOfonoCallMeter::setModemPath(const QString &path)
+QDBusAbstractInterface *QOfonoCallMeter::createDbusInterface(const QString &path)
 {
-    if (path == d_ptr->modemPath ||
-            path.isEmpty())
-        return;
-
-    if (path != modemPath()) {
-        if (d_ptr->callMeter) {
-            delete d_ptr->callMeter;
-            d_ptr->callMeter = 0;
-            d_ptr->properties.clear();
-        }
-        d_ptr->callMeter = new OfonoCallMeter("org.ofono", path, QDBusConnection::systemBus(),this);
-
-        if (d_ptr->callMeter->isValid()) {
-            d_ptr->modemPath = path;
-            connect(d_ptr->callMeter,SIGNAL(PropertyChanged(QString,QDBusVariant)),
-                    this,SLOT(propertyChanged(QString,QDBusVariant)));
-
-            connect(d_ptr->callMeter,SIGNAL(NearMaximumWarning()),this,SIGNAL(nearMaximumWarning()));
-            QDBusPendingReply<QVariantMap> reply;
-            reply = d_ptr->callMeter->GetProperties();
-            reply.waitForFinished();
-            d_ptr->properties = reply.value();
-            Q_EMIT modemPathChanged(path);
-        }
-    }
+    OfonoCallMeter *iface = new OfonoCallMeter("org.ofono", path, QDBusConnection::systemBus(), this);
+    connect(iface, SIGNAL(NearMaximumWarning()), SIGNAL(nearMaximumWarning()));
+    return iface;
 }
 
-QString QOfonoCallMeter::modemPath() const
+void QOfonoCallMeter::propertyChanged(const QString &property, const QVariant &value)
 {
-    return d_ptr->modemPath;
-}
-
-
-void QOfonoCallMeter::propertyChanged(const QString& property, const QDBusVariant& dbusvalue)
-{
-    QVariant value = dbusvalue.variant();
-    d_ptr->properties.insert(property,value);
-
+    QOfonoModemInterface::propertyChanged(property, value);
     if (property == QLatin1String("AccumulatedCallMeterMaximum")) {
         Q_EMIT accumulatedCallMeterMaximumChanged(value.value<quint32>());
     } else if (property == QLatin1String("PricePerUnit")) {
@@ -92,90 +44,69 @@ void QOfonoCallMeter::propertyChanged(const QString& property, const QDBusVarian
 
 quint32 QOfonoCallMeter::callMeter() const
 {
-    if (d_ptr->callMeter)
-        return d_ptr->properties["CallMeter"].value<quint32>();
-    else
-        return 0;
+    return getProperty("CallMeter").value<quint32>();
 }
 
 quint32 QOfonoCallMeter::accumulatedCallMeter() const
 {
-    if (d_ptr->callMeter)
-        return d_ptr->properties["AccumulatedCallMeter"].value<quint32>();
-    else
-        return 0;
+    return getProperty("AccumulatedCallMeter").value<quint32>();
 }
 
 quint32 QOfonoCallMeter::accumulatedCallMeterMaximum() const
 {
-    if (d_ptr->callMeter)
-        return d_ptr->properties["AccumulatedCallMeterMaximum"].value<quint32>();
-    else
-        return 0;
+    return getProperty("AccumulatedCallMeterMaximum").value<quint32>();
 }
 
 void QOfonoCallMeter::setAccumulatedCallMeterMaximum(quint32 max, const QString &password)
 {
-    if (d_ptr->callMeter) {
+    OfonoCallMeter *iface = (OfonoCallMeter*)dbusInterface();
+    if (iface) {
         QVariantList arguments;
         arguments << QVariant(max);
-        d_ptr->callMeter->SetProperty("AccumulatedCallMeterMaximum",QDBusVariant(arguments), password);
+        iface->SetProperty("AccumulatedCallMeterMaximum", QDBusVariant(arguments), password);
     }
 }
 
-
 qreal QOfonoCallMeter::pricePerUnit() const
 {
-    if (d_ptr->callMeter)
-        return d_ptr->properties["PricePerUnit"].value<qreal>();
-    else
-        return 0;
+    return getProperty("PricePerUnit").value<qreal>();
 }
 
 void QOfonoCallMeter::setPricePerUnit(qreal unit, const QString &password)
 {
-    if (d_ptr->callMeter) {
+    OfonoCallMeter *iface = (OfonoCallMeter*)dbusInterface();
+    if (iface) {
         QVariantList arguments;
         arguments << QVariant(unit);
-        d_ptr->callMeter->SetProperty("PricePerUnit",QDBusVariant(arguments), password);
+        iface->SetProperty("PricePerUnit", QDBusVariant(arguments), password);
     }
 }
 
 QString QOfonoCallMeter:: currency() const
 {
-    if (d_ptr->callMeter)
-        return d_ptr->properties["Currency"].value<QString>();
-    else
-        return QString();
+    return getString("Currency");
 }
 
 void QOfonoCallMeter::reset(const QString &password)
 {
-    if (d_ptr->callMeter) {
-    QDBusPendingReply<> result = d_ptr->callMeter->Reset(password);
-    QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(result, this);
-    connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
-            SLOT(resetFinished(QDBusPendingCallWatcher*)));
+    OfonoCallMeter *iface = (OfonoCallMeter*)dbusInterface();
+    if (iface) {
+        connect(new QDBusPendingCallWatcher(iface->Reset(password), iface),
+            SIGNAL(finished(QDBusPendingCallWatcher*)),
+            SLOT(onResetFinished(QDBusPendingCallWatcher*)));
     }
 }
 
-bool QOfonoCallMeter::isValid() const
-{
-    return d_ptr->callMeter->isValid();
-}
-
-void QOfonoCallMeter::resetFinished(QDBusPendingCallWatcher *call)
+void QOfonoCallMeter::onResetFinished(QDBusPendingCallWatcher *call)
 {
     call->deleteLater();
     QDBusPendingReply<> reply = *call;
     QOfonoCallMeter::Error error = NoError;
-    QString errorString;
-
     if (reply.isError()) {
         qWarning() << "QOfonoCallMeter::reset() failed:" << reply.error();
-        error = errorNameToEnum(reply.error().name());
-        errorString = reply.error().name() + " " + reply.error().message();
-        Q_EMIT resetComplete(error,errorString);
+        QString errorName(reply.error().name());
+        error = errorNameToEnum(errorName);
+        Q_EMIT resetComplete(error, errorName + " " + reply.error().message());
     }
 }
 

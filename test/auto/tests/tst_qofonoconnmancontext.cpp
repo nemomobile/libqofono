@@ -42,8 +42,8 @@ private slots:
         QOfonoManager manager;
         m = new QOfonoConnectionManager(this);
         m->setModemPath("/phonesim");
-        QCOMPARE(m->isValid(), true);
-        QCOMPARE(m->powered(), true);
+        QTRY_VERIFY(m->isValid());
+        QTRY_VERIFY(m->powered());
     }
 
     void testQOfonoConnectionManagerContext ()
