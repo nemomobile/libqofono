@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Jolla Ltd.
+** Copyright (C) 2013-2014 Jolla Ltd.
 ** Contact: lorn.potter@jollamobile.com
 **
 ** GNU Lesser General Public License Usage
@@ -16,27 +16,16 @@
 #include <QtXmlPatterns/QXmlQuery>
 
 #include "qofonoconnectioncontext.h"
+#include "qofononetworkregistration.h"
 #include "dbus/ofonoconnectioncontext.h"
 
-#include "qofonomanager.h"
-#include "qofonoconnectionmanager.h"
-#include "qofononetworkregistration.h"
-
-class QOfonoConnectionContextPrivate
-{
-public:
-    QString modemPath;
-};
-
 QOfonoConnectionContext::QOfonoConnectionContext(QObject *parent) :
-    QOfonoObject(parent),
-    d_ptr(new QOfonoConnectionContextPrivate)
+    QOfonoObject(parent)
 {
 }
 
 QOfonoConnectionContext::~QOfonoConnectionContext()
 {
-    delete d_ptr;
 }
 
 QDBusAbstractInterface* QOfonoConnectionContext::createDbusInterface(const QString &path)
@@ -56,23 +45,20 @@ QString QOfonoConnectionContext::contextPath() const
 
 QString QOfonoConnectionContext::modemPath() const
 {
-    return d_ptr->modemPath;
+    QString path = objectPath();
+    int lastSlash = path.lastIndexOf('/');
+    return (lastSlash > 0) ? path.left(lastSlash) : QString();
 }
 
 void QOfonoConnectionContext::setContextPath(const QString &path)
 {
     if (path != objectPath()) {
         // Modem path is redundant but supported for historical reasons
-        QString oldModemPath(d_ptr->modemPath);
+        QString oldModemPath(modemPath());
         setObjectPath(path);
-        int lastSlash = path.lastIndexOf('/');
-        if (lastSlash > 0) {
-            d_ptr->modemPath = path.left(lastSlash);
-        } else {
-            d_ptr->modemPath = QString();
-        }
-        if (d_ptr->modemPath != oldModemPath) {
-            Q_EMIT modemPathChanged(d_ptr->modemPath);
+        QString newModemPath(modemPath());
+        if (oldModemPath != newModemPath) {
+            Q_EMIT modemPathChanged(newModemPath);
         }
     }
 }
@@ -244,12 +230,13 @@ void QOfonoConnectionContext::disconnect()
 //check provision against mbpi
 bool QOfonoConnectionContext::validateProvisioning()
 {
-    qDebug() << Q_FUNC_INFO << d_ptr->modemPath;
-    if (d_ptr->modemPath.isEmpty())
+    QString modem(modemPath());
+    qDebug() << modem;
+    if (modem.isEmpty())
         return false;
 
     QOfonoNetworkRegistration netReg;
-    netReg.setModemPath(d_ptr->modemPath);
+    netReg.setModemPath(modem);
     if (netReg.status() == "registered")
         return validateProvisioning(netReg.networkOperators().at(0),netReg.mcc(),netReg.mnc());
     return false;
@@ -261,7 +248,7 @@ bool QOfonoConnectionContext::validateProvisioning()
 //check provision against mbpi
 bool QOfonoConnectionContext::validateProvisioning(const QString &providerString, const QString &mcc, const QString &mnc)
 {
-    qDebug() << Q_FUNC_INFO << providerString;
+    qDebug() << providerString;
     QXmlQuery query;
     QString provider = providerString;
 
@@ -347,11 +334,12 @@ bool QOfonoConnectionContext::validateProvisioning(const QString &providerString
 
 void QOfonoConnectionContext::provisionForCurrentNetwork(const QString &type)
 {
-    if (d_ptr->modemPath.isEmpty())
+    QString modem(modemPath());
+    if (modem.isEmpty())
         return;
 
     QOfonoNetworkRegistration netReg;
-    netReg.setModemPath(d_ptr->modemPath);
+    netReg.setModemPath(modem);
 
     if (netReg.status() == "registered")
         provision(netReg.name(), netReg.mcc(),netReg.mnc(), type);

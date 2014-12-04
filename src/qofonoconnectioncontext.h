@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Jolla Ltd.
+** Copyright (C) 2013-2014 Jolla Ltd.
 ** Contact: lorn.potter@jollamobile.com
 **
 ** GNU Lesser General Public License Usage
@@ -117,9 +117,6 @@ protected:
     QVariant convertProperty(const QString &key, const QVariant &value);
     void propertyChanged(const QString &key, const QVariant &value);
     void objectPathChanged(const QString &path);
-
-private:
-    QOfonoConnectionContextPrivate *d_ptr;
 };
 
 #endif // QOFONOCONNECTIONCONTEXT_H
