@@ -111,8 +111,25 @@ QString QOfonoNetworkRegistration::modemPath() const
 
 void QOfonoNetworkRegistration::registration()
 {
-    if (d_ptr->networkRegistration)
-        d_ptr->networkRegistration->Register();
+    if (d_ptr->networkRegistration) {
+        QDBusPendingReply<> reply = d_ptr->networkRegistration->Register();
+        QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(reply, this);
+        connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
+                SLOT(registrationComplete(QDBusPendingCallWatcher*)));
+    } else {
+        Q_EMIT registrationError(QStringLiteral("Error.ServiceUnknown"));
+    }
+}
+
+void QOfonoNetworkRegistration::registrationComplete(QDBusPendingCallWatcher *call)
+{
+    call->deleteLater();
+    QDBusPendingReply<> reply = *call;
+    if (!reply.isError()) {
+        Q_EMIT registrationFinished();
+    } else {
+        Q_EMIT registrationError(reply.error().message());
+    }
 }
 
 QStringList QOfonoNetworkRegistration::networkOperators()
