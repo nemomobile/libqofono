@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Jolla Ltd.
+** Copyright (C) 2013-2014 Jolla Ltd.
 ** Contact: lorn.potter@jollamobile.com
 **
 ** GNU Lesser General Public License Usage
@@ -34,6 +34,7 @@ class QOFONOSHARED_EXPORT QOfonoDeclarativePlugin : public QQmlExtensionPlugin
 #endif
 public:
     void registerTypes(const char *uri);
+    static void registerTypes(const char *uri, int major, int minor);
 #if QT_VERSION < 0x050000
     void initializeEngine(QDeclarativeEngine *engine, const char *uri);
 #endif
