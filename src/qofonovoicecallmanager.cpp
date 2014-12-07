@@ -16,7 +16,9 @@
 #include "qofonovoicecallmanager.h"
 #include "dbus/ofonovoicecallmanager.h"
 
-class QOfonoVoiceCallManager::Private
+#define SUPER QOfonoModemInterface
+
+class QOfonoVoiceCallManager::Private : public SUPER::ExtData
 {
 public:
     bool initialized;
@@ -57,20 +59,18 @@ public:
 };
 
 QOfonoVoiceCallManager::QOfonoVoiceCallManager(QObject *parent) :
-    QOfonoModemInterface(OfonoVoiceCallManager::staticInterfaceName(), parent),
-    d_ptr(new Private)
+    SUPER(OfonoVoiceCallManager::staticInterfaceName(), new Private, parent)
 {
     QOfonoDbusTypes::registerObjectPathProperties();
 }
 
 QOfonoVoiceCallManager::~QOfonoVoiceCallManager()
 {
-    delete d_ptr;
 }
 
 bool QOfonoVoiceCallManager::isValid() const
 {
-    return d_ptr->initialized && QOfonoModemInterface::isValid();
+    return privateData()->initialized && SUPER::isValid();
 }
 
 QDBusAbstractInterface *QOfonoVoiceCallManager::createDbusInterface(const QString &path)
@@ -92,7 +92,9 @@ QDBusAbstractInterface *QOfonoVoiceCallManager::createDbusInterface(const QStrin
 
 void QOfonoVoiceCallManager::dbusInterfaceDropped()
 {
-    QOfonoModemInterface::dbusInterfaceDropped();
+    SUPER::dbusInterfaceDropped();
+
+    Private *d_ptr = privateData();
     d_ptr->initialized = false;
     if (!d_ptr->callList.isEmpty()) {
         QStringList list = d_ptr->callList;
@@ -105,7 +107,7 @@ void QOfonoVoiceCallManager::dbusInterfaceDropped()
 
 void QOfonoVoiceCallManager::propertyChanged(const QString &property, const QVariant &value)
 {
-    QOfonoModemInterface::propertyChanged(property, value);
+    SUPER::propertyChanged(property, value);
     if (property == QLatin1String("EmergencyNumbers")) {
         Q_EMIT emergencyNumbersChanged(value.toStringList());
     }
@@ -118,12 +120,12 @@ QStringList QOfonoVoiceCallManager::emergencyNumbers() const
 
 QStringList QOfonoVoiceCallManager::getCalls() const
 {
-    return d_ptr->callList;
+    return privateData()->callList;
 }
 
 QString QOfonoVoiceCallManager::errorMessage() const
 {
-    return d_ptr->errorMessage;
+    return privateData()->errorMessage;
 }
 
 void QOfonoVoiceCallManager::dial(const QString &number, const QString &calleridHide)
@@ -223,6 +225,7 @@ void QOfonoVoiceCallManager::onVoidCallFinished(QDBusPendingCallWatcher *watch)
     QDBusPendingReply<> reply(*watch);
     bool ok = true;
     if (reply.isError()) {
+        Private *d_ptr = privateData();
         d_ptr->errorMessage = QString("%1: %2 %3").arg(call->name).
             arg(reply.error().name()).arg(reply.error().message());
         qWarning() << d_ptr->errorMessage;
@@ -239,6 +242,7 @@ void QOfonoVoiceCallManager::onObjectPathListCallFinished(QDBusPendingCallWatche
     QStringList list;
     bool ok = true;
     if (reply.isError()) {
+        Private *d_ptr = privateData();
         d_ptr->errorMessage = QString("%1: %2 %3").arg(call->name).
             arg(reply.error().name()).arg(reply.error().message());
         qWarning() << d_ptr->errorMessage;
@@ -253,6 +257,7 @@ void QOfonoVoiceCallManager::onObjectPathListCallFinished(QDBusPendingCallWatche
 
 void QOfonoVoiceCallManager::addCall(const QString &callPath)
 {
+    Private *d_ptr = privateData();
     if (!d_ptr->callList.contains(callPath)) {
         d_ptr->callList.append(callPath);
         Q_EMIT callAdded(callPath);
@@ -268,7 +273,7 @@ void QOfonoVoiceCallManager::onGetCallsFinished(QDBusPendingCallWatcher *watch)
         Q_EMIT reportError(reply.error().message());
     } else {
         ObjectPathPropertiesList list = reply.value();
-        d_ptr->initialized = true;
+        privateData()->initialized = true;
         for (int i=0; i<list.count(); i++) {
             addCall(list[i].path.path());
         }
@@ -279,7 +284,7 @@ void QOfonoVoiceCallManager::onGetCallsFinished(QDBusPendingCallWatcher *watch)
 void QOfonoVoiceCallManager::onCallRemoved(const QDBusObjectPath &path)
 {
     QString callPath = path.path();
-    if (d_ptr->callList.removeOne(callPath)) {
+    if (privateData()->callList.removeOne(callPath)) {
         Q_EMIT callRemoved(callPath);
     }
 }
@@ -287,4 +292,19 @@ void QOfonoVoiceCallManager::onCallRemoved(const QDBusObjectPath &path)
 void QOfonoVoiceCallManager::onCallAdded(const QDBusObjectPath &path, const QVariantMap &)
 {
     addCall(path.path());
+}
+
+QString QOfonoVoiceCallManager::modemPath() const
+{
+    return SUPER::modemPath();
+}
+
+void QOfonoVoiceCallManager::setModemPath(const QString &path)
+{
+    SUPER::setModemPath(path);
+}
+
+QOfonoVoiceCallManager::Private *QOfonoVoiceCallManager::privateData() const
+{
+    return (QOfonoVoiceCallManager::Private*)SUPER::extData();
 }

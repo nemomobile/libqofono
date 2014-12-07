@@ -16,8 +16,10 @@
 #include "qofonocallbarring.h"
 #include "dbus/ofonocallbarring.h"
 
+#define SUPER QOfonoModemInterface
+
 QOfonoCallBarring::QOfonoCallBarring(QObject *parent) :
-    QOfonoModemInterface(OfonoCallBarring::staticInterfaceName(), parent)
+    SUPER(OfonoCallBarring::staticInterfaceName(), parent)
 {
 }
 
@@ -37,7 +39,7 @@ void QOfonoCallBarring::connectOfono()
 
 void QOfonoCallBarring::propertyChanged(const QString &property, const QVariant &value)
 {
-    QOfonoModemInterface::propertyChanged(property, value);
+    SUPER::propertyChanged(property, value);
     if (property == QLatin1String("VoiceIncoming")) {
         Q_EMIT voiceIncomingChanged(value.toString());
     } else if (property == QLatin1String("VoiceOutgoing")) {
@@ -123,7 +125,7 @@ void QOfonoCallBarring::disableAllOutgoing(const QString &password)
 
 void QOfonoCallBarring::getPropertiesFinished(const QVariantMap &properties, const QDBusError *error)
 {
-    QOfonoModemInterface::getPropertiesFinished(properties, error);
+    SUPER::getPropertiesFinished(properties, error);
     if (error) {
         Q_EMIT getPropertiesFailed();
     }
@@ -169,4 +171,24 @@ void QOfonoCallBarring::disableAllOutgoingCallComplete(QDBusPendingCallWatcher *
     call->deleteLater();
     QDBusPendingReply<> reply = *call;
     Q_EMIT disableAllOutgoingComplete(!reply.isError());
+}
+
+QString QOfonoCallBarring::modemPath() const
+{
+    return SUPER::modemPath();
+}
+
+void QOfonoCallBarring::setModemPath(const QString &path)
+{
+    SUPER::setModemPath(path);
+}
+
+bool QOfonoCallBarring::isValid() const
+{
+    return SUPER::isValid();
+}
+
+bool QOfonoCallBarring::isReady() const
+{
+    return SUPER::isReady();
 }

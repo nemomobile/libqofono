@@ -27,9 +27,12 @@ class QOfonoModemInterface : public QOfonoObject
     Q_PROPERTY(QString modemPath READ modemPath WRITE setModemPath NOTIFY modemPathChanged)
     Q_PROPERTY(bool ready READ isReady NOTIFY readyChanged)
 
-public:
+protected:
+    QOfonoModemInterface(const QString &iface, ExtData *ext, QObject *parent = NULL);
     QOfonoModemInterface(const QString &iface, QObject *parent = NULL);
     ~QOfonoModemInterface();
+
+    virtual ExtData* extData() const;
 
     QString modemPath() const;
     void setModemPath(const QString &path);
@@ -50,7 +53,7 @@ private slots:
 
 private:
     class Private;
-    Private* d_ptr;
+    Private* privateData() const;
 };
 
 #endif // QOFONOMODEMINTERFACE_H

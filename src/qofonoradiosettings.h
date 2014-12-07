@@ -52,6 +52,8 @@ public:
     bool fastDormancy() const;
     void setFastDormancy(bool fastDormancy);
 
+    bool isValid() const;
+
 Q_SIGNALS:
     void technologyPreferenceChanged(const QString &preference);
     void gsmBandChanged(const QString &gsmBand);

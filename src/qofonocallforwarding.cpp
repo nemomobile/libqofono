@@ -16,8 +16,10 @@
 #include "qofonocallforwarding.h"
 #include "dbus/ofonocallforwarding.h"
 
+#define SUPER QOfonoModemInterface
+
 QOfonoCallForwarding::QOfonoCallForwarding(QObject *parent) :
-    QOfonoModemInterface(OfonoCallForwarding::staticInterfaceName(), parent)
+    SUPER(OfonoCallForwarding::staticInterfaceName(), parent)
 {
 }
 
@@ -37,7 +39,7 @@ void QOfonoCallForwarding::connectOfono()
 
 void QOfonoCallForwarding::propertyChanged(const QString &property, const QVariant &value)
 {
-    QOfonoModemInterface::propertyChanged(property, value);
+    SUPER::propertyChanged(property, value);
     if (property == QLatin1String("VoiceUnconditional")) {
         Q_EMIT voiceUnconditionalChanged(value.toString());
     } else if (property == QLatin1String("VoiceBusy")) {
@@ -118,7 +120,7 @@ void QOfonoCallForwarding::disableAll(const QString &type)
 
 void QOfonoCallForwarding::getPropertiesFinished(const QVariantMap &properties, const QDBusError *error)
 {
-    QOfonoModemInterface::getPropertiesFinished(properties, error);
+    SUPER::getPropertiesFinished(properties, error);
     if (error) {
         Q_EMIT getPropertiesFailed();
     }
@@ -126,7 +128,7 @@ void QOfonoCallForwarding::getPropertiesFinished(const QVariantMap &properties, 
 
 void QOfonoCallForwarding::setPropertyFinished(const QString &property, const QDBusError *error)
 {
-    QOfonoModemInterface::setPropertyFinished(property, error);
+    SUPER::setPropertyFinished(property, error);
     if (property == "VoiceUnconditional") {
         Q_EMIT voiceUnconditionalComplete(!error);
     } else if (property == "VoiceBusy") {
@@ -138,4 +140,24 @@ void QOfonoCallForwarding::setPropertyFinished(const QString &property, const QD
     } else if (property == "VoiceNotReachable") {
         Q_EMIT voiceNotReachableComplete(!error);
     }
+}
+
+QString QOfonoCallForwarding::modemPath() const
+{
+    return SUPER::modemPath();
+}
+
+void QOfonoCallForwarding::setModemPath(const QString &path)
+{
+    SUPER::setModemPath(path);
+}
+
+bool QOfonoCallForwarding::isValid() const
+{
+    return SUPER::isValid();
+}
+
+bool QOfonoCallForwarding::isReady() const
+{
+    return SUPER::isReady();
 }

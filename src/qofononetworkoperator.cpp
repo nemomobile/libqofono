@@ -16,7 +16,9 @@
 #include "qofononetworkoperator.h"
 #include "dbus/ofononetworkoperator.h"
 
-class QOfonoNetworkOperator::Private
+#define SUPER QOfonoObject
+
+class QOfonoNetworkOperator::Private : public SUPER::ExtData
 {
 public:
     bool registering;
@@ -24,8 +26,7 @@ public:
 };
 
 QOfonoNetworkOperator::QOfonoNetworkOperator(QObject *parent) :
-    QOfonoObject(parent),
-    d_ptr(new Private)
+    SUPER(new Private, parent)
 {
 }
 
@@ -33,15 +34,13 @@ QOfonoNetworkOperator::QOfonoNetworkOperator(QObject *parent) :
 // via D-Bus and makes the object valid immediately
 QOfonoNetworkOperator::QOfonoNetworkOperator(const QString &path,
     const QVariantMap &properties, QObject *parent) :
-    QOfonoObject(parent),
-    d_ptr(new Private)
+    SUPER(new Private, parent)
 {
     setObjectPath(path, &properties);
 }
 
 QOfonoNetworkOperator::~QOfonoNetworkOperator()
 {
-    delete d_ptr;
 }
 
 QString QOfonoNetworkOperator::operatorPath() const
@@ -56,7 +55,7 @@ void QOfonoNetworkOperator::setOperatorPath(const QString &path)
 
 void QOfonoNetworkOperator::objectPathChanged(const QString &path, const QVariantMap *properties)
 {
-    QOfonoObject::objectPathChanged(path, properties);
+    SUPER::objectPathChanged(path, properties);
     Q_EMIT operatorPathChanged(path);
 }
 
@@ -69,7 +68,8 @@ QDBusAbstractInterface *QOfonoNetworkOperator::createDbusInterface(const QString
 
 void QOfonoNetworkOperator::dbusInterfaceDropped()
 {
-    QOfonoObject::dbusInterfaceDropped();
+    SUPER::dbusInterfaceDropped();
+    Private *d_ptr = privateData();
     if (d_ptr->registering) {
         d_ptr->registering = false;
         Q_EMIT registeringChanged(d_ptr->registering);
@@ -78,6 +78,7 @@ void QOfonoNetworkOperator::dbusInterfaceDropped()
 
 void QOfonoNetworkOperator::registerOperator()
 {
+    Private *d_ptr = privateData();
     if (!d_ptr->registering) {
         OfonoNetworkOperator *iface = (OfonoNetworkOperator*)dbusInterface();
         if (iface) {
@@ -102,6 +103,8 @@ void QOfonoNetworkOperator::onRegisterFinished(QDBusPendingCallWatcher *watch)
          error = errorNameToEnum(reply.error().name());
          errorString = reply.error().name() + " " + reply.error().message();
     }
+
+    Private *d_ptr = privateData();
     d_ptr->registering = false;
     Q_EMIT registerComplete(error, errorString);
     Q_EMIT registeringChanged(d_ptr->registering);
@@ -109,7 +112,7 @@ void QOfonoNetworkOperator::onRegisterFinished(QDBusPendingCallWatcher *watch)
 
 bool QOfonoNetworkOperator::registering() const
 {
-    return d_ptr->registering;
+    return privateData()->registering;
 }
 
 QString QOfonoNetworkOperator::name() const
@@ -142,9 +145,19 @@ QString QOfonoNetworkOperator::additionalInfo() const
     return getString("AdditionalInformation");
 }
 
+bool QOfonoNetworkOperator::isValid() const
+{
+    return SUPER::isValid();
+}
+
+QOfonoNetworkOperator::Private *QOfonoNetworkOperator::privateData() const
+{
+    return (QOfonoNetworkOperator::Private*)SUPER::extData();
+}
+
 void QOfonoNetworkOperator::propertyChanged(const QString &property, const QVariant &value)
 {
-    QOfonoObject::propertyChanged(property, value);
+    SUPER::propertyChanged(property, value);
     if (property == QLatin1String("Name")) {
         Q_EMIT nameChanged(value.value<QString>());
     } else if (property == QLatin1String("Status")) {

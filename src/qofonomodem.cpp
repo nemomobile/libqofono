@@ -23,8 +23,10 @@
 typedef QMap<QString,QWeakPointer<QOfonoModem> > ModemMap;
 Q_GLOBAL_STATIC(ModemMap, modemMap)
 
+#define SUPER QOfonoObject
+
 QOfonoModem::QOfonoModem(QObject *parent) :
-    QOfonoObject(parent)
+    SUPER(parent)
 {
 }
 
@@ -39,7 +41,7 @@ QDBusAbstractInterface *QOfonoModem::createDbusInterface(const QString &path)
 
 void QOfonoModem::objectPathChanged(const QString &path, const QVariantMap *properties)
 {
-    QOfonoObject::objectPathChanged(path, properties);
+    SUPER::objectPathChanged(path, properties);
     Q_EMIT modemPathChanged(path);
 }
 
@@ -130,7 +132,7 @@ void QOfonoModem::setLockdown(bool lockdown)
 
 void QOfonoModem::propertyChanged(const QString &property, const QVariant &value)
 {
-    QOfonoObject::propertyChanged(property, value);
+    SUPER::propertyChanged(property, value);
     if (property == QLatin1String("Online")) {
         Q_EMIT onlineChanged(value.value<bool>());
     } else if (property == QLatin1String("Powered")) {
@@ -169,4 +171,9 @@ QSharedPointer<QOfonoModem> QOfonoModem::instance(const QString &modemPath)
         modem->resetDbusInterface();
     }
     return modem;
+}
+
+bool QOfonoModem::isValid() const
+{
+    return SUPER::isValid();
 }

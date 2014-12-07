@@ -16,8 +16,10 @@
 #include "qofonosmartmessaging.h"
 #include "dbus/ofonosmartmessaging.h"
 
+#define SUPER QOfonoModemInterface2
+
 QOfonoSmartMessaging::QOfonoSmartMessaging(QObject *parent) :
-    QOfonoModemInterface2(OfonoSmartMessaging::staticInterfaceName(), parent)
+    SUPER(OfonoSmartMessaging::staticInterfaceName(), parent)
 {
 }
 
@@ -68,4 +70,19 @@ void QOfonoSmartMessaging::unregisterAgent(const QString &objectPath)
     if (iface) {
         iface->UnregisterAgent(QDBusObjectPath(objectPath));
     }
+}
+
+QString QOfonoSmartMessaging::modemPath() const
+{
+    return SUPER::modemPath();
+}
+
+void QOfonoSmartMessaging::setModemPath(const QString &path)
+{
+    SUPER::setModemPath(path);
+}
+
+bool QOfonoSmartMessaging::isValid() const
+{
+    return SUPER::isValid();
 }

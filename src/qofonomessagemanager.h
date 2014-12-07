@@ -36,6 +36,9 @@ public:
     explicit QOfonoMessageManager(QObject *parent = 0);
     ~QOfonoMessageManager();
 
+    QString modemPath() const;
+    void setModemPath(const QString &path);
+
     QString serviceCenterAddress();
     void setServiceCenterAddress(const QString &address);
 
@@ -90,7 +93,7 @@ private:
 
 private:
     class Private;
-    Private* d_ptr;
+    Private* privateData() const;
 };
 
 #endif // QOFONOMessageManager_H

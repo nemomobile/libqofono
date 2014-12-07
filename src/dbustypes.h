@@ -37,4 +37,12 @@ namespace QOfonoDbusTypes {
     void registerObjectPathProperties();
 }
 
+// Deprecated, left in for ABI compatibility
+struct OfonoPathProps { QDBusObjectPath path; QVariantMap properties; };
+typedef QList<OfonoPathProps> QArrayOfPathProps;
+Q_DECLARE_METATYPE(OfonoPathProps)
+Q_DECLARE_METATYPE (QArrayOfPathProps)
+QDBusArgument &operator<<(QDBusArgument &, const OfonoPathProps &);
+const QDBusArgument &operator>>(const QDBusArgument &, OfonoPathProps &);
+
 #endif // DBUSTYPES_H

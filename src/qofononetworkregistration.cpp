@@ -17,7 +17,9 @@
 #include "qofononetworkoperator.h"
 #include "dbus/ofononetworkregistration.h"
 
-class QOfonoNetworkRegistration::Private
+#define SUPER QOfonoModemInterface
+
+class QOfonoNetworkRegistration::Private : public QOfonoObject::ExtData
 {
 public:
     bool initialized;
@@ -27,28 +29,27 @@ public:
     QStringList operatorPaths;
 
     Private() : initialized(false), scanning(false), currentOperator(NULL) {}
+    ~Private() { qDeleteAll(networkOperators.values()); }
 };
 
 QOfonoNetworkRegistration::QOfonoNetworkRegistration(QObject *parent) :
-    QOfonoModemInterface(OfonoNetworkRegistration::staticInterfaceName(), parent),
-    d_ptr(new Private)
+    SUPER(OfonoNetworkRegistration::staticInterfaceName(), new Private, parent)
 {
     QOfonoDbusTypes::registerObjectPathProperties();
 }
 
 QOfonoNetworkRegistration::~QOfonoNetworkRegistration()
 {
-    delete d_ptr;
 }
 
 bool QOfonoNetworkRegistration::isValid() const
 {
-    return d_ptr->initialized && QOfonoModemInterface::isValid();
+    return privateData()->initialized && SUPER::isValid();
 }
 
 bool QOfonoNetworkRegistration::scanning() const
 {
-    return d_ptr->scanning;
+    return privateData()->scanning;
 }
 
 QDBusAbstractInterface *QOfonoNetworkRegistration::createDbusInterface(const QString &path)
@@ -63,7 +64,8 @@ QDBusAbstractInterface *QOfonoNetworkRegistration::createDbusInterface(const QSt
 
 void QOfonoNetworkRegistration::dbusInterfaceDropped()
 {
-    QOfonoModemInterface::dbusInterfaceDropped();
+    SUPER::dbusInterfaceDropped();
+    Private *d_ptr = privateData();
     d_ptr->initialized = false;
     if (d_ptr->scanning) {
         d_ptr->scanning = false;
@@ -103,21 +105,28 @@ void QOfonoNetworkRegistration::onRegistrationFinished(QDBusPendingCallWatcher *
 
 QStringList QOfonoNetworkRegistration::networkOperators() const
 {
-    return d_ptr->operatorPaths;
+    return privateData()->operatorPaths;
+}
+
+QStringList QOfonoNetworkRegistration::networkOperators()
+{
+    return privateData()->operatorPaths;
 }
 
 QOfonoNetworkOperator* QOfonoNetworkRegistration::networkOperator(const QString &path) const
 {
-    return d_ptr->networkOperators[path];
+    return privateData()->networkOperators[path];
 }
 
 QString QOfonoNetworkRegistration::currentOperatorPath()
 {
+    Private *d_ptr = privateData();
     return d_ptr->currentOperator ? d_ptr->currentOperator->operatorPath() : QString();
 }
 
 void QOfonoNetworkRegistration::scan()
 {
+    Private *d_ptr = privateData();
     if (!d_ptr->scanning) {
         OfonoNetworkRegistration *iface = (OfonoNetworkRegistration*)dbusInterface();
         if (iface) {
@@ -182,7 +191,7 @@ QString QOfonoNetworkRegistration::baseStation() const
 
 void QOfonoNetworkRegistration::propertyChanged(const QString &property, const QVariant &value)
 {
-    QOfonoModemInterface::propertyChanged(property, value);
+    SUPER::propertyChanged(property, value);
     if (property == QLatin1String("Mode")) {
         Q_EMIT modeChanged(value.toString());
     } else if (property == QLatin1String("Status")) {
@@ -213,6 +222,7 @@ void QOfonoNetworkRegistration::setOperators(const ObjectPathPropertiesList &lis
     QStringList paths;
     QList<QOfonoNetworkOperator*> newOperators;
     QOfonoNetworkOperator* currentOperator = NULL;
+    Private *d_ptr = privateData();
     bool listChanged = false;
     int i;
 
@@ -276,7 +286,7 @@ void QOfonoNetworkRegistration::onGetOperatorsFinished(QDBusPendingCallWatcher *
         qDebug() << reply.error();
         Q_EMIT reportError(reply.error().message());
     } else {
-        d_ptr->initialized = true;
+        privateData()->initialized = true;
         setOperators(reply.value());
         if (isValid()) validChanged(true);
     }
@@ -293,7 +303,7 @@ void QOfonoNetworkRegistration::onScanFinished(QDBusPendingCallWatcher *watch)
         setOperators(reply.value());
         Q_EMIT scanFinished();
     }
-    d_ptr->scanning = false;
+    privateData()->scanning = false;
     scanningChanged(false);
 }
 
@@ -301,6 +311,7 @@ void QOfonoNetworkRegistration::onOperatorStatusChanged(const QString &status)
 {
     QString oldPath = currentOperatorPath();
     QOfonoNetworkOperator *op = (QOfonoNetworkOperator*)sender();
+    Private *d_ptr = privateData();
     if (status == "current") {
         d_ptr->currentOperator = op;
     } else if (d_ptr->currentOperator == op) {
@@ -310,4 +321,19 @@ void QOfonoNetworkRegistration::onOperatorStatusChanged(const QString &status)
     if (currentPath != oldPath) {
         Q_EMIT currentOperatorPathChanged(currentPath);
     }
+}
+
+QString QOfonoNetworkRegistration::modemPath() const
+{
+    return SUPER::modemPath();
+}
+
+void QOfonoNetworkRegistration::setModemPath(const QString &path)
+{
+    SUPER::setModemPath(path);
+}
+
+QOfonoNetworkRegistration::Private *QOfonoNetworkRegistration::privateData() const
+{
+    return (QOfonoNetworkRegistration::Private*)SUPER::extData();
 }

@@ -34,10 +34,16 @@ public:
     explicit QOfonoMessageWaiting(QObject *parent = 0);
     ~QOfonoMessageWaiting();
 
+    QString modemPath() const;
+    void setModemPath(const QString &path);
+
     bool voicemailWaiting() const;
     int voicemailMessageCount() const;
     QString voicemailMailboxNumber() const;
     void setVoicemailMailboxNumber(const QString &mailboxnumber);
+
+    bool isValid() const;
+    bool isReady() const;
 
     void connectOfono();
 

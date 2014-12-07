@@ -73,6 +73,8 @@ public:
     QStringList features() const;
     QStringList interfaces() const;
 
+    bool isValid() const;
+
     // If you use this, remember to keep a QSharedPointer to it, otherwise it may be destroyed.
     static QSharedPointer<QOfonoModem> instance(const QString &modemPath);
 

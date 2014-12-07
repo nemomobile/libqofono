@@ -79,6 +79,7 @@ public:
     QVariantMap settings() const;
     QVariantMap IPv6Settings() const;
 
+    bool isValid() const;
     QString modemPath() const;
 
     Q_INVOKABLE bool validateProvisioning(); //check provision against mbpi

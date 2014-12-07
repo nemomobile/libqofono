@@ -40,6 +40,9 @@ public:
     explicit QOfonoConnectionManager(QObject *parent = 0);
     ~QOfonoConnectionManager();
 
+    QString modemPath() const;
+    void setModemPath(const QString &path);
+
     bool attached() const;
     QString bearer() const;
     bool suspended() const;
@@ -87,7 +90,7 @@ protected:
 
 private:
     class Private;
-    Private* d_ptr;
+    Private *privateData() const;
 };
 
 #endif // QOFONOCONNECTIONMANAGER_H

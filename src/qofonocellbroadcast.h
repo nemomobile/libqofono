@@ -42,7 +42,9 @@ public:
     void setEnabled(bool b);
 
     QString topics() const;
-    void setTopics(const QString &);
+    void setTopics(const QString &) const; // to maintain ABI
+
+    bool isValid() const;
 
 Q_SIGNALS:
     void enabledChanged(bool);

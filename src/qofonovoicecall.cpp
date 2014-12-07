@@ -16,6 +16,8 @@
 #include "qofonovoicecall.h"
 #include "dbus/ofonovoicecall.h"
 
+#define SUPER QOfonoObject
+
 class QOfonoVoiceCallWatcher : public QDBusPendingCallWatcher {
 public:
     typedef void (QOfonoVoiceCall::*Signal)(QOfonoVoiceCall::Error,const QString&);
@@ -32,7 +34,7 @@ public:
 };
 
 QOfonoVoiceCall::QOfonoVoiceCall(QObject *parent) :
-    QOfonoObject(parent)
+    SUPER(parent)
 {
 }
 
@@ -52,7 +54,7 @@ QString QOfonoVoiceCall::voiceCallPath() const
 
 void QOfonoVoiceCall::objectPathChanged(const QString &path, const QVariantMap *properties)
 {
-    QOfonoObject::objectPathChanged(path, properties);
+    SUPER::objectPathChanged(path, properties);
     Q_EMIT voiceCallPathChanged(path);
 }
 
@@ -63,7 +65,7 @@ QDBusAbstractInterface *QOfonoVoiceCall::createDbusInterface(const QString &path
 
 void QOfonoVoiceCall::propertyChanged(const QString &property, const QVariant &value)
 {
-    QOfonoObject::propertyChanged(property, value);
+    SUPER::propertyChanged(property, value);
     if (property == QLatin1String("LineIdentification")) {
         Q_EMIT lineIdentificationChanged(value.toString());
     } else if (property == QLatin1String("DisconnectReason")) {
@@ -205,4 +207,9 @@ QOfonoVoiceCall::Error QOfonoVoiceCall::errorNameToEnum(const QString &errorName
         return FailedError;
     else
         return UnknownError;
+}
+
+bool QOfonoVoiceCall::isValid() const
+{
+    return SUPER::isValid();
 }

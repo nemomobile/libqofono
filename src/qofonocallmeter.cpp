@@ -16,8 +16,10 @@
 #include "qofonocallmeter.h"
 #include "dbus/ofonocallmeter.h"
 
+#define SUPER QOfonoModemInterface
+
 QOfonoCallMeter::QOfonoCallMeter(QObject *parent) :
-    QOfonoModemInterface(OfonoCallMeter::staticInterfaceName(), parent)
+    SUPER(OfonoCallMeter::staticInterfaceName(), parent)
 {
 }
 
@@ -34,7 +36,7 @@ QDBusAbstractInterface *QOfonoCallMeter::createDbusInterface(const QString &path
 
 void QOfonoCallMeter::propertyChanged(const QString &property, const QVariant &value)
 {
-    QOfonoModemInterface::propertyChanged(property, value);
+    SUPER::propertyChanged(property, value);
     if (property == QLatin1String("AccumulatedCallMeterMaximum")) {
         Q_EMIT accumulatedCallMeterMaximumChanged(value.value<quint32>());
     } else if (property == QLatin1String("PricePerUnit")) {
@@ -126,4 +128,19 @@ QOfonoCallMeter::Error QOfonoCallMeter::errorNameToEnum(const QString &errorName
         return FailedError;
     else
         return UnknownError;
+}
+
+QString QOfonoCallMeter::modemPath() const
+{
+    return SUPER::modemPath();
+}
+
+void QOfonoCallMeter::setModemPath(const QString &path)
+{
+    SUPER::setModemPath(path);
+}
+
+bool QOfonoCallMeter::isValid() const
+{
+    return SUPER::isValid();
 }

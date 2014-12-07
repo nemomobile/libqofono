@@ -16,7 +16,9 @@
 #include "qofonophonebook.h"
 #include "dbus/ofonophonebook.h"
 
-class QOfonoPhonebook::Private
+#define SUPER QOfonoModemInterface2
+
+class QOfonoPhonebook::Private : public SUPER::ExtData
 {
 public:
     bool importing;
@@ -24,14 +26,12 @@ public:
 };
 
 QOfonoPhonebook::QOfonoPhonebook(QObject *parent) :
-    QOfonoModemInterface2(OfonoPhonebook::staticInterfaceName(), parent),
-    d_ptr(new Private)
+    SUPER(OfonoPhonebook::staticInterfaceName(), new Private, parent)
 {
 }
 
 QOfonoPhonebook::~QOfonoPhonebook()
 {
-    delete d_ptr;
 }
 
 QDBusAbstractInterface *QOfonoPhonebook::createDbusInterface(const QString &path)
@@ -41,7 +41,8 @@ QDBusAbstractInterface *QOfonoPhonebook::createDbusInterface(const QString &path
 
 void QOfonoPhonebook::dbusInterfaceDropped()
 {
-    QOfonoModemInterface2::dbusInterfaceDropped();
+    SUPER::dbusInterfaceDropped();
+    Private *d_ptr = privateData();
     if (d_ptr->importing) {
         d_ptr->importing = false;
         Q_EMIT importingChanged();
@@ -50,11 +51,12 @@ void QOfonoPhonebook::dbusInterfaceDropped()
 
 bool QOfonoPhonebook::importing() const
 {
-    return d_ptr->importing;
+    return privateData()->importing;
 }
 
 void QOfonoPhonebook::beginImport()
 {
+    Private *d_ptr = privateData();
     if (!d_ptr->importing) {
         OfonoPhonebook *iface = (OfonoPhonebook*)dbusInterface();
         if (iface) {
@@ -76,6 +78,26 @@ void QOfonoPhonebook::onImportFinished(QDBusPendingCallWatcher *watch)
     } else {
         Q_EMIT importFailed();
     }
-    d_ptr->importing = false;
+    privateData()->importing = false;
     Q_EMIT importingChanged();
+}
+
+QString QOfonoPhonebook::modemPath() const
+{
+    return SUPER::modemPath();
+}
+
+void QOfonoPhonebook::setModemPath(const QString &path)
+{
+    SUPER::setModemPath(path);
+}
+
+bool QOfonoPhonebook::isValid() const
+{
+    return SUPER::isValid();
+}
+
+QOfonoPhonebook::Private *QOfonoPhonebook::privateData() const
+{
+    return (QOfonoPhonebook::Private*)SUPER::extData();
 }

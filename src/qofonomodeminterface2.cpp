@@ -23,19 +23,37 @@ public:
     QString interfaceName;
     QSharedPointer<QOfonoModem> modem;
     QDBusAbstractInterface *interface;
+    QOfonoModemInterface2::ExtData *ext;
 
-    Private(const QString &iname) : interfaceName(iname), interface(NULL) {}
+    Private(const QString &iname, QOfonoModemInterface2::ExtData *data) :
+        interfaceName(iname), interface(NULL), ext(data) {}
+    ~Private() { delete ext; }
 };
+
+QOfonoModemInterface2::ExtData::~ExtData()
+{
+}
+
+QOfonoModemInterface2::QOfonoModemInterface2(const QString &iname, ExtData *ext, QObject *parent) :
+    QObject(parent),
+    d_ptr(new Private(iname, ext))
+{
+}
 
 QOfonoModemInterface2::QOfonoModemInterface2(const QString &iname, QObject *parent) :
     QObject(parent),
-    d_ptr(new Private(iname))
+    d_ptr(new Private(iname, NULL))
 {
 }
 
 QOfonoModemInterface2::~QOfonoModemInterface2()
 {
     delete d_ptr;
+}
+
+QOfonoModemInterface2::ExtData* QOfonoModemInterface2::extData() const
+{
+    return d_ptr->ext;
 }
 
 QString QOfonoModemInterface2::modemPath() const

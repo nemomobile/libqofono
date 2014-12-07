@@ -16,8 +16,10 @@
 #include "qofonosupplementaryservices.h"
 #include "dbus/ofonosupplementaryservices.h"
 
+#define SUPER QOfonoModemInterface
+
 QOfonoSupplementaryServices::QOfonoSupplementaryServices(QObject *parent) :
-    QOfonoModemInterface(OfonoSupplementaryServices::staticInterfaceName(), parent)
+    SUPER(OfonoSupplementaryServices::staticInterfaceName(), parent)
 {
 }
 
@@ -62,7 +64,7 @@ void QOfonoSupplementaryServices::cancel()
 
 void QOfonoSupplementaryServices::propertyChanged(const QString &property, const QVariant &value)
 {
-    QOfonoModemInterface::propertyChanged(property, value);
+    SUPER::propertyChanged(property, value);
     if (property == QLatin1String("State")) {
         Q_EMIT stateChanged(value.value<QString>());
     }
@@ -159,4 +161,19 @@ void QOfonoSupplementaryServices::cancelResponseReceived(QDBusPendingCallWatcher
     call->deleteLater();
     QDBusPendingReply<> reply = *call;
     Q_EMIT cancelComplete(!reply.isError());
+}
+
+QString QOfonoSupplementaryServices::modemPath() const
+{
+    return SUPER::modemPath();
+}
+
+void QOfonoSupplementaryServices::setModemPath(const QString &path)
+{
+    SUPER::setModemPath(path);
+}
+
+bool QOfonoSupplementaryServices::isValid() const
+{
+    return SUPER::isValid();
 }

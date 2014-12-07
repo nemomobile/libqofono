@@ -33,7 +33,12 @@ public:
     explicit QOfonoSupplementaryServices(QObject *parent = 0);
     ~QOfonoSupplementaryServices();
 
+    QString modemPath() const;
+    void setModemPath(const QString &path);
+
     QString state() const;
+
+    bool isValid() const;
 
     Q_INVOKABLE void initiate(const QString &command);
     Q_INVOKABLE void respond(const QString &reply);

@@ -16,14 +16,16 @@
 #include "qofonoconnectionmanager.h"
 #include "dbus/ofonoconnectionmanager.h"
 
-class QOfonoConnectionManager::Private
+#define SUPER QOfonoModemInterface
+
+class QOfonoConnectionManager::Private : public QOfonoObject::ExtData
 {
 public:
     bool initialized;
     QStringList contexts;
     QHash<QString,QString> contextTypes;
     QString filter;
-public:
+
     Private() : initialized(false) {}
     void filterContexts();
 };
@@ -61,20 +63,18 @@ void QOfonoConnectionManager::Private::filterContexts()
 }
 
 QOfonoConnectionManager::QOfonoConnectionManager(QObject *parent) :
-    QOfonoModemInterface(OfonoConnectionManager::staticInterfaceName(), parent),
-    d_ptr(new Private)
+    SUPER(OfonoConnectionManager::staticInterfaceName(), new Private, parent)
 {
     QOfonoDbusTypes::registerObjectPathProperties();
 }
 
 QOfonoConnectionManager::~QOfonoConnectionManager()
 {
-    delete d_ptr;
 }
 
 bool QOfonoConnectionManager::isValid() const
 {
-    return d_ptr->initialized && QOfonoModemInterface::isValid();
+    return privateData()->initialized && SUPER::isValid();
 }
 
 QDBusAbstractInterface *QOfonoConnectionManager::createDbusInterface(const QString &path)
@@ -95,6 +95,7 @@ QDBusAbstractInterface *QOfonoConnectionManager::createDbusInterface(const QStri
 void QOfonoConnectionManager::dbusInterfaceDropped()
 {
     QOfonoModemInterface::dbusInterfaceDropped();
+    Private *d_ptr = privateData();
     d_ptr->initialized = false;
     if (!d_ptr->contexts.isEmpty()) {
         QStringList list = d_ptr->contexts;
@@ -174,7 +175,7 @@ void QOfonoConnectionManager::setPowered(bool value)
 
 void QOfonoConnectionManager::propertyChanged(const QString &property, const QVariant &value)
 {
-    QOfonoModemInterface::propertyChanged(property, value);
+    SUPER::propertyChanged(property, value);
     if (property == QLatin1String("Attached")) {
         Q_EMIT attachedChanged(value.value<bool>());
     } else if (property == QLatin1String("Bearer")) {
@@ -190,12 +191,13 @@ void QOfonoConnectionManager::propertyChanged(const QString &property, const QVa
 
 QStringList QOfonoConnectionManager::contexts()
 {
-    return d_ptr->contexts;
+    return privateData()->contexts;
 }
 
 void QOfonoConnectionManager::onContextAdded(const QDBusObjectPath &path, const QVariantMap &properties)
 {
     QString contextPath(path.path());
+    Private *d_ptr = privateData();
     d_ptr->contextTypes.insert(contextPath, properties.value("Type").toString());
     d_ptr->filterContexts();
     if (d_ptr->contexts.contains(contextPath)) {
@@ -206,6 +208,7 @@ void QOfonoConnectionManager::onContextAdded(const QDBusObjectPath &path, const 
 
 void QOfonoConnectionManager::onContextRemoved(const QDBusObjectPath &path)
 {
+    Private *d_ptr = privateData();
     QString contextPath(path.path());
     d_ptr->contextTypes.remove(contextPath);
     if (d_ptr->contexts.removeOne(contextPath)) {
@@ -216,11 +219,12 @@ void QOfonoConnectionManager::onContextRemoved(const QDBusObjectPath &path)
 
 QString QOfonoConnectionManager::filter() const
 {
-    return d_ptr->filter;
+    return privateData()->filter;
 }
 
 void QOfonoConnectionManager::setFilter(const QString &filter)
 {
+    Private *d_ptr = privateData();
     if (d_ptr->filter != filter) {
         d_ptr->filter = filter;
         d_ptr->filterContexts();
@@ -237,6 +241,7 @@ void QOfonoConnectionManager::onGetContextsFinished(QDBusPendingCallWatcher *wat
         qDebug() << reply.error();
         Q_EMIT reportError(reply.error().message());
     } else {
+        Private *d_ptr = privateData();
         QStringList old = d_ptr->contexts;
         d_ptr->contextTypes.clear();
         foreach (ObjectPathProperties context, reply.value()) {
@@ -276,4 +281,19 @@ void QOfonoConnectionManager::onRemoveContextFinished(QDBusPendingCallWatcher *w
         qDebug() << reply.error();
         Q_EMIT reportError(reply.error().message());
     }
+}
+
+QString QOfonoConnectionManager::modemPath() const
+{
+    return SUPER::modemPath();
+}
+
+void QOfonoConnectionManager::setModemPath(const QString &path)
+{
+    SUPER::setModemPath(path);
+}
+
+QOfonoConnectionManager::Private *QOfonoConnectionManager::privateData() const
+{
+    return (QOfonoConnectionManager::Private*)SUPER::extData();
 }

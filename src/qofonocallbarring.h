@@ -34,31 +34,37 @@ public:
     explicit QOfonoCallBarring(QObject *parent = 0);
     ~QOfonoCallBarring();
 
-     QString voiceIncoming();
-     Q_INVOKABLE void setVoiceIncoming(const QString &barrings, const QString &password);
+    QString modemPath() const;
+    void setModemPath(const QString &path);
 
-     QString voiceOutgoing();
-     Q_INVOKABLE void setVoiceOutgoing(const QString &barrings, const QString &password);
+    QString voiceIncoming();
+    Q_INVOKABLE void setVoiceIncoming(const QString &barrings, const QString &password);
 
-     void connectOfono();
+    QString voiceOutgoing();
+    Q_INVOKABLE void setVoiceOutgoing(const QString &barrings, const QString &password);
+
+    bool isValid() const;
+    bool isReady() const;
+
+    void connectOfono();
 
 Q_SIGNALS:
-     void voiceIncomingChanged(const QString &barrings);
-     void voiceOutgoingChanged(const QString &barrings);
-     void voiceIncomingComplete(bool success);
-     void voiceOutgoingComplete(bool success);
-     void getPropertiesFailed();
+    void voiceIncomingChanged(const QString &barrings);
+    void voiceOutgoingChanged(const QString &barrings);
+    void voiceIncomingComplete(bool success);
+    void voiceOutgoingComplete(bool success);
+    void getPropertiesFailed();
 
-     void changePasswordComplete(bool success);
-     void disableAllComplete(bool success);
-     void disableAllIncomingComplete(bool success);
-     void disableAllOutgoingComplete(bool success);
+    void changePasswordComplete(bool success);
+    void disableAllComplete(bool success);
+    void disableAllIncomingComplete(bool success);
+    void disableAllOutgoingComplete(bool success);
 
 public slots:
-     void changePassword(const QString &oldPassword, const QString &newPassword);
-     void disableAll(const QString &password);
-     void disableAllIncoming(const QString &password);
-     void disableAllOutgoing(const QString &password);
+    void changePassword(const QString &oldPassword, const QString &newPassword);
+    void disableAll(const QString &password);
+    void disableAllIncoming(const QString &password);
+    void disableAllOutgoing(const QString &password);
 
 private slots:
     void setVoiceIncomingComplete(QDBusPendingCallWatcher *);

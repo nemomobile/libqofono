@@ -16,8 +16,7 @@
 #include "qofonosimmanager.h"
 #include "dbus/ofonosimmanager.h"
 
-static const int qofonosimmanager_pinRetries = 3;
-static const int qofonosimmanager_pukRetries = 10;
+#define SUPER QOfonoModemInterface
 
 namespace QOfonoSimManagerPrivate
 {
@@ -45,7 +44,7 @@ namespace QOfonoSimManagerPrivate
 }
 
 QOfonoSimManager::QOfonoSimManager(QObject *parent) :
-    QOfonoModemInterface(OfonoSimManager::staticInterfaceName(), parent)
+    SUPER(OfonoSimManager::staticInterfaceName(), parent)
 {
 }
 
@@ -106,13 +105,13 @@ QVariant QOfonoSimManager::convertProperty(const QString &property, const QVaria
         }
         return convertedRetries;
     } else {
-        return QOfonoModemInterface::convertProperty(property, value);
+        return SUPER::convertProperty(property, value);
     }
 }
 
 void QOfonoSimManager::propertyChanged(const QString &property, const QVariant &value)
 {
-    QOfonoModemInterface::propertyChanged(property, value);
+    SUPER::propertyChanged(property, value);
     if (property == QLatin1String("Present")) {
         Q_EMIT presenceChanged(value.value<bool>());
     } else if (property == QLatin1String("SubscriberIdentity")) {
@@ -462,4 +461,19 @@ int QOfonoSimManager::pukToPin(QOfonoSimManager::PinType puk)
     default:
         return (int)QOfonoSimManager::NoPin;
     }
+}
+
+QString QOfonoSimManager::modemPath() const
+{
+    return SUPER::modemPath();
+}
+
+void QOfonoSimManager::setModemPath(const QString &path)
+{
+    SUPER::setModemPath(path);
+}
+
+bool QOfonoSimManager::isValid() const
+{
+    return SUPER::isValid();
 }

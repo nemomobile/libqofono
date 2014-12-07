@@ -34,6 +34,9 @@ public:
     explicit QOfonoVoiceCallManager(QObject *parent = 0);
     ~QOfonoVoiceCallManager();
 
+    QString modemPath() const;
+    void setModemPath(const QString &path);
+
     QStringList emergencyNumbers() const;
 
     Q_INVOKABLE QStringList getCalls() const;
@@ -91,7 +94,7 @@ protected:
 
 private:
     class Private;
-    Private *d_ptr;
+    Private *privateData() const;
 };
 
 #endif // QOFONOVoiceCallManager_H

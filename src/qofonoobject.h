@@ -23,9 +23,18 @@ class QOfonoObject : public QObject
     Q_OBJECT
     Q_PROPERTY(bool valid READ isValid NOTIFY validChanged)
 
+public:
+    class ExtData {
+    public:
+        virtual ~ExtData();
+    };
+
 protected:
+    QOfonoObject(ExtData *ext, QObject *parent = NULL);
     QOfonoObject(QObject *parent = NULL);
     ~QOfonoObject();
+
+    virtual ExtData* extData() const;
 
 public:
     QString objectPath() const;
@@ -41,6 +50,7 @@ protected:
     virtual void objectPathChanged(const QString &path, const QVariantMap *properties) = 0;
     virtual QDBusAbstractInterface *createDbusInterface(const QString &path) = 0;
     virtual void dbusInterfaceDropped();
+
     virtual QVariant convertProperty(const QString &key, const QVariant &value);
     virtual void updateProperty(const QString &key, const QVariant &value);
     virtual void propertyChanged(const QString &key, const QVariant &value);

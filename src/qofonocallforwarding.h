@@ -38,6 +38,9 @@ public:
     explicit QOfonoCallForwarding(QObject *parent = 0);
     ~QOfonoCallForwarding();
 
+    QString modemPath() const;
+    void setModemPath(const QString &path);
+
     QString voiceUnconditional();
     void setVoiceUnconditional(const QString &property);
 
@@ -57,6 +60,9 @@ public:
     bool forwardingFlagOnSim();
 
     Q_INVOKABLE void disableAll(const QString &type);
+
+    bool isValid() const;
+    bool isReady() const;
 
     void connectOfono();
 

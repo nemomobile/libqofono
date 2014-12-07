@@ -35,6 +35,9 @@ public:
     explicit QOfonoCallVolume(QObject *parent = 0);
     ~QOfonoCallVolume();
 
+    QString modemPath() const;
+    void setModemPath(const QString &path);
+
     bool muted() const;
     void setMuted(const bool mute);
 
@@ -43,6 +46,8 @@ public:
 
     quint8 microphoneVolume()const ;
     void setMicrophoneVolume(const quint8 &mpvolume);
+
+    bool isValid() const;
 
 Q_SIGNALS:
     void mutedChanged(bool muted);

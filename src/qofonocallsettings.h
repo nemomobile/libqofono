@@ -40,6 +40,9 @@ public:
     explicit QOfonoCallSettings(QObject *parent = 0);
     ~QOfonoCallSettings();
 
+    QString modemPath() const;
+    void setModemPath(const QString &path);
+
     QString callingLinePresentation();
     QString calledLinePresentation();
     QString callingNamePresentation();
@@ -52,6 +55,9 @@ public:
 
     QString voiceCallWaiting();
     void setVoiceCallWaiting(const QString &setting);
+
+    bool isValid() const;
+    bool isReady() const;
 
     void connectOfono();
 

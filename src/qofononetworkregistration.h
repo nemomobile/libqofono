@@ -47,6 +47,9 @@ public:
     explicit QOfonoNetworkRegistration(QObject *parent = 0);
     ~QOfonoNetworkRegistration();
     
+    QString modemPath() const;
+    void setModemPath(const QString &path);
+
     QString mode() const;
     QString status() const;
     uint locationAreaCode() const;
@@ -58,6 +61,7 @@ public:
     uint strength() const;
     QString baseStation() const;
 
+    QStringList networkOperators(); // For ABI compatibility
     QStringList networkOperators() const;
     QOfonoNetworkOperator* networkOperator(const QString &path) const;
 
@@ -106,7 +110,7 @@ private:
 
 private:
     class Private;
-    Private *d_ptr;
+    Private *privateData() const;
 };
 
 #endif // QOFONONETWORKREGISTRATION_H

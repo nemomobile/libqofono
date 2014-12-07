@@ -16,30 +16,29 @@
 #include "qofonomessagemanager.h"
 #include "dbus/ofonomessagemanager.h"
 
-class QOfonoMessageManager::Private
+#define SUPER QOfonoModemInterface
+
+class QOfonoMessageManager::Private : public QOfonoObject::ExtData
 {
 public:
     bool initialized;
     QStringList messageList;
-public:
     Private() : initialized(false) {}
 };
 
 QOfonoMessageManager::QOfonoMessageManager(QObject *parent) :
-    QOfonoModemInterface(OfonoMessageManager::staticInterfaceName(), parent),
-    d_ptr(new Private)
+    SUPER(OfonoMessageManager::staticInterfaceName(), new Private, parent)
 {
     QOfonoDbusTypes::registerObjectPathProperties();
 }
 
 QOfonoMessageManager::~QOfonoMessageManager()
 {
-    delete d_ptr;
 }
 
 bool QOfonoMessageManager::isValid() const
 {
-    return d_ptr->initialized && QOfonoModemInterface::isValid();
+    return privateData()->initialized && SUPER::isValid();
 }
 
 QDBusAbstractInterface *QOfonoMessageManager::createDbusInterface(const QString &path)
@@ -65,7 +64,8 @@ QDBusAbstractInterface *QOfonoMessageManager::createDbusInterface(const QString 
 
 void QOfonoMessageManager::dbusInterfaceDropped()
 {
-    QOfonoModemInterface::dbusInterfaceDropped();
+    SUPER::dbusInterfaceDropped();
+    Private *d_ptr = privateData();
     d_ptr->initialized = false;
     if (!d_ptr->messageList.isEmpty()) {
         QStringList list = d_ptr->messageList;
@@ -78,7 +78,7 @@ void QOfonoMessageManager::dbusInterfaceDropped()
 
 void QOfonoMessageManager::propertyChanged(const QString &property, const QVariant &value)
 {
-    QOfonoModemInterface::propertyChanged(property, value);
+    SUPER::propertyChanged(property, value);
     if (property == QLatin1String("ServiceCenterAddress")) {
         Q_EMIT serviceCenterAddressChanged(value.toString());
     } else if (property == QLatin1String("UseDeliveryReports")) {
@@ -142,7 +142,7 @@ void QOfonoMessageManager::sendMessage(const QString &numberTo, const QString &m
 
 QStringList QOfonoMessageManager::messages()
 {
-    return d_ptr->messageList;
+    return privateData()->messageList;
 }
 
 void QOfonoMessageManager::onMessageAdded(const QDBusObjectPath &path, const QVariantMap &)
@@ -153,7 +153,7 @@ void QOfonoMessageManager::onMessageAdded(const QDBusObjectPath &path, const QVa
 void QOfonoMessageManager::onMessageRemoved(const QDBusObjectPath &path)
 {
     QString messagePath = path.path();
-    if (d_ptr->messageList.removeOne(messagePath)) {
+    if (privateData()->messageList.removeOne(messagePath)) {
         Q_EMIT messageRemoved(messagePath);
     }
 }
@@ -167,7 +167,7 @@ void QOfonoMessageManager::onGetMessagesFinished(QDBusPendingCallWatcher *watch)
         Q_EMIT reportError(reply.error().message());
     } else {
         ObjectPathPropertiesList list = reply.value();
-        d_ptr->initialized = true;
+        privateData()->initialized = true;
         for (int i=0; i<list.count(); i++) {
             addMessage(list[i].path.path());
         }
@@ -178,6 +178,7 @@ void QOfonoMessageManager::onGetMessagesFinished(QDBusPendingCallWatcher *watch)
 
 void QOfonoMessageManager::addMessage(const QString &messagePath)
 {
+    Private *d_ptr = privateData();
     if (!d_ptr->messageList.contains(messagePath)) {
         d_ptr->messageList.append(messagePath);
         Q_EMIT messageAdded(messagePath);
@@ -198,7 +199,7 @@ void QOfonoMessageManager::onSendMessageFinished(QDBusPendingCallWatcher *watch)
 
 void QOfonoMessageManager::setPropertyFinished(const QString &property, const QDBusError *error)
 {
-    QOfonoModemInterface::setPropertyFinished(property, error);
+    SUPER::setPropertyFinished(property, error);
     if (property == "ServiceCenterAddress") {
         Q_EMIT setServiceCenterAddressComplete(!error);
     } else if (property == "UseDeliveryReports") {
@@ -208,4 +209,19 @@ void QOfonoMessageManager::setPropertyFinished(const QString &property, const QD
     } else if (property == "Alphabet") {
         Q_EMIT setAlphabetComplete(!error);
     }
+}
+
+QString QOfonoMessageManager::modemPath() const
+{
+    return SUPER::modemPath();
+}
+
+void QOfonoMessageManager::setModemPath(const QString &path)
+{
+    SUPER::setModemPath(path);
+}
+
+QOfonoMessageManager::Private *QOfonoMessageManager::privateData() const
+{
+    return (QOfonoMessageManager::Private*)SUPER::extData();
 }

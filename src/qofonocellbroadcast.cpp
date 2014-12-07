@@ -16,8 +16,10 @@
 #include "qofonocellbroadcast.h"
 #include "dbus/ofonocellbroadcast.h"
 
+#define SUPER QOfonoObject
+
 QOfonoCellBroadcast::QOfonoCellBroadcast(QObject *parent) :
-    QOfonoObject(parent)
+    SUPER(parent)
 {
 }
 
@@ -39,7 +41,7 @@ QDBusAbstractInterface *QOfonoCellBroadcast::createDbusInterface(const QString &
 
 void QOfonoCellBroadcast::objectPathChanged(const QString &path, const QVariantMap *properties)
 {
-    QOfonoObject::objectPathChanged(path, properties);
+    SUPER::objectPathChanged(path, properties);
     Q_EMIT modemPathChanged(path);
 }
 
@@ -55,7 +57,7 @@ QString QOfonoCellBroadcast::modemPath() const
 
 void QOfonoCellBroadcast::propertyChanged(const QString &property, const QVariant &value)
 {
-    QOfonoObject::propertyChanged(property, value);
+    SUPER::propertyChanged(property, value);
     if (property == QLatin1String("Powered")) {
         Q_EMIT enabledChanged(value.toBool());
     } else if (property == QLatin1String("Topics")) {
@@ -78,7 +80,14 @@ QString QOfonoCellBroadcast::topics() const
     return getString("Topics");
 }
 
-void QOfonoCellBroadcast::setTopics(const QString &topics)
+void QOfonoCellBroadcast::setTopics(const QString &topics) const
 {
-    setProperty("Topics", topics);
+    // It's not clear why this method is const (probably, copy/paste artifact)
+    // but it has to remain const to maintain ABI
+    ((QOfonoCellBroadcast*)this)->setProperty("Topics", topics);
+}
+
+bool QOfonoCellBroadcast::isValid() const
+{
+    return SUPER::isValid();
 }

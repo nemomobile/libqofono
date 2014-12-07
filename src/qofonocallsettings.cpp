@@ -16,8 +16,10 @@
 #include "qofonocallsettings.h"
 #include "dbus/ofonocallsettings.h"
 
+#define SUPER QOfonoModemInterface
+
 QOfonoCallSettings::QOfonoCallSettings(QObject *parent) :
-    QOfonoModemInterface(OfonoCallSettings::staticInterfaceName(), parent)
+    SUPER(OfonoCallSettings::staticInterfaceName(), parent)
 {
 }
 
@@ -37,7 +39,7 @@ QDBusAbstractInterface *QOfonoCallSettings::createDbusInterface(const QString &p
 
 void QOfonoCallSettings::propertyChanged(const QString &property, const QVariant &value)
 {
-    QOfonoModemInterface::propertyChanged(property, value);
+    SUPER::propertyChanged(property, value);
     if (property == QLatin1String("CallingLinePresentation")) {
         Q_EMIT callingLinePresentationChanged(value.value<QString>());
     } else if (property == QLatin1String("CalledLinePresentation")) {
@@ -109,7 +111,7 @@ void QOfonoCallSettings::setVoiceCallWaiting(const QString &setting)
 
 void QOfonoCallSettings::getPropertiesFinished(const QVariantMap &properties, const QDBusError *error)
 {
-    QOfonoModemInterface::getPropertiesFinished(properties, error);
+    SUPER::getPropertiesFinished(properties, error);
     if (error) {
         Q_EMIT getPropertiesFailed();
     }
@@ -117,10 +119,30 @@ void QOfonoCallSettings::getPropertiesFinished(const QVariantMap &properties, co
 
 void QOfonoCallSettings::setPropertyFinished(const QString &property, const QDBusError *error)
 {
-    QOfonoModemInterface::setPropertyFinished(property, error);
+    SUPER::setPropertyFinished(property, error);
     if (property == "HideCallerId") {
         Q_EMIT hideCallerIdComplete(!error);
     } else if (property == "VoiceCallWaiting") {
         Q_EMIT voiceCallWaitingComplete(!error);
     }
+}
+
+QString QOfonoCallSettings::modemPath() const
+{
+    return SUPER::modemPath();
+}
+
+void QOfonoCallSettings::setModemPath(const QString &path)
+{
+    SUPER::setModemPath(path);
+}
+
+bool QOfonoCallSettings::isValid() const
+{
+    return SUPER::isValid();
+}
+
+bool QOfonoCallSettings::isReady() const
+{
+    return SUPER::isReady();
 }

@@ -33,7 +33,11 @@ public:
     explicit QOfonoPhonebook(QObject *parent = 0);
     ~QOfonoPhonebook();
 
+    QString modemPath() const;
+    void setModemPath(const QString &path);
+
     bool importing() const;
+    bool isValid() const;
 
 Q_SIGNALS:
     void importReady(const QString &vcardData);
@@ -52,7 +56,7 @@ protected:
 
 private:
     class Private;
-    Private *d_ptr;
+    Private *privateData() const;
 };
 
 #endif // QOFONOPhonebook_H

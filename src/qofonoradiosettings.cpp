@@ -16,8 +16,10 @@
 #include "qofonoradiosettings.h"
 #include "dbus/ofonoradiosettings.h"
 
+#define SUPER QOfonoObject
+
 QOfonoRadioSettings::QOfonoRadioSettings(QObject *parent) :
-    QOfonoObject(parent)
+    SUPER(parent)
 {
 }
 
@@ -32,7 +34,7 @@ QDBusAbstractInterface *QOfonoRadioSettings::createDbusInterface(const QString &
 
 void QOfonoRadioSettings::objectPathChanged(const QString &path, const QVariantMap *properties)
 {
-    QOfonoObject::objectPathChanged(path, properties);
+    SUPER::objectPathChanged(path, properties);
     Q_EMIT modemPathChanged(path);
 }
 
@@ -48,7 +50,7 @@ QString QOfonoRadioSettings::modemPath() const
 
 void QOfonoRadioSettings::propertyChanged(const QString &property, const QVariant &value)
 {
-    QOfonoObject::propertyChanged(property, value);
+    SUPER::propertyChanged(property, value);
     if (property == QLatin1String("TechnologyPreference")) {
         Q_EMIT technologyPreferenceChanged(value.value<QString>());
     } else if (property == QLatin1String("GsmBand")) {
@@ -98,4 +100,9 @@ bool QOfonoRadioSettings::fastDormancy() const
 void QOfonoRadioSettings::setFastDormancy(bool fastDormancy)
 {
     setProperty("FastDormancy", fastDormancy);
+}
+
+bool QOfonoRadioSettings::isValid() const
+{
+    return SUPER::isValid();
 }

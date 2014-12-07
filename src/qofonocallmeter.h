@@ -48,6 +48,9 @@ public:
     explicit QOfonoCallMeter(QObject *parent = 0);
     ~QOfonoCallMeter();
 
+    QString modemPath() const;
+    void setModemPath(const QString &path);
+
     quint32 callMeter() const;
     quint32 accumulatedCallMeter() const;
 
@@ -60,6 +63,8 @@ public:
     QString currency() const;
 
     Q_INVOKABLE void reset(const QString &password);
+
+    bool isValid() const;
 
 Q_SIGNALS:
     void nearMaximumWarning();

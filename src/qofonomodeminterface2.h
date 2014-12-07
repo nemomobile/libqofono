@@ -28,8 +28,17 @@ class QOfonoModemInterface2 : public QObject
     Q_PROPERTY(QString modemPath READ modemPath WRITE setModemPath NOTIFY modemPathChanged)
 
 public:
+    class ExtData {
+    public:
+        virtual ~ExtData();
+    };
+
+protected:
+    QOfonoModemInterface2(const QString &iface, ExtData *ext, QObject *parent = NULL);
     QOfonoModemInterface2(const QString &iface, QObject *parent = NULL);
     ~QOfonoModemInterface2();
+
+    ExtData* extData() const;
 
     QString modemPath() const;
     void setModemPath(const QString &path);

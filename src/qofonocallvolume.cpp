@@ -16,8 +16,10 @@
 #include "qofonocallvolume.h"
 #include "dbus/ofonocallvolume.h"
 
+#define SUPER QOfonoModemInterface
+
 QOfonoCallVolume::QOfonoCallVolume(QObject *parent) :
-    QOfonoModemInterface(OfonoCallVolume::staticInterfaceName(), parent)
+    SUPER(OfonoCallVolume::staticInterfaceName(), parent)
 {
 }
 
@@ -32,7 +34,7 @@ QDBusAbstractInterface *QOfonoCallVolume::createDbusInterface(const QString &pat
 
 void QOfonoCallVolume::propertyChanged(const QString &property, const QVariant &value)
 {
-    QOfonoModemInterface::propertyChanged(property, value);
+    SUPER::propertyChanged(property, value);
     if (property == QLatin1String("Muted")) {
         Q_EMIT mutedChanged(value.value<bool>());
     } else if (property == QLatin1String("SpeakerVolume")) {
@@ -71,4 +73,19 @@ quint8 QOfonoCallVolume::microphoneVolume()const
 void QOfonoCallVolume::setMicrophoneVolume(const quint8 &volume)
 {
     setProperty("MicrophoneVolume", QVariant::fromValue(volume));
+}
+
+QString QOfonoCallVolume::modemPath() const
+{
+    return SUPER::modemPath();
+}
+
+void QOfonoCallVolume::setModemPath(const QString &path)
+{
+    SUPER::setModemPath(path);
+}
+
+bool QOfonoCallVolume::isValid() const
+{
+    return SUPER::isValid();
 }

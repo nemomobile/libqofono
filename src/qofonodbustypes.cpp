@@ -31,10 +31,29 @@ const QDBusArgument &operator>>(const QDBusArgument &arg, ObjectPathProperties &
     return arg;
 }
 
+QDBusArgument &operator<<(QDBusArgument &arg, const OfonoPathProps &props)
+{
+    arg.beginStructure();
+    arg << props.path << props.properties;
+    arg.endStructure();
+    return arg;
+}
+
+const QDBusArgument &operator>>(const QDBusArgument &arg, OfonoPathProps &props)
+{
+    arg.beginStructure();
+    arg >> props.path >> props.properties;
+    arg.endStructure();
+    return arg;
+}
+
 void QOfonoDbusTypes::registerObjectPathProperties()
 {
     qDBusRegisterMetaType<ObjectPathProperties>();
     qDBusRegisterMetaType<ObjectPathPropertiesList>();
     qRegisterMetaType<ObjectPathProperties>("ObjectPathProperties");
     qRegisterMetaType<ObjectPathPropertiesList>("ObjectPathPropertiesList");
+
+    qDBusRegisterMetaType<OfonoPathProps>();
+    qDBusRegisterMetaType<QArrayOfPathProps>();
 }

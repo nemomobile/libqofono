@@ -75,6 +75,9 @@ public:
     explicit QOfonoSimManager(QObject *parent = 0);
     ~QOfonoSimManager();
 
+    QString modemPath() const;
+    void setModemPath(const QString &path);
+
     bool present() const;
     QString subscriberIdentity() const;
     QString mobileCountryCode() const;
@@ -88,6 +91,7 @@ public:
     QVariantMap pinRetries() const; //
     bool fixedDialing() const;
     bool barredDialing() const;
+    bool isValid() const;
 
 Q_SIGNALS:
     void presenceChanged(bool ispresent);

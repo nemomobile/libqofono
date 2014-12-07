@@ -32,6 +32,10 @@ public:
     explicit QOfonoSmartMessaging(QObject *parent = 0);
     ~QOfonoSmartMessaging();
 
+    QString modemPath() const;
+    void setModemPath(const QString &path);
+    bool isValid() const;
+
 public slots:
     QDBusObjectPath sendAppointment(const QString &toPhoneNumber, const QByteArray &appointment);
     QDBusObjectPath sendBusinessCard(const QString &toPhoneNumber, const QByteArray &card);

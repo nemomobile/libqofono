@@ -64,6 +64,7 @@ public:
 
     Q_INVOKABLE void registerOperator();
     bool registering() const;
+    bool isValid() const;
 
 Q_SIGNALS:
 
@@ -92,7 +93,7 @@ protected:
 
 private:
     class Private;
-    Private *d_ptr;
+    Private *privateData() const;
 };
 
 #endif // QOFONONETWORKOPERATOR_H

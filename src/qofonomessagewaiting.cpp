@@ -16,8 +16,10 @@
 #include "qofonomessagewaiting.h"
 #include "dbus/ofonomessagewaiting.h"
 
+#define SUPER QOfonoModemInterface
+
 QOfonoMessageWaiting::QOfonoMessageWaiting(QObject *parent) :
-    QOfonoModemInterface(OfonoMessageWaiting::staticInterfaceName(), parent)
+    SUPER(OfonoMessageWaiting::staticInterfaceName(), parent)
 {
 }
 
@@ -37,7 +39,7 @@ void QOfonoMessageWaiting::connectOfono()
 
 void QOfonoMessageWaiting::propertyChanged(const QString &property, const QVariant &value)
 {
-    QOfonoModemInterface::propertyChanged(property, value);
+    SUPER::propertyChanged(property, value);
     if (property == QLatin1String("VoicemailWaiting")) {
         Q_EMIT voicemailWaitingChanged(value.toBool());
     } else if (property == QLatin1String("VoicemailMessageCount")) {
@@ -69,7 +71,7 @@ void QOfonoMessageWaiting::setVoicemailMailboxNumber(const QString &mailboxnumbe
 
 void QOfonoMessageWaiting::getPropertiesFinished(const QVariantMap &properties, const QDBusError *error)
 {
-    QOfonoModemInterface::getPropertiesFinished(properties, error);
+    SUPER::getPropertiesFinished(properties, error);
     if (error) {
         Q_EMIT getPropertiesFailed();
     }
@@ -77,8 +79,28 @@ void QOfonoMessageWaiting::getPropertiesFinished(const QVariantMap &properties, 
 
 void QOfonoMessageWaiting::setPropertyFinished(const QString &property, const QDBusError *error)
 {
-    QOfonoModemInterface::setPropertyFinished(property, error);
+    SUPER::setPropertyFinished(property, error);
     if (property == "VoicemailMailboxNumber") {
         Q_EMIT voicemailMailboxComplete(!error);
     }
+}
+
+QString QOfonoMessageWaiting::modemPath() const
+{
+    return SUPER::modemPath();
+}
+
+void QOfonoMessageWaiting::setModemPath(const QString &path)
+{
+    SUPER::setModemPath(path);
+}
+
+bool QOfonoMessageWaiting::isValid() const
+{
+    return SUPER::isValid();
+}
+
+bool QOfonoMessageWaiting::isReady() const
+{
+    return SUPER::isReady();
 }

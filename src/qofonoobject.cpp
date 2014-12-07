@@ -19,12 +19,16 @@
 class QOfonoObject::Private
 {
 public:
+    QOfonoObject::ExtData *ext;
     QDBusAbstractInterface *interface;
     bool initialized;
     QString objectPath;
     QVariantMap properties;
 
-    Private() : interface(NULL), initialized(false) {}
+    Private(QOfonoObject::ExtData *data) : ext(data),
+        interface(NULL), initialized(false) {}
+    ~Private() { delete ext; }
+
     QDBusPendingCall setProperty(const QString &key, const QVariant &value);
 
     class SetPropertyWatcher : public QDBusPendingCallWatcher {
@@ -36,6 +40,10 @@ public:
     };
 };
 
+QOfonoObject::ExtData::~ExtData()
+{
+}
+
 QDBusPendingCall QOfonoObject::Private::setProperty(const QString &key, const QVariant &value)
 {
     // Caller checks interface for NULL
@@ -44,15 +52,27 @@ QDBusPendingCall QOfonoObject::Private::setProperty(const QString &key, const QV
     return interface->asyncCallWithArgumentList("SetProperty", args);
 }
 
+
 QOfonoObject::QOfonoObject(QObject *parent) :
     QObject(parent),
-    d_ptr(new QOfonoObject::Private)
+    d_ptr(new QOfonoObject::Private(NULL))
+{
+}
+
+QOfonoObject::QOfonoObject(QOfonoObject::ExtData *ext, QObject *parent) :
+    QObject(parent),
+    d_ptr(new QOfonoObject::Private(ext))
 {
 }
 
 QOfonoObject::~QOfonoObject()
 {
     delete d_ptr;
+}
+
+QOfonoObject::ExtData* QOfonoObject::extData() const
+{
+    return d_ptr->ext;
 }
 
 QString QOfonoObject::objectPath() const
