@@ -29,7 +29,7 @@ class QOFONOSHARED_EXPORT QOfonoConnectionContext : public QOfonoObject
     Q_OBJECT
     Q_PROPERTY(bool active READ active WRITE setActive NOTIFY activeChanged)
     Q_PROPERTY(QString accessPointName READ accessPointName WRITE setAccessPointName NOTIFY accessPointNameChanged)
-    Q_PROPERTY(QString type READ type WRITE setType NOTIFY nameChanged)
+    Q_PROPERTY(QString type READ type WRITE setType NOTIFY typeChanged)
     Q_PROPERTY(QString username READ username WRITE setUsername NOTIFY usernameChanged)
     Q_PROPERTY(QString password READ password WRITE setPassword NOTIFY passwordChanged)
     Q_PROPERTY(QString protocol READ protocol WRITE setProtocol NOTIFY protocolChanged)
