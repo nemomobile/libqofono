@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Jolla Ltd.
+** Copyright (C) 2013-2014 Jolla Ltd.
 ** Contact: lorn.potter@jollamobile.com
 **
 ** GNU Lesser General Public License Usage
@@ -15,279 +15,149 @@
 
 #include "qofonocallforwarding.h"
 #include "dbus/ofonocallforwarding.h"
-#include "qofonomodem.h"
 
-class QOfonoCallForwardingPrivate
-{
-public:
-    QOfonoCallForwardingPrivate();
-    QString modemPath;
-    OfonoCallForwarding *callForward;
-    QVariantMap properties;
-    bool propertiesPending;
-    QSharedPointer<QOfonoModem> modem;
-};
-
-QOfonoCallForwardingPrivate::QOfonoCallForwardingPrivate() :
-    modemPath(QString())
-  , callForward(0)
-  , propertiesPending(false)
-{
-}
+#define SUPER QOfonoModemInterface
 
 QOfonoCallForwarding::QOfonoCallForwarding(QObject *parent) :
-    QObject(parent)
-  , d_ptr(new QOfonoCallForwardingPrivate)
+    SUPER(OfonoCallForwarding::staticInterfaceName(), parent)
 {
 }
 
 QOfonoCallForwarding::~QOfonoCallForwarding()
 {
-    delete d_ptr;
 }
 
-void QOfonoCallForwarding::setModemPath(const QString &path)
+QDBusAbstractInterface *QOfonoCallForwarding::createDbusInterface(const QString &path)
 {
-    if (path == d_ptr->modemPath || path.isEmpty())
-        return;
-
-    if (!d_ptr->modem.isNull())
-        disconnect(d_ptr->modem.data(), SIGNAL(interfacesChanged(QStringList)),
-                   this, SLOT(modemInterfacesChanged(QStringList)));
-
-    d_ptr->modemPath = path;
-    connectOfono();
-
-    d_ptr->modem = QOfonoModem::instance(path);
-    connect(d_ptr->modem.data(), SIGNAL(interfacesChanged(QStringList)),
-            this, SLOT(modemInterfacesChanged(QStringList)));
-
-    Q_EMIT modemPathChanged(path);
-}
-
-QString QOfonoCallForwarding::modemPath() const
-{
-    return d_ptr->modemPath;
-}
-
-void QOfonoCallForwarding::modemInterfacesChanged(const QStringList &interfaces)
-{
-    bool haveIface = interfaces.contains("org.ofono.CallForwarding");
-    if (haveIface != (isValid() && (isReady() || d_ptr->propertiesPending)))
-        connectOfono();
+    return new OfonoCallForwarding("org.ofono", path, QDBusConnection::systemBus(), this);
 }
 
 void QOfonoCallForwarding::connectOfono()
 {
-    if (d_ptr->callForward) {
-        bool wasReady = isReady();
-        delete d_ptr->callForward;
-        d_ptr->callForward = 0;
-        d_ptr->properties.clear();
-        d_ptr->propertiesPending = false;
-        if (wasReady != isReady())
-            Q_EMIT readyChanged();
-    }
-    d_ptr->callForward = new OfonoCallForwarding("org.ofono", d_ptr->modemPath, QDBusConnection::systemBus(),this);
-
-    if (d_ptr->callForward->isValid()) {
-        connect(d_ptr->callForward,SIGNAL(PropertyChanged(QString,QDBusVariant)),
-                this,SLOT(propertyChanged(QString,QDBusVariant)));
-        d_ptr->propertiesPending = true;
-        QDBusPendingReply<QVariantMap> reply = d_ptr->callForward->GetProperties();
-        QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(reply, this);
-        connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
-                SLOT(getPropertiesComplete(QDBusPendingCallWatcher*)));
-    }
+    resetDbusInterface();
 }
 
-void QOfonoCallForwarding::propertyChanged(const QString& property, const QDBusVariant& dbusvalue)
+void QOfonoCallForwarding::propertyChanged(const QString &property, const QVariant &value)
 {
-    QVariant value = dbusvalue.variant();
-    d_ptr->properties.insert(property,value);
-
+    SUPER::propertyChanged(property, value);
     if (property == QLatin1String("VoiceUnconditional")) {
-        Q_EMIT voiceUnconditionalChanged(value.value<QString>());
+        Q_EMIT voiceUnconditionalChanged(value.toString());
     } else if (property == QLatin1String("VoiceBusy")) {
-        Q_EMIT voiceBusyChanged(value.value<QString>());
+        Q_EMIT voiceBusyChanged(value.toString());
     } else if (property == QLatin1String("VoiceNoReply")) {
-        Q_EMIT voiceNoReplyChanged(value.value<QString>());
+        Q_EMIT voiceNoReplyChanged(value.toString());
     } else if (property == QLatin1String("VoiceNoReplyTimeout")) {
         Q_EMIT voiceNoReplyTimeoutChanged(value.value<quint16>());
     } else if (property == QLatin1String("VoiceNotReachable")) {
-        Q_EMIT voiceNotReachableChanged(value.value<QString>());
+        Q_EMIT voiceNotReachableChanged(value.toString());
     } else if (property == QLatin1String("ForwardingFlagOnSim")) {
-        Q_EMIT forwardingFlagOnSimChanged(value.value<bool>());
+        Q_EMIT forwardingFlagOnSimChanged(value.toBool());
     }
 }
 
 QString QOfonoCallForwarding::voiceUnconditional()
 {
-    if (d_ptr->callForward)
-        return d_ptr->properties.value("VoiceUnconditional").value<QString>();
-    else
-        return QString();
+    return getString("VoiceUnconditional");
 }
 
 void QOfonoCallForwarding::setVoiceUnconditional(const QString &property)
 {
-    if (d_ptr->callForward) {
-        QDBusPendingReply<> reply = d_ptr->callForward->SetProperty("VoiceUnconditional",QDBusVariant(property));
-        QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(reply, this);
-        connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
-                SLOT(setVoiceUnconditionalComplete(QDBusPendingCallWatcher*)));
-    }
+    setProperty("VoiceUnconditional", property);
 }
 
 QString QOfonoCallForwarding::voiceBusy()
 {
-    if (d_ptr->callForward)
-        return d_ptr->properties.value("VoiceBusy").value<QString>();
-    else
-        return QString();
+    return getString("VoiceBusy");
 }
 
 void QOfonoCallForwarding::setVoiceBusy(const QString &property)
 {
-    if (d_ptr->callForward) {
-        QDBusPendingReply<> reply = d_ptr->callForward->SetProperty("VoiceBusy",QDBusVariant(property));
-        QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(reply, this);
-        connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
-                SLOT(setVoiceBusyComplete(QDBusPendingCallWatcher*)));
-    }
+    setProperty("VoiceBusy", property);
 }
 
 QString QOfonoCallForwarding::voiceNoReply()
 {
-    if (d_ptr->callForward)
-        return d_ptr->properties.value("VoiceNoReply").value<QString>();
-    else
-        return QString();
+    return getString("VoiceNoReply");
 }
 
 void QOfonoCallForwarding::setVoiceNoReply(const QString &property)
 {
-    if (d_ptr->callForward) {
-        QDBusPendingReply<> reply = d_ptr->callForward->SetProperty("VoiceNoReply",QDBusVariant(property));
-        QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(reply, this);
-        connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
-                SLOT(setVoiceNoReplyComplete(QDBusPendingCallWatcher*)));
-    }
+    setProperty("VoiceNoReply", property);
 }
 
 quint16 QOfonoCallForwarding::voiceNoReplyTimeout()
 {
-    if (d_ptr->callForward)
-        return d_ptr->properties.value("VoiceNoReplyTimeout").value<quint16>();
-    else
-        return 0;
+    return getProperty("VoiceNoReplyTimeout").value<quint16>();
 }
 
 void QOfonoCallForwarding::setVoiceNoReplyTimeout(ushort timeout)
 {
-    if (d_ptr->callForward) {
-        QDBusPendingReply<> reply = d_ptr->callForward->SetProperty("VoiceNoReplyTimeout",QDBusVariant(QVariant::fromValue((quint16)timeout)));
-        QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(reply, this);
-        connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
-                SLOT(setVoiceNoReplyTimeoutComplete(QDBusPendingCallWatcher*)));
-    }
+    setProperty("VoiceNoReplyTimeout", QVariant::fromValue((quint16)timeout));
 }
-
 
 QString QOfonoCallForwarding::voiceNotReachable()
 {
-    if (d_ptr->callForward)
-        return d_ptr->properties.value("VoiceNotReachable").value<QString>();
-    else
-        return QString();
+    return getString("VoiceNotReachable");
 }
 
 void QOfonoCallForwarding::setVoiceNotReachable(const QString &property)
 {
-    if (d_ptr->callForward) {
-        QDBusPendingReply<> reply = d_ptr->callForward->SetProperty("VoiceNotReachable",QDBusVariant(property));
-        QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(reply, this);
-        connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
-                SLOT(setVoiceNotReachableComplete(QDBusPendingCallWatcher*)));
-    }
+    setProperty("VoiceNotReachable", property);
 }
-
 
 bool QOfonoCallForwarding::forwardingFlagOnSim()
 {
-    if (d_ptr->callForward)
-        return d_ptr->properties.value("ForwardingFlagOnSim").value<bool>();
-    else
-        return false;
+    return getBool("ForwardingFlagOnSim");
 }
-
 
 void QOfonoCallForwarding::disableAll(const QString &type)
 {
-    if (d_ptr->callForward)
-        d_ptr->callForward->DisableAll(type);
+    OfonoCallForwarding *iface = (OfonoCallForwarding*)dbusInterface();
+    if (iface) {
+        iface->DisableAll(type);
+    }
+}
+
+void QOfonoCallForwarding::getPropertiesFinished(const QVariantMap &properties, const QDBusError *error)
+{
+    SUPER::getPropertiesFinished(properties, error);
+    if (error) {
+        Q_EMIT getPropertiesFailed();
+    }
+}
+
+void QOfonoCallForwarding::setPropertyFinished(const QString &property, const QDBusError *error)
+{
+    SUPER::setPropertyFinished(property, error);
+    if (property == "VoiceUnconditional") {
+        Q_EMIT voiceUnconditionalComplete(!error);
+    } else if (property == "VoiceBusy") {
+        Q_EMIT voiceBusyComplete(!error);
+    } else if (property == "VoiceNoReply") {
+        Q_EMIT voiceNoReplyComplete(!error);
+    } else if (property == "VoiceNoReplyTimeout") {
+        Q_EMIT voiceNoReplyTimeoutComplete(!error);
+    } else if (property == "VoiceNotReachable") {
+        Q_EMIT voiceNotReachableComplete(!error);
+    }
+}
+
+QString QOfonoCallForwarding::modemPath() const
+{
+    return SUPER::modemPath();
+}
+
+void QOfonoCallForwarding::setModemPath(const QString &path)
+{
+    SUPER::setModemPath(path);
 }
 
 bool QOfonoCallForwarding::isValid() const
 {
-    return d_ptr->callForward && d_ptr->callForward->isValid();
+    return SUPER::isValid();
 }
 
 bool QOfonoCallForwarding::isReady() const
 {
-    return !d_ptr->properties.isEmpty();
-}
-
-void QOfonoCallForwarding::getPropertiesComplete(QDBusPendingCallWatcher *call)
-{
-    call->deleteLater();
-    QDBusPendingReply<QVariantMap> reply = *call;
-    if (!reply.isError()) {
-        d_ptr->properties = reply.value();
-        Q_EMIT voiceUnconditionalChanged(voiceUnconditional());
-        Q_EMIT voiceBusyChanged(voiceBusy());
-        Q_EMIT voiceNoReplyChanged(voiceNoReply());
-        Q_EMIT voiceNoReplyTimeoutChanged(voiceNoReplyTimeout());
-        Q_EMIT voiceNotReachableChanged(voiceNotReachable());
-        Q_EMIT forwardingFlagOnSimChanged(forwardingFlagOnSim());
-        Q_EMIT readyChanged();
-    } else {
-        Q_EMIT getPropertiesFailed();
-    }
-    d_ptr->propertiesPending = false;
-}
-
-void QOfonoCallForwarding::setVoiceUnconditionalComplete(QDBusPendingCallWatcher *call)
-{
-    call->deleteLater();
-    QDBusPendingReply<> reply = *call;
-    Q_EMIT voiceUnconditionalComplete(!reply.isError());
-}
-
-void QOfonoCallForwarding::setVoiceBusyComplete(QDBusPendingCallWatcher *call)
-{
-    call->deleteLater();
-    QDBusPendingReply<> reply = *call;
-    Q_EMIT voiceBusyComplete(!reply.isError());
-}
-
-void QOfonoCallForwarding::setVoiceNoReplyComplete(QDBusPendingCallWatcher *call)
-{
-    call->deleteLater();
-    QDBusPendingReply<> reply = *call;
-    Q_EMIT voiceNoReplyComplete(!reply.isError());
-}
-
-void QOfonoCallForwarding::setVoiceNoReplyTimeoutComplete(QDBusPendingCallWatcher *call)
-{
-    call->deleteLater();
-    QDBusPendingReply<> reply = *call;
-    Q_EMIT voiceNoReplyTimeoutComplete(!reply.isError());
-}
-
-void QOfonoCallForwarding::setVoiceNotReachableComplete(QDBusPendingCallWatcher *call)
-{
-    call->deleteLater();
-    QDBusPendingReply<> reply = *call;
-    Q_EMIT voiceNotReachableComplete(!reply.isError());
+    return SUPER::isReady();
 }

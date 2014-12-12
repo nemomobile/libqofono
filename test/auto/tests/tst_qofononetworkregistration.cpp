@@ -22,13 +22,10 @@
  */
 
 #include <QtTest/QtTest>
-#include <QtCore/QObject>
 
-#include "../../../src/qofononetworkregistration.h"
-#include "../../../src/qofonomanager.h"
-#include "../../../src/qofonomodem.h"
+#include "qofononetworkregistration.h"
+#include "qofonomodem.h"
 
-#include <QtDebug>
 
 class TestQOfonoNetworkRegistration : public QObject
 {
@@ -37,10 +34,9 @@ class TestQOfonoNetworkRegistration : public QObject
 private slots:
     void initTestCase()
     {
-        QOfonoManager manager;
         m = new QOfonoNetworkRegistration(this);
         m->setModemPath("/phonesim");
-        QCOMPARE(m->isValid(), true);
+        QTRY_VERIFY(m->isValid());
     }
 
     void testQOfonoNetworkRegistration()
@@ -79,24 +75,30 @@ private slots:
         modem.setOnline(true);
         QTRY_COMPARE(modem.online(), true);
 
-        QEXPECT_FAIL("", "Network registration status does not change when modem goes offline",
-                Abort);
-        QTRY_COMPARE(status.count(), 1);
+        QTRY_COMPARE(status.count(), 3);
+        QCOMPARE(status.takeFirst().at(0).toString(), QString(""));
+        QCOMPARE(status.takeFirst().at(0).toString(), QString("unknown"));
         QCOMPARE(status.takeFirst().at(0).toString(), QString("registered"));
-        QCOMPARE(mcc.count(), 1);
+
+        QTRY_COMPARE(mcc.count(), 2);
+        QCOMPARE(mcc.takeFirst().at(0).toString(), QString(""));
         QCOMPARE(mcc.takeFirst().at(0).toString(), QString("234"));
-        QCOMPARE(mnc.count(), 1);
+
+        QTRY_COMPARE(mnc.count(), 2);
+        QCOMPARE(mnc.takeFirst().at(0).toString(), QString(""));
         QCOMPARE(mnc.takeFirst().at(0).toString(), QString("01"));
-        QCOMPARE(name.count(), 2);
+
+        QTRY_COMPARE(name.count(), 2);
+        QVERIFY(name.takeFirst().at(0).toString().isEmpty());
         QVERIFY(name.takeFirst().at(0).toString().length() > 0);
-        QVERIFY(name.takeFirst().at(0).toString().length() > 0);
-        QCOMPARE(strength.count(), 1);
+
+        QTRY_COMPARE(strength.count(), 2);
+        QCOMPARE(strength.takeFirst().at(0).toUInt(), uint(0));
         QCOMPARE(strength.takeFirst().at(0).toUInt(), uint(100));
     }
 
     void cleanupTestCase()
     {
-
     }
 
 private:

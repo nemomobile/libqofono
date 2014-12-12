@@ -112,9 +112,12 @@ for(s,DBUS_FILES) {
 
 SOURCES += $$DBUS_SOURCES\
     qofono.cpp \
+    qofonodbustypes.cpp \
     qofonoobject.cpp \
     qofonomanager.cpp \
     qofonomodem.cpp \
+    qofonomodeminterface.cpp \
+    qofonomodeminterface2.cpp \
     qofonoassistedsatellitenavigation.cpp \
     qofonoconnectionmanager.cpp \
     qofonoconnectioncontext.cpp \
@@ -152,6 +155,8 @@ PUBLIC_HEADERS += \
     qofonomanager.h \
     dbustypes.h \
     qofonomodem.h \
+    qofonomodeminterface.h \
+    qofonomodeminterface2.h \
     qofonoassistedsatellitenavigation.h \
     qofonoconnectionmanager.h \
     qofonoconnectioncontext.h \

@@ -22,14 +22,9 @@
  */
 
 #include <QtTest/QtTest>
-#include <QtCore/QObject>
-#include <QDBusObjectPath>
 
-#include "../../../src/qofonomanager.h"
-#include "../../../src/qofonomessagemanager.h"
-#include "../../../src/qofonomessage.h"
-
-#include <QtDebug>
+#include "qofonomessagemanager.h"
+#include "qofonomessage.h"
 
 class TestQOfonoMessageManager : public QObject
 {
@@ -41,10 +36,9 @@ class TestQOfonoMessageManager : public QObject
 private slots:
     void initTestCase()
     {
-        QOfonoManager manager;
         m = new QOfonoMessageManager(this);
         m->setModemPath("/phonesim");
-        QCOMPARE(m->isValid(), true);
+        QTRY_VERIFY(m->isValid());
     }
 
     void testQOfonoMessageManager()
@@ -54,7 +48,6 @@ private slots:
         QSignalSpy messageRemoved(m, SIGNAL(messageRemoved(QString)));
         QSignalSpy immediateMessage(m, SIGNAL(immediateMessage(QString, QVariantMap)));
         QSignalSpy incomingMessage(m, SIGNAL(incomingMessage(QString, QVariantMap)));
-
 
         QStringList messages = m->messages();
         QVERIFY(messages.count() == 0);

@@ -22,12 +22,8 @@
  */
 
 #include <QtTest/QtTest>
-#include <QtCore/QObject>
 
-#include "../../../src/qofonocellbroadcast.h"
-#include "../../../src/qofonomodem.h"
-
-#include <QtDebug>
+#include "qofonocellbroadcast.h"
 
 class TestQOfonoCellBroadcast : public QObject
 {
@@ -40,8 +36,7 @@ private slots:
     {
         m = new QOfonoCellBroadcast( this);
         m->setModemPath("/phonesim");
-
-        QCOMPARE(m->isValid(), true);
+        QTRY_VERIFY(m->isValid());
     }
 
     void testQOfonoCellBroadcast()

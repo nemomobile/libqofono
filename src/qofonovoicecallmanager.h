@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Jolla Ltd.
+** Copyright (C) 2013-2014 Jolla Ltd.
 ** Contact: lorn.potter@jollamobile.com
 **
 ** GNU Lesser General Public License Usage
@@ -16,21 +16,17 @@
 #ifndef QOFONOVoiceCallManager_H
 #define QOFONOVoiceCallManager_H
 
-#include <QObject>
-#include <QDBusVariant>
-#include <QStringList>
+#include "qofonomodeminterface.h"
 #include "qofono_global.h"
+
 //! This class is used to access ofono voice call manager API
 /*!
  * The API is documented in
  * http://git.kernel.org/?p=network/ofono/ofono.git;a=blob_plain;f=doc/voicecallmanager-api.txt
  */
-
-class QOfonoVoiceCallManagerPrivate;
-class QOFONOSHARED_EXPORT QOfonoVoiceCallManager : public QObject
+class QOFONOSHARED_EXPORT QOfonoVoiceCallManager : public QOfonoModemInterface
 {
     Q_OBJECT
-    Q_PROPERTY(QString modemPath READ modemPath WRITE setModemPath NOTIFY modemPathChanged)
     Q_PROPERTY(QStringList emergencyNumbers READ emergencyNumbers NOTIFY emergencyNumbersChanged)
     Q_PROPERTY(QString errorMessage READ errorMessage)
 
@@ -57,6 +53,7 @@ Q_SIGNALS:
 
     void dialComplete(bool status);
     void hangupAllComplete(bool status);
+    void sendTonesComplete(bool status);
     void transferComplete(bool status);
     void swapCallsComplete(bool status);
     void releaseAndAnswerComplete(bool status);
@@ -67,41 +64,37 @@ Q_SIGNALS:
 
     void barringActive(const QString &type);
     void forwarded(const QString &type);
-    void modemPathChanged(const QString &path);
 
 public slots:
     void dial(const QString &number, const QString &calleridHide);
-     void hangupAll();
-     void sendTones(const QString &tonestring);
-     void transfer();
-     void swapCalls();
-     void releaseAndAnswer();
-     void holdAndAnswer();
-     void privateChat(const QString &path);
-     void createMultiparty();
-     void hangupMultiparty();
-
-private:
-    QOfonoVoiceCallManagerPrivate *d_ptr;
-    void connectSignals();
+    void hangupAll();
+    void sendTones(const QString &tonestring);
+    void transfer();
+    void swapCalls();
+    void releaseAndAnswer();
+    void holdAndAnswer();
+    void privateChat(const QString &path);
+    void createMultiparty();
+    void hangupMultiparty();
 
 private slots:
-    void propertyChanged(const QString &property,const QDBusVariant &value);
-
-    void dialFinished(QDBusPendingCallWatcher *call);
-    void hangupAllFinished(QDBusPendingCallWatcher *call);
-    void sendTonesFinished(QDBusPendingCallWatcher *call);
-    void transferFinished(QDBusPendingCallWatcher *call);
-    void swapCallsFinished(QDBusPendingCallWatcher *call);
-    void releaseAndAnswerFinished(QDBusPendingCallWatcher *call);
-    void holdAndAnswerFinished(QDBusPendingCallWatcher *call);
-    void privateChatFinished(QDBusPendingCallWatcher *call);
-    void createMultipartyFinished(QDBusPendingCallWatcher *call);
-    void hangupMultipartyFinished(QDBusPendingCallWatcher *call);
-
+    void onGetCallsFinished(QDBusPendingCallWatcher *watch);
+    void onVoidCallFinished(QDBusPendingCallWatcher *watch);
+    void onObjectPathListCallFinished(QDBusPendingCallWatcher *watch);
     void onCallAdded(const QDBusObjectPath &, const QVariantMap &map);
     void onCallRemoved(const QDBusObjectPath &);
 
+private:
+    void addCall(const QString &callPath);
+
+protected:
+    QDBusAbstractInterface *createDbusInterface(const QString &path);
+    void dbusInterfaceDropped();
+    void propertyChanged(const QString &property, const QVariant &value);
+
+private:
+    class Private;
+    Private *privateData() const;
 };
 
 #endif // QOFONOVoiceCallManager_H

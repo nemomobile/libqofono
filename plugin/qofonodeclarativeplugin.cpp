@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Jolla Ltd.
+** Copyright (C) 2013-2014 Jolla Ltd.
 ** Contact: lorn.potter@jollamobile.com
 **
 ** GNU Lesser General Public License Usage
@@ -60,55 +60,62 @@
 #include "qofonopositioningrequestagent.h"
 #include "qofonolocationreporting.h"
 
+#include "qofononetworkoperatorlistmodel.h"
 
-void QOfonoDeclarativePlugin::registerTypes(const char *uri)
+void QOfonoDeclarativePlugin::registerTypes(const char *uri, int major, int minor)
 {
     Q_ASSERT(QLatin1String(uri) == QLatin1String("MeeGo.QOfono"));
 
-    qmlRegisterType<QOfonoManager>(uri,0,2,"OfonoManager");
-    qmlRegisterType<QOfonoModem>(uri,0,2,"OfonoModem");
+    qmlRegisterType<QOfonoManager>(uri,major,minor,"OfonoManager");
+    qmlRegisterType<QOfonoModem>(uri,major,minor,"OfonoModem");
 
-    qmlRegisterType<QOfonoConnectionManager>(uri,0,2,"OfonoConnMan");
-    qmlRegisterType<QOfonoConnectionContext>(uri,0,2,"OfonoContextConnection");
+    qmlRegisterType<QOfonoConnectionManager>(uri,major,minor,"OfonoConnMan");
+    qmlRegisterType<QOfonoConnectionContext>(uri,major,minor,"OfonoContextConnection");
 
-    qmlRegisterType<QOfonoNetworkRegistration>(uri,0,2,"OfonoNetworkRegistration");
-    qmlRegisterType<QOfonoNetworkOperator>(uri,0,2,"OfonoNetworkOperator");
+    qmlRegisterType<QOfonoNetworkRegistration>(uri,major,minor,"OfonoNetworkRegistration");
+    qmlRegisterType<QOfonoNetworkOperator>(uri,major,minor,"OfonoNetworkOperator");
 
-    qmlRegisterType<QOfonoCellBroadcast>(uri,0,2,"OfonoCellBroadcast");
+    qmlRegisterType<QOfonoCellBroadcast>(uri,major,minor,"OfonoCellBroadcast");
 
-    qmlRegisterType<QOfonoCallBarring>(uri,0,2,"OfonoCallBarring");
-    qmlRegisterType<QOfonoCallForwarding>(uri,0,2,"OfonoCallForwarding");
+    qmlRegisterType<QOfonoCallBarring>(uri,major,minor,"OfonoCallBarring");
+    qmlRegisterType<QOfonoCallForwarding>(uri,major,minor,"OfonoCallForwarding");
 
-    qmlRegisterType<QOfonoCallSettings>(uri,0,2,"OfonoCallSettings");
-    qmlRegisterType<QOfonoCallMeter>(uri,0,2,"OfonoCallMeter");
+    qmlRegisterType<QOfonoCallSettings>(uri,major,minor,"OfonoCallSettings");
+    qmlRegisterType<QOfonoCallMeter>(uri,major,minor,"OfonoCallMeter");
 
-    qmlRegisterType<QOfonoMessage>(uri,0,2,"OfonoMessage");
-    qmlRegisterType<QOfonoMessageManager>(uri,0,2,"OfonoMessageManager");
-    qmlRegisterType<QOfonoMessageWaiting>(uri,0,2,"OfonoMessageWaiting");
+    qmlRegisterType<QOfonoMessage>(uri,major,minor,"OfonoMessage");
+    qmlRegisterType<QOfonoMessageManager>(uri,major,minor,"OfonoMessageManager");
+    qmlRegisterType<QOfonoMessageWaiting>(uri,major,minor,"OfonoMessageWaiting");
 
-    qmlRegisterType<QOfonoSimManager>(uri,0,2,"OfonoSimManager");
+    qmlRegisterType<QOfonoSimManager>(uri,major,minor,"OfonoSimManager");
 
-    qmlRegisterType<QOfonoSmartMessaging>(uri,0,2,"OfonoSmartMessaging");
-    qmlRegisterType<QOfonoSmartMessagingAgent>(uri,0,2,"OfonoSmartMessagingAgent");
+    qmlRegisterType<QOfonoSmartMessaging>(uri,major,minor,"OfonoSmartMessaging");
+    qmlRegisterType<QOfonoSmartMessagingAgent>(uri,major,minor,"OfonoSmartMessagingAgent");
 
-    qmlRegisterType<QOfonoVoiceCall>(uri,0,2,"OfonoVoiceCall");
-    qmlRegisterType<QOfonoVoiceCallManager>(uri,0,2,"OfonoVoiceCallManager");
+    qmlRegisterType<QOfonoVoiceCall>(uri,major,minor,"OfonoVoiceCall");
+    qmlRegisterType<QOfonoVoiceCallManager>(uri,major,minor,"OfonoVoiceCallManager");
 
-    qmlRegisterType<QOfonoRadioSettings>(uri,0,2,"OfonoRadioSettings");
-    qmlRegisterType<QOfonoSupplementaryServices>(uri,0,2,"OfonoSupplementaryServices");
+    qmlRegisterType<QOfonoRadioSettings>(uri,major,minor,"OfonoRadioSettings");
+    qmlRegisterType<QOfonoSupplementaryServices>(uri,major,minor,"OfonoSupplementaryServices");
 
-    qmlRegisterType<QOfonoPhonebook>(uri,0,2,"OfonoPhonebook");
-    qmlRegisterType<QOfonoTextTelephony>(uri,0,2,"OfonoTextTelephony");
+    qmlRegisterType<QOfonoPhonebook>(uri,major,minor,"OfonoPhonebook");
+    qmlRegisterType<QOfonoTextTelephony>(uri,major,minor,"OfonoTextTelephony");
 
-    qmlRegisterType<QOfonoHandsfree>(uri,0,2,"OfonoHandsfree");
-    qmlRegisterType<QOfonoHandsfreeAudioAgent>(uri,0,2,"OfonoHandsfreeAudioAgent");
-    qmlRegisterType<QOfonoHandsfreeAudioCard>(uri,0,2,"OfonoHandsfreeAudioCard");
-    qmlRegisterType<QOfonoHandsfreeAudioManager>(uri,0,2,"OfonoHandsfreeAudioManager");
+    qmlRegisterType<QOfonoHandsfree>(uri,major,minor,"OfonoHandsfree");
+    qmlRegisterType<QOfonoHandsfreeAudioAgent>(uri,major,minor,"OfonoHandsfreeAudioAgent");
+    qmlRegisterType<QOfonoHandsfreeAudioCard>(uri,major,minor,"OfonoHandsfreeAudioCard");
+    qmlRegisterType<QOfonoHandsfreeAudioManager>(uri,major,minor,"OfonoHandsfreeAudioManager");
 
-    qmlRegisterType<QOfonoAssistedSatelliteNavigation>(uri,0,2,"OfonoAssistedSatelliteNavigation");
-    qmlRegisterType<QOfonoPositioningRequestAgent>(uri,0,2,"OfonoPositioningRequestAgent");
-    qmlRegisterType<QOfonoLocationReporting>(uri,0,2,"OfonoLocationReporting");
+    qmlRegisterType<QOfonoAssistedSatelliteNavigation>(uri,major,minor,"OfonoAssistedSatelliteNavigation");
+    qmlRegisterType<QOfonoPositioningRequestAgent>(uri,major,minor,"OfonoPositioningRequestAgent");
+    qmlRegisterType<QOfonoLocationReporting>(uri,major,minor,"OfonoLocationReporting");
 
+    qmlRegisterType<QOfonoNetworkOperatorListModel>(uri,major,minor,"OfonoNetworkOperatorListModel");
+}
+
+void QOfonoDeclarativePlugin::registerTypes(const char *uri)
+{
+    registerTypes(uri, 0, 2);
 }
 
 #if QT_VERSION < 0x050000

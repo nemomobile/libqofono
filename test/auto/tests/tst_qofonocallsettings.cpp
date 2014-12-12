@@ -22,11 +22,8 @@
  */
 
 #include <QtTest/QtTest>
-#include <QtCore/QObject>
 
-#include "../../../src/qofonocallsettings.h"
-
-#include <QtDebug>
+#include "qofonocallsettings.h"
 
 class TestQOfonoCallSettings : public QObject
 {
@@ -37,11 +34,11 @@ private slots:
     {
         m = new QOfonoCallSettings(this);
         m->setModemPath("/phonesim");
-        QCOMPARE(m->isValid(), true);
-
         QSignalSpy ready(m, SIGNAL(readyChanged()));
+
+        QTRY_VERIFY(m->isValid());
+        QTRY_VERIFY(m->isReady());
         QTRY_COMPARE(ready.count(), 1);
-        QCOMPARE(m->isReady(), true);
     }
 
     void testQOfonoCallSettings()

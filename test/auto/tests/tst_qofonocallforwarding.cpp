@@ -22,10 +22,8 @@
  */
 
 #include <QtTest/QtTest>
-#include <QtCore/QObject>
 
-#include "../../../src/qofonocallforwarding.h"
-#include <QtDebug>
+#include "qofonocallforwarding.h"
 
 class TestQOfonoCallForwarding : public QObject
 {
@@ -36,11 +34,11 @@ private slots:
     {
         m = new QOfonoCallForwarding(this);
         m->setModemPath("/phonesim");
-        QCOMPARE(m->isValid(), true);
 
         QSignalSpy ready(m, SIGNAL(readyChanged()));
-        QTRY_COMPARE(ready.count(), 1);
-        QCOMPARE(m->isReady(), true);
+        QTRY_VERIFY(m->isValid());
+        QTRY_VERIFY(m->isReady());
+        QCOMPARE(ready.count(), 1);
     }
 
     void testQOfonoCallForwarding()

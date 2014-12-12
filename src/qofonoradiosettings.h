@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Jolla Ltd.
+** Copyright (C) 2013-2014 Jolla Ltd.
 ** Contact: lorn.potter@jollamobile.com
 **
 ** GNU Lesser General Public License Usage
@@ -17,6 +17,7 @@
 #define QOFONORadioSettings_H
 
 #include "qofonoobject.h"
+#include "qofono_global.h"
 
 //! This class is used to access ofono radio settings API
 /*!
@@ -61,9 +62,9 @@ Q_SIGNALS:
     void modemPathChanged(const QString &path);
 
 protected:
-    QDBusAbstractInterface* createDbusInterface(const QString &path);
+    QDBusAbstractInterface *createDbusInterface(const QString &path);
     void propertyChanged(const QString &key, const QVariant &value);
-    void objectPathChanged(const QString &path);
+    void objectPathChanged(const QString &path, const QVariantMap *properties);
 };
 
 #endif // QOFONORadioSettings_H

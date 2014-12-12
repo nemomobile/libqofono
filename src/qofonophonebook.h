@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Jolla Ltd.
+** Copyright (C) 2013-2014 Jolla Ltd.
 ** Contact: lorn.potter@jollamobile.com
 **
 ** GNU Lesser General Public License Usage
@@ -16,20 +16,17 @@
 #ifndef QOFONOPhonebook_H
 #define QOFONOPhonebook_H
 
-#include <QObject>
-#include <QDBusVariant>
+#include "qofonomodeminterface2.h"
 #include "qofono_global.h"
+
 //! This class is used to access ofono phonebook API
 /*!
  * oFono phonebook API is documented in
  * http://git.kernel.org/?p=network/ofono/ofono.git;a=blob_plain;f=doc/phonebook-api.txt
  */
-
-class QOfonoPhonebookPrivate;
-class QOFONOSHARED_EXPORT QOfonoPhonebook : public QObject
+class QOFONOSHARED_EXPORT QOfonoPhonebook : public QOfonoModemInterface2
 {
     Q_OBJECT
-    Q_PROPERTY(QString modemPath READ modemPath WRITE setModemPath NOTIFY modemPathChanged)
     Q_PROPERTY(bool importing READ importing NOTIFY importingChanged)
 
 public:
@@ -40,10 +37,9 @@ public:
     void setModemPath(const QString &path);
 
     bool importing() const;
-
     bool isValid() const;
+
 Q_SIGNALS:
-    void modemPathChanged(const QString &path);
     void importReady(const QString &vcardData);
     void importFailed();
     void importingChanged();
@@ -52,11 +48,15 @@ public slots:
     void beginImport();
 
 private slots:
-    void importComplete(QDBusPendingCallWatcher *call);
+    void onImportFinished(QDBusPendingCallWatcher *watch);
+
+protected:
+    QDBusAbstractInterface *createDbusInterface(const QString &path);
+    void dbusInterfaceDropped();
 
 private:
-    QOfonoPhonebookPrivate *d_ptr;
-
+    class Private;
+    Private *privateData() const;
 };
 
 #endif // QOFONOPhonebook_H

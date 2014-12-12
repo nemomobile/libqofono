@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Jolla Ltd.
+** Copyright (C) 2013-2014 Jolla Ltd.
 ** Contact: lorn.potter@jollamobile.com
 **
 ** GNU Lesser General Public License Usage
@@ -16,90 +16,88 @@
 #include "qofonophonebook.h"
 #include "dbus/ofonophonebook.h"
 
-class QOfonoPhonebookPrivate
+#define SUPER QOfonoModemInterface2
+
+class QOfonoPhonebook::Private : public SUPER::ExtData
 {
 public:
-    QOfonoPhonebookPrivate();
-    QString modemPath;
-    OfonoPhonebook *phonebook;
     bool importing;
+    Private() : importing(false) {}
 };
 
-QOfonoPhonebookPrivate::QOfonoPhonebookPrivate() :
-    modemPath(QString())
-  , phonebook(0)
-  , importing(false)
-{
-}
-
 QOfonoPhonebook::QOfonoPhonebook(QObject *parent) :
-    QObject(parent)
-  , d_ptr(new QOfonoPhonebookPrivate)
+    SUPER(OfonoPhonebook::staticInterfaceName(), new Private, parent)
 {
 }
 
 QOfonoPhonebook::~QOfonoPhonebook()
 {
-    delete d_ptr;
 }
 
-void QOfonoPhonebook::setModemPath(const QString &path)
+QDBusAbstractInterface *QOfonoPhonebook::createDbusInterface(const QString &path)
 {
-    if (path == d_ptr->modemPath ||
-            path.isEmpty())
-        return;
+    return new OfonoPhonebook("org.ofono", path, QDBusConnection::systemBus(), this);
+}
 
-    if (path != modemPath()) {
-        if (d_ptr->phonebook) {
-            delete d_ptr->phonebook;
-            d_ptr->phonebook = 0;
-        }
-        d_ptr->phonebook = new OfonoPhonebook("org.ofono", path, QDBusConnection::systemBus(),this);
-        if (d_ptr->phonebook->isValid()) {
-            d_ptr->modemPath = path;
-            Q_EMIT modemPathChanged(path);
-        }
+void QOfonoPhonebook::dbusInterfaceDropped()
+{
+    SUPER::dbusInterfaceDropped();
+    Private *d_ptr = privateData();
+    if (d_ptr->importing) {
+        d_ptr->importing = false;
+        Q_EMIT importingChanged();
     }
-}
-
-QString QOfonoPhonebook::modemPath() const
-{
-    return d_ptr->modemPath;
 }
 
 bool QOfonoPhonebook::importing() const
 {
-    return d_ptr->importing;
+    return privateData()->importing;
 }
 
 void QOfonoPhonebook::beginImport()
 {
-    if (d_ptr->phonebook) {
-        QDBusPendingReply<QString> result = d_ptr->phonebook->Import();
-        QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(result, this);
-        connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
-                SLOT(importComplete(QDBusPendingCallWatcher*)));
-        d_ptr->importing = true;
-        emit importingChanged();
+    Private *d_ptr = privateData();
+    if (!d_ptr->importing) {
+        OfonoPhonebook *iface = (OfonoPhonebook*)dbusInterface();
+        if (iface) {
+            connect(new QDBusPendingCallWatcher(iface->Import(), iface),
+                SIGNAL(finished(QDBusPendingCallWatcher*)),
+                SLOT(onImportFinished(QDBusPendingCallWatcher*)));
+            d_ptr->importing = true;
+            Q_EMIT importingChanged();
+        }
     }
 }
 
-void QOfonoPhonebook::importComplete(QDBusPendingCallWatcher *call)
+void QOfonoPhonebook::onImportFinished(QDBusPendingCallWatcher *watch)
 {
-    call->deleteLater();
-    QDBusPendingReply<QString> reply = *call;
+    watch->deleteLater();
+    QDBusPendingReply<QString> reply(*watch);
     if (!reply.isError()) {
-        QString data = reply.value();
-        emit importReady(data);
+        Q_EMIT importReady(reply.value());
     } else {
-        emit importFailed();
+        Q_EMIT importFailed();
     }
-    d_ptr->importing = false;
-    emit importingChanged();
+    privateData()->importing = false;
+    Q_EMIT importingChanged();
+}
+
+QString QOfonoPhonebook::modemPath() const
+{
+    return SUPER::modemPath();
+}
+
+void QOfonoPhonebook::setModemPath(const QString &path)
+{
+    SUPER::setModemPath(path);
 }
 
 bool QOfonoPhonebook::isValid() const
 {
-    return d_ptr->phonebook->isValid();
+    return SUPER::isValid();
 }
 
+QOfonoPhonebook::Private *QOfonoPhonebook::privateData() const
+{
+    return (QOfonoPhonebook::Private*)SUPER::extData();
+}

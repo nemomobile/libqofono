@@ -22,12 +22,9 @@
  */
 
 #include <QtTest/QtTest>
-#include <QtCore/QObject>
 
-#include "../../../src/qofononetworkregistration.h"
-#include "../../../src/qofononetworkoperator.h"
-
-#include <QtDebug>
+#include "qofononetworkregistration.h"
+#include "qofononetworkoperator.h"
 
 // Do it here to not break API compatibility - also see qRegisterMetaType below
 Q_DECLARE_METATYPE(QOfonoNetworkOperator::Error)
@@ -47,8 +44,7 @@ private slots:
     {
         m = new QOfonoNetworkRegistration(this);
         m->setModemPath("/phonesim");
-
-        QCOMPARE(m->isValid(), true);
+        QTRY_VERIFY(m->isValid());
     }
 
     void testQOfonoNetworkOperator()
@@ -69,6 +65,7 @@ private slots:
         {
             QOfonoNetworkOperator *op = new QOfonoNetworkOperator(this);
             op->setOperatorPath(opId);
+            QTRY_VERIFY(op->isValid());
             opList << op;
             if (op1 == -1 && op->status() == "current")
                 op1 = opIdList.indexOf(opId);

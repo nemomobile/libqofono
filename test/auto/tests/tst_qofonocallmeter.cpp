@@ -22,11 +22,8 @@
  */
 
 #include <QtTest/QtTest>
-#include <QtCore/QObject>
 
-#include "../../../src/qofonocallmeter.h"
-
-#include <QtDebug>
+#include "qofonocallmeter.h"
 
 class TestQOfonoCallMeter : public QObject
 {
@@ -37,7 +34,7 @@ private slots:
     {
         m = new QOfonoCallMeter(this);
         m->setModemPath("/phonesim");
-        QCOMPARE(m->isValid(), true);
+        QTRY_VERIFY(m->isValid());
     }
 
     void testQOfonoCallMeter()
@@ -48,7 +45,6 @@ private slots:
 
     void cleanupTestCase()
     {
-
     }
 
 private:

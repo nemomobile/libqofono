@@ -19,8 +19,10 @@
 #include "qofononetworkregistration.h"
 #include "dbus/ofonoconnectioncontext.h"
 
+#define SUPER QOfonoObject
+
 QOfonoConnectionContext::QOfonoConnectionContext(QObject *parent) :
-    QOfonoObject(parent)
+    SUPER(parent)
 {
 }
 
@@ -28,13 +30,14 @@ QOfonoConnectionContext::~QOfonoConnectionContext()
 {
 }
 
-QDBusAbstractInterface* QOfonoConnectionContext::createDbusInterface(const QString &path)
+QDBusAbstractInterface *QOfonoConnectionContext::createDbusInterface(const QString &path)
 {
     return new OfonoConnectionContext("org.ofono", path, QDBusConnection::systemBus(),this);
 }
 
-void QOfonoConnectionContext::objectPathChanged(const QString &path)
+void QOfonoConnectionContext::objectPathChanged(const QString &path, const QVariantMap *properties)
 {
+    SUPER::objectPathChanged(path, properties);
     Q_EMIT contextPathChanged(path);
 }
 
@@ -71,12 +74,13 @@ QVariant QOfonoConnectionContext::convertProperty(const QString &key, const QVar
         value.value<QDBusArgument>() >> map;
         return map;
     } else {
-        return QOfonoObject::convertProperty(key, value);
+        return SUPER::convertProperty(key, value);
     }
 }
 
 void QOfonoConnectionContext::propertyChanged(const QString &property, const QVariant &value)
 {
+    SUPER::propertyChanged(property, value);
     if (property == QLatin1String("Active")) {
         Q_EMIT activeChanged(value.value<bool>());
     } else if (property == QLatin1String("Name")) {
@@ -96,11 +100,10 @@ void QOfonoConnectionContext::propertyChanged(const QString &property, const QVa
     } else if (property == QLatin1String("MessageCenter")) {
         Q_EMIT messageCenterChanged(value.value<QString>());
     } else if (property == QLatin1String("Settings")) {
-        Q_EMIT settingsChanged(value.value<QVariantMap>());
+        Q_EMIT settingsChanged(getVariantMap("Settings"));
     } else if (property == QLatin1String("IPv6.Settings")) {
-        Q_EMIT IPv6SettingsChanged(value.value<QVariantMap>());
+        Q_EMIT IPv6SettingsChanged(getVariantMap("IPv6.Settings"));
     }
-    QOfonoObject::propertyChanged(property, value);
 }
 
 bool QOfonoConnectionContext::active() const
@@ -207,15 +210,15 @@ void QOfonoConnectionContext::setMessageCenter(const QString &value)
     setProperty("MessageCenter", value);
 }
 
-bool QOfonoConnectionContext::isValid() const
-{
-    return QOfonoObject::isValid();
-}
-
 void QOfonoConnectionContext::disconnect()
 {
     Q_EMIT disconnectRequested();
     setPropertySync("Active", false);
+}
+
+bool QOfonoConnectionContext::isValid() const
+{
+    return SUPER::isValid();
 }
 
 /*

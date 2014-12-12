@@ -16,18 +16,14 @@
 #ifndef QOFONOMANAGER_H
 #define QOFONOMANAGER_H
 
-#include <QObject>
-#include <QVariant>
 #include "dbustypes.h"
-
 #include "qofono_global.h"
+
 //! This class is used to access ofono connman context API
 /*!
  * The API is documented in
  * http://git.kernel.org/?p=network/ofono/ofono.git;a=blob;f=doc/manager-api.txt
  */
-
-class QOfonoManagerPrivate;
 class QOFONOSHARED_EXPORT QOfonoManager : public QObject
 {
     Q_OBJECT
@@ -59,7 +55,8 @@ private slots:
     void ofonoUnregistered(const QString &);
 
 private:
-    QOfonoManagerPrivate *d_ptr;
+    class Private;
+    Private *d_ptr;
 };
 
 #endif // QOFONOMANAGER_H

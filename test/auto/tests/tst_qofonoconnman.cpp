@@ -22,13 +22,9 @@
  */
 
 #include <QtTest/QtTest>
-#include  <QtCore/QObject>
 
 #include "qofonoconnectioncontext.h"
 #include "qofonoconnectionmanager.h"
-#include "qofonomanager.h"
-
-#include <QtDebug>
 
 class TestOfonoConnMan : public QObject
 {
@@ -37,27 +33,24 @@ class TestOfonoConnMan : public QObject
 private slots:
     void initTestCase()
     {
-        QOfonoManager manager;
         m = new QOfonoConnectionManager(this);
         m->setModemPath("/phonesim");
 
-        QCOMPARE(m->isValid(), true);
-        QCOMPARE(m->powered(), true);
+        QTRY_VERIFY(m->isValid());
+        QTRY_VERIFY(m->powered());
     }
 
     void testOfonoConnMan()
     {
-        // Set initial values
-        m->setPowered(true);
-        QTRY_COMPARE(m->powered(), true);
         m->setRoamingAllowed(true);
         QTRY_COMPARE(m->roamingAllowed(), true);
+        Q_FOREACH (QString context, m->contexts()) {
+            m->removeContext(context);
+        }
+        QTRY_VERIFY(m->contexts().isEmpty());
 
-        QSignalSpy attch(m, SIGNAL(attachedChanged(bool)));
-        QSignalSpy sus(m,SIGNAL(suspendedChanged(bool)));
-        QSignalSpy ber(m, SIGNAL(bearerChanged(QString)));
         QSignalSpy roam(m,SIGNAL(roamingAllowedChanged(bool)));
-        QSignalSpy pow(m,SIGNAL(poweredChanged(bool)));
+        QSignalSpy pow(m, SIGNAL(poweredChanged(bool)));
         QSignalSpy add(m, SIGNAL(contextAdded(QString)));
         QSignalSpy rem(m, SIGNAL(contextRemoved(QString)));
 
@@ -116,7 +109,6 @@ private slots:
 
     void cleanupTestCase()
     {
-
     }
 
 private:

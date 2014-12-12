@@ -22,12 +22,9 @@
  */
 
 #include <QtTest/QtTest>
-#include <QtCore/QObject>
 
-#include "../../../src/qofonomessagewaiting.h"
-#include "../../../src/qofonomodem.h"
-
-#include <QtDebug>
+#include "qofonomessagewaiting.h"
+#include "qofonomodem.h"
 
 class TestQOfonoMessageWaiting : public QObject
 {
@@ -41,7 +38,7 @@ private slots:
     {
         m = new QOfonoMessageWaiting(this);
         m->setModemPath("/phonesim");
-        QCOMPARE(m->isValid(), true);
+        QTRY_VERIFY(m->isValid());
     }
 
     void testQOfonoMessageWaiting()
@@ -67,10 +64,13 @@ private slots:
         QCOMPARE(modemOnline.takeFirst().at(0).toBool(), false);
 
         QTest::qWait(REASONABLE_TIMEOUT);
-        QCOMPARE(waiting.count(), 0);
-        QCOMPARE(messageCount.count(), 0);
-        QCOMPARE(mailboxNumber.count(), 0);
+        QTRY_COMPARE(waiting.count(), 1);
+        QTRY_COMPARE(messageCount.count(), 1);
+        QTRY_COMPARE(mailboxNumber.count(), 1);
         QCOMPARE(setNumberComplete.count(), 0);
+        QCOMPARE(waiting.takeFirst().at(0).toInt(), 0);
+        QCOMPARE(messageCount.takeFirst().at(0).toInt(), 0);
+        QCOMPARE(mailboxNumber.takeFirst().at(0).toString(), QString(""));
 
         modem.setOnline(true);
         QTRY_COMPARE(modemOnline.count(), 1);
@@ -119,7 +119,6 @@ private slots:
 
     void cleanupTestCase()
     {
-
     }
 
 private:

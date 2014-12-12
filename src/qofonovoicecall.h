@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Jolla Ltd.
+** Copyright (C) 2013-2014 Jolla Ltd.
 ** Contact: lorn.potter@jollamobile.com
 **
 ** GNU Lesser General Public License Usage
@@ -16,17 +16,15 @@
 #ifndef QOFONOVoiceCall_H
 #define QOFONOVoiceCall_H
 
-#include <QObject>
-#include <QDBusVariant>
+#include "qofonoobject.h"
 #include "qofono_global.h"
+
 //! This class is used to access ofono voice call API
 /*!
  * The API is documented in
  * http://git.kernel.org/?p=network/ofono/ofono.git;a=blob;f=doc/voicecall-api.txt
  */
-
-class QOfonoVoiceCallPrivate;
-class QOFONOSHARED_EXPORT QOfonoVoiceCall : public QObject
+class QOFONOSHARED_EXPORT QOfonoVoiceCall : public QOfonoObject
 {
     Q_OBJECT
     Q_ENUMS(Error)
@@ -72,6 +70,7 @@ public:
     bool remoteMultiparty() const;
 
     bool isValid() const;
+
 Q_SIGNALS:
     void lineIdentificationChanged(const QString &name);
     void nameChanged(const QString &name);
@@ -98,14 +97,15 @@ public slots:
     void deflect(const QString &number);
 
 private:
-    QOfonoVoiceCallPrivate *d_ptr;
-    Error errorNameToEnum(const QString &errorName);
+    static Error errorNameToEnum(const QString &errorName);
 
 private slots:
-    void propertyChanged(const QString &property,const QDBusVariant &value);
-    void answerFinished(QDBusPendingCallWatcher *call);
-    void hangupFinished(QDBusPendingCallWatcher *call);
-    void deflectFinished(QDBusPendingCallWatcher *call);
+    void onDbusCallFinished(QDBusPendingCallWatcher *watch);
+
+protected:
+    QDBusAbstractInterface *createDbusInterface(const QString &path);
+    void propertyChanged(const QString &key, const QVariant &value);
+    void objectPathChanged(const QString &path, const QVariantMap *properties);
 };
 
 #endif // QOFONOVoiceCall_H

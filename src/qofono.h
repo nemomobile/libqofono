@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Jolla Ltd.
+** Copyright (C) 2013-2014 Jolla Ltd.
 ** Contact: lorn.potter@jollamobile.com
 **
 ** GNU Lesser General Public License Usage
@@ -46,6 +46,7 @@ public:
     QOfono();
 
     static QString mobileCountryCodeToAlpha2CountryCode(int mcc);
+    static void registerObjectPathPropertiesType();
 };
 
 #endif // QOFONO_H

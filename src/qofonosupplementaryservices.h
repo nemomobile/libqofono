@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Jolla Ltd.
+** Copyright (C) 2013-2014 Jolla Ltd.
 ** Contact: lorn.potter@jollamobile.com
 **
 ** GNU Lesser General Public License Usage
@@ -16,20 +16,17 @@
 #ifndef QOFONOSupplimentaryServices_H
 #define QOFONOSupplimentaryServices_H
 
-#include <QObject>
-#include <QDBusVariant>
+#include "qofonomodeminterface.h"
 #include "qofono_global.h"
+
 //! This class is used to access ofono supplementary services API
 /*!
  * The API is documented in
  * http://git.kernel.org/?p=network/ofono/ofono.git;a=blob_plain;f=doc/supplementaryservices-api.txt
  */
-
-class QOfonoSupplementaryServicesPrivate;
-class QOFONOSHARED_EXPORT QOfonoSupplementaryServices : public QObject
+class QOFONOSHARED_EXPORT QOfonoSupplementaryServices : public QOfonoModemInterface
 {
     Q_OBJECT
-    Q_PROPERTY(QString modemPath READ modemPath WRITE setModemPath NOTIFY modemPathChanged)
     Q_PROPERTY(QString state READ state NOTIFY stateChanged)
 
 public:
@@ -65,11 +62,11 @@ Q_SIGNALS:
     void stateChanged(const QString &state);
     void modemPathChanged(const QString &path);
     
-private:
-    QOfonoSupplementaryServicesPrivate *d_ptr;
+protected:
+    QDBusAbstractInterface *createDbusInterface(const QString &path);
+    void propertyChanged(const QString &key, const QVariant &value);
 
 private slots:
-    void propertyChanged(const QString &property,const QDBusVariant &value);
     void initiateResponseReceived(QDBusPendingCallWatcher*);
     void respondResponseReceived(QDBusPendingCallWatcher*);
     void cancelResponseReceived(QDBusPendingCallWatcher*);

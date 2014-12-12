@@ -22,11 +22,8 @@
  */
 
 #include <QtTest/QtTest>
-#include <QtCore/QObject>
 
-#include "../../../src/qofonophonebook.h"
-
-#include <QtDebug>
+#include "qofonophonebook.h"
 
 class TestQOfonoPhonebook : public QObject
 {
@@ -37,6 +34,7 @@ private slots:
     {
         m = new QOfonoPhonebook(this);
         m->setModemPath("/phonesim");
+        QTRY_VERIFY(m->isValid());
     }
 
     void testQOfonoPhonebook()
@@ -60,7 +58,6 @@ private slots:
 
     void cleanupTestCase()
     {
-
     }
 
 private:

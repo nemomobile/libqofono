@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Jolla Ltd.
+** Copyright (C) 2013-2014 Jolla Ltd.
 ** Contact: lorn.potter@jollamobile.com
 **
 ** GNU Lesser General Public License Usage
@@ -13,278 +13,215 @@
 **
 ****************************************************************************/
 
-#include "dbustypes.h"
 #include "qofonomessagemanager.h"
 #include "dbus/ofonomessagemanager.h"
 
-class QOfonoMessageManagerPrivate
+#define SUPER QOfonoModemInterface
+
+class QOfonoMessageManager::Private : public QOfonoObject::ExtData
 {
 public:
-    QOfonoMessageManagerPrivate();
-    QString modemPath;
-    OfonoMessageManager *messageManager;
-    QVariantMap properties;
+    bool initialized;
     QStringList messageList;
-    QString errorMessage;
+    Private() : initialized(false) {}
 };
 
-QOfonoMessageManagerPrivate::QOfonoMessageManagerPrivate() :
-    modemPath(QString())
-  , messageManager(0)
-  , messageList(QStringList())
-{
-}
-
 QOfonoMessageManager::QOfonoMessageManager(QObject *parent) :
-    QObject(parent)
-  , d_ptr(new QOfonoMessageManagerPrivate)
+    SUPER(OfonoMessageManager::staticInterfaceName(), new Private, parent)
 {
+    QOfonoDbusTypes::registerObjectPathProperties();
 }
 
 QOfonoMessageManager::~QOfonoMessageManager()
 {
-    delete d_ptr;
 }
 
-void QOfonoMessageManager::setModemPath(const QString &path)
+bool QOfonoMessageManager::isValid() const
 {
-    if (path == d_ptr->modemPath ||
-            path.isEmpty())
-        return;
+    return privateData()->initialized && SUPER::isValid();
+}
 
-       if (path != modemPath()) {
-           if (d_ptr->messageManager) {
-            delete d_ptr->messageManager;
-            d_ptr->messageManager = 0;
-            d_ptr->properties.clear();
-        }
-        d_ptr->messageManager = new OfonoMessageManager("org.ofono", path, QDBusConnection::systemBus(),this);
+QDBusAbstractInterface *QOfonoMessageManager::createDbusInterface(const QString &path)
+{
+    OfonoMessageManager* iface = new OfonoMessageManager("org.ofono", path, QDBusConnection::systemBus(), this);
+    connect(new QDBusPendingCallWatcher(iface->GetMessages(), iface),
+        SIGNAL(finished(QDBusPendingCallWatcher*)),
+        SLOT(onGetMessagesFinished(QDBusPendingCallWatcher*)));
+    connect(iface,
+        SIGNAL(ImmediateMessage(QString,QVariantMap)),
+        SIGNAL(immediateMessage(QString,QVariantMap)));
+    connect(iface,
+        SIGNAL(IncomingMessage(QString,QVariantMap)),
+        SIGNAL(incomingMessage(QString,QVariantMap)));
+    connect(iface,
+        SIGNAL(MessageAdded(QDBusObjectPath,QVariantMap)),
+        SLOT(onMessageAdded(QDBusObjectPath,QVariantMap)));
+    connect(iface,
+        SIGNAL(MessageRemoved(QDBusObjectPath)),
+        SLOT(onMessageRemoved(QDBusObjectPath)));
+    return iface;
+}
 
-        if (d_ptr->messageManager->isValid()) {
-            d_ptr->modemPath = path;
-            connect(d_ptr->messageManager,SIGNAL(PropertyChanged(QString,QDBusVariant)),
-                    this,SLOT(propertyChanged(QString,QDBusVariant)));
-            connect(d_ptr->messageManager,SIGNAL(ImmediateMessage(QString,QVariantMap)),
-                    this,SIGNAL(immediateMessage(QString,QVariantMap)));
-            connect(d_ptr->messageManager,SIGNAL(IncomingMessage(QString,QVariantMap)),
-                    this,SIGNAL(incomingMessage(QString,QVariantMap)));
-            connect(d_ptr->messageManager,SIGNAL(MessageAdded(QDBusObjectPath,QVariantMap)),
-                    this,SLOT(onMessageAdded(QDBusObjectPath,QVariantMap)));
-            connect(d_ptr->messageManager,SIGNAL(MessageRemoved(QDBusObjectPath)),
-                    this,SLOT(onMessageRemoved(QDBusObjectPath)));
-
-            QDBusPendingReply<QVariantMap> reply;
-            reply = d_ptr->messageManager->GetProperties();
-            reply.waitForFinished();
-            d_ptr->properties = reply.value();
-
-            QDBusMessage request = QDBusMessage::createMethodCall("org.ofono",
-                                                                  path,
-                                                                  "org.ofono.MessageManager",
-                                                                  "GetMessages");
-
-            QDBusConnection::systemBus().callWithCallback(request,
-                                                           this,
-                                                           SLOT(getMessagesFinished(ObjectPathPropertiesList)),
-                                                           SLOT(messagesError(QDBusError)));
+void QOfonoMessageManager::dbusInterfaceDropped()
+{
+    SUPER::dbusInterfaceDropped();
+    Private *d_ptr = privateData();
+    d_ptr->initialized = false;
+    if (!d_ptr->messageList.isEmpty()) {
+        QStringList list = d_ptr->messageList;
+        d_ptr->messageList.clear();
+        for (int i=0; i<list.count(); i++) {
+            Q_EMIT messageRemoved(list[i]);
         }
     }
 }
 
-QString QOfonoMessageManager::modemPath() const
+void QOfonoMessageManager::propertyChanged(const QString &property, const QVariant &value)
 {
-    return d_ptr->modemPath;
-}
-
-
-void QOfonoMessageManager::propertyChanged(const QString& property, const QDBusVariant& dbusvalue)
-{
-    QVariant value = dbusvalue.variant();
-    d_ptr->properties.insert(property,value);
-
+    SUPER::propertyChanged(property, value);
     if (property == QLatin1String("ServiceCenterAddress")) {
-        Q_EMIT serviceCenterAddressChanged(value.value<QString>());
+        Q_EMIT serviceCenterAddressChanged(value.toString());
     } else if (property == QLatin1String("UseDeliveryReports")) {
-        Q_EMIT useDeliveryReportsChanged(value.value<bool>());
+        Q_EMIT useDeliveryReportsChanged(value.toBool());
     } else if (property == QLatin1String("Bearer")) {
-        Q_EMIT bearerChanged(value.value<QString>());
+        Q_EMIT bearerChanged(value.toString());
     } else if (property == QLatin1String("Alphabet")) {
-        Q_EMIT alphabetChanged(value.value<QString>());
+        Q_EMIT alphabetChanged(value.toString());
     }
 }
 
 QString QOfonoMessageManager::serviceCenterAddress()
 {
-    if (d_ptr->messageManager)
-        return d_ptr->properties["ServiceCenterAddress"].value<QString>();
-    else
-        return QString();
+    return getString("ServiceCenterAddress");
 }
 
 void QOfonoMessageManager::setServiceCenterAddress(const QString &address)
 {
-    if (d_ptr->messageManager) {
-        QDBusPendingReply<> result = d_ptr->messageManager->SetProperty("ServiceCenterAddress",QDBusVariant(address));
-        QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(result, this);
-        connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
-                SLOT(setServiceCenterAddressFinished(QDBusPendingCallWatcher*)));
-    }
+    setProperty("ServiceCenterAddress", address);
 }
 
 bool QOfonoMessageManager::useDeliveryReports()
 {
-    if (d_ptr->messageManager)
-        return d_ptr->properties["UseDeliveryReports"].value<bool>();
-    else
-        return false;
+    return getBool("UseDeliveryReports");
 }
 
 void QOfonoMessageManager::setUseDeliveryReports(bool useDeliveryReports)
 {
-    if (d_ptr->messageManager) {
-        QDBusPendingReply<> result = d_ptr->messageManager->SetProperty("UseDeliveryReports",QDBusVariant(useDeliveryReports));
-        QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(result, this);
-        connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
-                SLOT(setUseDeliveryReportsFinished(QDBusPendingCallWatcher*)));
-    }
+    setProperty("UseDeliveryReports", useDeliveryReports);
 }
 
 QString QOfonoMessageManager::bearer()
 {
-    if (d_ptr->messageManager)
-        return d_ptr->properties["Bearer"].value<QString>();
-    else
-        return QString();
+    return getString("Bearer");
 }
 
 void QOfonoMessageManager::setBearer(const QString &bearer)
 {
-    if (d_ptr->messageManager) {
-        QDBusPendingReply<> result = d_ptr->messageManager->SetProperty("Bearer",QDBusVariant(bearer));
-        QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(result, this);
-        connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
-                SLOT(setBearerFinished(QDBusPendingCallWatcher*)));
-    }
+    setProperty("Bearer", bearer);
 }
 
 QString QOfonoMessageManager::alphabet()
 {
-    if (d_ptr->messageManager)
-        return d_ptr->properties["Alphabet"].value<QString>();
-    else
-        return QString();
+    return getString("Alphabet");
 }
 
 void QOfonoMessageManager::setAlphabet(const QString &alphabet)
 {
-    if (d_ptr->messageManager) {
-        QDBusPendingReply<> result = d_ptr->messageManager->SetProperty("Alphabet",QDBusVariant(alphabet));
-        QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(result, this);
-        connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
-                SLOT(setAlphabetFinished(QDBusPendingCallWatcher*)));
-    }
+    setProperty("Alphabet", alphabet);
 }
 
 void QOfonoMessageManager::sendMessage(const QString &numberTo, const QString &message)
 {
-    if (d_ptr->messageManager) {
-        QDBusPendingReply<QDBusObjectPath> result = d_ptr->messageManager->SendMessage(numberTo,message);
-        QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(result, this);
-        connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
-                SLOT(sendMessageFinished(QDBusPendingCallWatcher*)));
+    OfonoMessageManager *iface = (OfonoMessageManager*)dbusInterface();
+    if (iface) {
+        connect(new QDBusPendingCallWatcher(iface->SendMessage(numberTo, message), iface),
+            SIGNAL(finished(QDBusPendingCallWatcher*)),
+            SLOT(onSendMessageFinished(QDBusPendingCallWatcher*)));
     }
 }
 
 QStringList QOfonoMessageManager::messages()
 {
-    if (d_ptr->messageManager)
-        return d_ptr->messageList;
-    return QStringList();
+    return privateData()->messageList;
 }
 
-
-void QOfonoMessageManager::onMessageAdded(const QDBusObjectPath &path,
-        const QVariantMap &properties)
+void QOfonoMessageManager::onMessageAdded(const QDBusObjectPath &path, const QVariantMap &)
 {
-    Q_UNUSED(properties);
-
-    if (d_ptr->messageManager) {
-        if (!d_ptr->messageList.contains(path.path())) {
-            d_ptr->messageList.append(path.path());
-            Q_EMIT messageAdded(path.path());
-        }
-    }
+    addMessage(path.path());
 }
 
 void QOfonoMessageManager::onMessageRemoved(const QDBusObjectPath &path)
 {
-    if (d_ptr->messageManager) {
-        if (d_ptr->messageList.contains(path.path())) {
-            d_ptr->messageList.removeOne(path.path());
-            Q_EMIT messageRemoved(path.path());
-        }
+    QString messagePath = path.path();
+    if (privateData()->messageList.removeOne(messagePath)) {
+        Q_EMIT messageRemoved(messagePath);
     }
 }
 
-bool QOfonoMessageManager::isValid() const
+void QOfonoMessageManager::onGetMessagesFinished(QDBusPendingCallWatcher *watch)
 {
-    return d_ptr->messageManager->isValid();
-}
-
-void QOfonoMessageManager::getMessagesFinished(const ObjectPathPropertiesList &list)
-{
-    qDebug() << Q_FUNC_INFO << list.count();
-//    messages = reply2.value();
-    foreach(ObjectPathProperties message, list) {
-        d_ptr->messageList << message.path.path();
-        Q_EMIT messageAdded(message.path.path());
-    }
-    Q_EMIT messagesFinished();
-}
-
-void QOfonoMessageManager::messagesError(const QDBusError &error)
-{
-    qDebug() << Q_FUNC_INFO << error.message();
-}
-
-void QOfonoMessageManager::sendMessageFinished(QDBusPendingCallWatcher *call)
-{
-    call->deleteLater();
-    QDBusPendingReply<QDBusObjectPath> reply = *call;
-    bool ok = true;
+    watch->deleteLater();
+    QDBusPendingReply<ObjectPathPropertiesList> reply(*watch);
     if (reply.isError()) {
-        qWarning() << Q_FUNC_INFO << "failed:" << reply.error();
-         d_ptr->errorMessage = reply.error().name() + " " + reply.error().message();
-         ok = false;
+        qDebug() << reply.error();
+        Q_EMIT reportError(reply.error().message());
+    } else {
+        ObjectPathPropertiesList list = reply.value();
+        privateData()->initialized = true;
+        for (int i=0; i<list.count(); i++) {
+            addMessage(list[i].path.path());
+        }
+        Q_EMIT messagesFinished();
+        if (isValid()) validChanged(true);
     }
-    Q_EMIT sendMessageComplete(ok, reply.value().path());
 }
 
-void QOfonoMessageManager::setServiceCenterAddressFinished(QDBusPendingCallWatcher *call)
+void QOfonoMessageManager::addMessage(const QString &messagePath)
 {
-    call->deleteLater();
-    QDBusPendingReply<> reply = *call;
-    Q_EMIT setServiceCenterAddressComplete(!reply.isError());
+    Private *d_ptr = privateData();
+    if (!d_ptr->messageList.contains(messagePath)) {
+        d_ptr->messageList.append(messagePath);
+        Q_EMIT messageAdded(messagePath);
+    }
 }
 
-void QOfonoMessageManager::setUseDeliveryReportsFinished(QDBusPendingCallWatcher *call)
+void QOfonoMessageManager::onSendMessageFinished(QDBusPendingCallWatcher *watch)
 {
-    call->deleteLater();
-    QDBusPendingReply<> reply = *call;
-    Q_EMIT setUseDeliveryReportsComplete(!reply.isError());
+    watch->deleteLater();
+    QDBusPendingReply<QDBusObjectPath> reply = *watch;
+    if (reply.isError()) {
+        qWarning() << reply.error();
+        Q_EMIT sendMessageComplete(false, QString());
+    } else {
+        Q_EMIT sendMessageComplete(true, reply.value().path());
+    }
 }
 
-void QOfonoMessageManager::setBearerFinished(QDBusPendingCallWatcher *call)
+void QOfonoMessageManager::setPropertyFinished(const QString &property, const QDBusError *error)
 {
-    call->deleteLater();
-    QDBusPendingReply<> reply = *call;
-    Q_EMIT setBearerComplete(!reply.isError());
+    SUPER::setPropertyFinished(property, error);
+    if (property == "ServiceCenterAddress") {
+        Q_EMIT setServiceCenterAddressComplete(!error);
+    } else if (property == "UseDeliveryReports") {
+        Q_EMIT setUseDeliveryReportsComplete(!error);
+    } else if (property == "Bearer") {
+        Q_EMIT setBearerComplete(!error);
+    } else if (property == "Alphabet") {
+        Q_EMIT setAlphabetComplete(!error);
+    }
 }
 
-void QOfonoMessageManager::setAlphabetFinished(QDBusPendingCallWatcher *call)
+QString QOfonoMessageManager::modemPath() const
 {
-    call->deleteLater();
-    QDBusPendingReply<> reply = *call;
-    Q_EMIT setAlphabetComplete(!reply.isError());
+    return SUPER::modemPath();
 }
 
+void QOfonoMessageManager::setModemPath(const QString &path)
+{
+    SUPER::setModemPath(path);
+}
+
+QOfonoMessageManager::Private *QOfonoMessageManager::privateData() const
+{
+    return (QOfonoMessageManager::Private*)SUPER::extData();
+}

@@ -25,14 +25,9 @@ QOfonoMessage::~QOfonoMessage()
 {
 }
 
-QDBusAbstractInterface* QOfonoMessage::createDbusInterface(const QString &path)
+QString QOfonoMessage::messagePath() const
 {
-    return new OfonoMessage("org.ofono", path, QDBusConnection::systemBus(), this);
-}
-
-void QOfonoMessage::objectPathChanged(const QString &path)
-{
-    Q_EMIT messagePathChanged(path);
+    return objectPath();
 }
 
 void QOfonoMessage::setMessagePath(const QString &path)
@@ -40,17 +35,23 @@ void QOfonoMessage::setMessagePath(const QString &path)
     setObjectPath(path);
 }
 
-QString QOfonoMessage::messagePath() const
+void QOfonoMessage::objectPathChanged(const QString &path, const QVariantMap *properties)
 {
-    return objectPath();
+    QOfonoObject::objectPathChanged(path, properties);
+    Q_EMIT messagePathChanged(path);
+}
+
+QDBusAbstractInterface *QOfonoMessage::createDbusInterface(const QString &path)
+{
+    return new OfonoMessage("org.ofono", path, QDBusConnection::systemBus(), this);
 }
 
 void QOfonoMessage::propertyChanged(const QString &property, const QVariant &value)
 {
+    QOfonoObject::propertyChanged(property, value);
     if (property == QLatin1String("State")) {
         Q_EMIT stateChanged(value.value<QString>());
     }
-    QOfonoObject::propertyChanged(property, value);
 }
 
 QString QOfonoMessage::state() const
@@ -60,7 +61,7 @@ QString QOfonoMessage::state() const
 
 void QOfonoMessage::cancel()
 {
-    QDBusAbstractInterface* dbus = dbusInterface();
+    QDBusAbstractInterface *dbus = dbusInterface();
     if (dbus) {
         ((OfonoMessage*)dbus)->Cancel();
     }

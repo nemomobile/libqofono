@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Jolla Ltd.
+** Copyright (C) 2013-2014 Jolla Ltd.
 ** Contact: lorn.potter@jollamobile.com
 **
 ** GNU Lesser General Public License Usage
@@ -16,72 +16,25 @@
 #include "qofonocallvolume.h"
 #include "dbus/ofonocallvolume.h"
 
-class QOfonoCallVolumePrivate
-{
-public:
-    QOfonoCallVolumePrivate();
-    QString modemPath;
-    OfonoCallVolume *callVolume;
-    QVariantMap properties;
-
-};
-
-QOfonoCallVolumePrivate::QOfonoCallVolumePrivate() :
-    modemPath(QString())
-  , callVolume(0)
-{
-}
+#define SUPER QOfonoModemInterface
 
 QOfonoCallVolume::QOfonoCallVolume(QObject *parent) :
-    QObject(parent)
-  , d_ptr(new QOfonoCallVolumePrivate)
+    SUPER(OfonoCallVolume::staticInterfaceName(), parent)
 {
 }
 
 QOfonoCallVolume::~QOfonoCallVolume()
 {
-    delete d_ptr;
 }
 
-void QOfonoCallVolume::setModemPath(const QString &path)
+QDBusAbstractInterface *QOfonoCallVolume::createDbusInterface(const QString &path)
 {
-    if (path == d_ptr->modemPath ||
-            path.isEmpty())
-        return;
-
-    if (path != modemPath()) {
-        if (d_ptr->callVolume) {
-            delete d_ptr->callVolume;
-            d_ptr->callVolume= 0;
-            d_ptr->properties.clear();
-        }
-        d_ptr->callVolume = new OfonoCallVolume("org.ofono", path, QDBusConnection::systemBus(),this);
-
-        if (d_ptr->callVolume->isValid()) {
-            d_ptr->modemPath = path;
-            connect(d_ptr->callVolume,SIGNAL(PropertyChanged(QString,QDBusVariant)),
-                    this,SLOT(propertyChanged(QString,QDBusVariant)));
-
-            QDBusPendingReply<QVariantMap> reply;
-            reply = d_ptr->callVolume->GetProperties();
-            reply.waitForFinished();
-            d_ptr->properties = reply.value();
-            Q_EMIT modemPathChanged(path);
-        }
-    }
+    return new OfonoCallVolume("org.ofono", path, QDBusConnection::systemBus(),this);
 }
 
-QString QOfonoCallVolume::modemPath() const
+void QOfonoCallVolume::propertyChanged(const QString &property, const QVariant &value)
 {
-    return d_ptr->modemPath;
-}
-
-
-void QOfonoCallVolume::propertyChanged(const QString& property, const QDBusVariant& dbusvalue)
-{
-    QVariant value = dbusvalue.variant();
-    d_ptr->properties.insert(property,value);
-
+    SUPER::propertyChanged(property, value);
     if (property == QLatin1String("Muted")) {
         Q_EMIT mutedChanged(value.value<bool>());
     } else if (property == QLatin1String("SpeakerVolume")) {
@@ -93,48 +46,46 @@ void QOfonoCallVolume::propertyChanged(const QString& property, const QDBusVaria
 
 bool QOfonoCallVolume::muted() const
 {
-    if ( d_ptr->callVolume)
-        return d_ptr->properties["Muted"].value<bool>();
-    else
-        return false;
+    return getBool("Muted");
 }
 
 void QOfonoCallVolume::setMuted(bool mute)
 {
-    if ( d_ptr->callVolume)
-        d_ptr->callVolume->SetProperty("Muted",QDBusVariant(mute));
-
+    setProperty("Muted", mute);
 }
 
 quint8 QOfonoCallVolume::speakerVolume() const
 {
-    if (d_ptr->callVolume)
-        return d_ptr->properties["SpeakerVolume"].value<quint8>();
-    else
-        return 0;
+    return getProperty("SpeakerVolume").value<quint8>();
 }
 
+// Passing one byte by reference is such a great idea!
 void QOfonoCallVolume::setSpeakerVolume(const quint8 &volume)
 {
-    if ( d_ptr->callVolume)
-        d_ptr->callVolume->SetProperty("SpeakerVolume",QDBusVariant(QVariant::fromValue(volume)));
+    setProperty("SpeakerVolume", QVariant::fromValue(volume));
 }
 
 quint8 QOfonoCallVolume::microphoneVolume()const
 {
-    if ( d_ptr->callVolume)
-        return d_ptr->properties["MicrophoneVolume"].value<quint8>();
-    else
-        return 0;
+    return getProperty("microphoneVolume").value<quint8>();
 }
 
 void QOfonoCallVolume::setMicrophoneVolume(const quint8 &volume)
 {
-    if ( d_ptr->callVolume)
-        d_ptr->callVolume->SetProperty("MicrophoneVolume",QDBusVariant(volume));
+    setProperty("MicrophoneVolume", QVariant::fromValue(volume));
+}
+
+QString QOfonoCallVolume::modemPath() const
+{
+    return SUPER::modemPath();
+}
+
+void QOfonoCallVolume::setModemPath(const QString &path)
+{
+    SUPER::setModemPath(path);
 }
 
 bool QOfonoCallVolume::isValid() const
 {
-    return d_ptr->callVolume->isValid();
+    return SUPER::isValid();
 }

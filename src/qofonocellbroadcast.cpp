@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Jolla Ltd.
+** Copyright (C) 2013-2014 Jolla Ltd.
 ** Contact: lorn.potter@jollamobile.com
 **
 ** GNU Lesser General Public License Usage
@@ -16,111 +16,78 @@
 #include "qofonocellbroadcast.h"
 #include "dbus/ofonocellbroadcast.h"
 
-class QOfonoCellBroadcastPrivate
-{
-public:
-    QOfonoCellBroadcastPrivate();
-    QString modemPath;
-    OfonoCellBroadcast *cellBroadcast;
-    QVariantMap properties;
-
-};
-
-QOfonoCellBroadcastPrivate::QOfonoCellBroadcastPrivate() :
-    modemPath(QString())
-  , cellBroadcast(0)
-{
-}
+#define SUPER QOfonoObject
 
 QOfonoCellBroadcast::QOfonoCellBroadcast(QObject *parent) :
-    QObject(parent)
-  , d_ptr(new QOfonoCellBroadcastPrivate)
+    SUPER(parent)
 {
 }
 
 QOfonoCellBroadcast::~QOfonoCellBroadcast()
 {
-    delete d_ptr;
+}
+
+QDBusAbstractInterface *QOfonoCellBroadcast::createDbusInterface(const QString &path)
+{
+    OfonoCellBroadcast *iface = new OfonoCellBroadcast("org.ofono", path, QDBusConnection::systemBus(), this);
+    connect(iface,
+        SIGNAL(IncomingBroadcast(QString,quint16)),
+        SIGNAL(incomingBroadcast(QString,quint16)));
+    connect(iface,
+        SIGNAL(EmergencyBroadcast(QString,QVariantMap)),
+        SIGNAL(emergencyBroadcast(QString,QVariantMap)));
+    return iface;
+}
+
+void QOfonoCellBroadcast::objectPathChanged(const QString &path, const QVariantMap *properties)
+{
+    SUPER::objectPathChanged(path, properties);
+    Q_EMIT modemPathChanged(path);
 }
 
 void QOfonoCellBroadcast::setModemPath(const QString &path)
 {
-    if (path == d_ptr->modemPath ||
-            path.isEmpty())
-        return;
-
-    if (path != modemPath()) {
-        if (d_ptr->cellBroadcast) {
-            delete d_ptr->cellBroadcast;
-            d_ptr->cellBroadcast = 0;
-            d_ptr->properties.clear();
-        }
-        d_ptr->cellBroadcast = new OfonoCellBroadcast("org.ofono", path, QDBusConnection::systemBus(),this);
-
-        if (d_ptr->cellBroadcast->isValid()) {
-            d_ptr->modemPath = path;
-            connect(d_ptr->cellBroadcast,SIGNAL(PropertyChanged(QString,QDBusVariant)),
-                    this,SLOT(propertyChanged(QString,QDBusVariant)));
-            connect(d_ptr->cellBroadcast,SIGNAL(IncomingBroadcast(QString,quint16)),
-                    this,SIGNAL(incomingBroadcast(QString,quint16)));
-            connect(d_ptr->cellBroadcast,SIGNAL(EmergencyBroadcast(QString,QVariantMap)),
-                    this,SIGNAL(emergencyBroadcast(QString,QVariantMap)));
-
-            QDBusPendingReply<QVariantMap> reply;
-            reply = d_ptr->cellBroadcast->GetProperties();
-            reply.waitForFinished();
-            d_ptr->properties = reply.value();
-            Q_EMIT modemPathChanged(path);
-        }
-    }
+    setObjectPath(path);
 }
 
 QString QOfonoCellBroadcast::modemPath() const
 {
-    return d_ptr->modemPath;
+    return objectPath();
+}
+
+void QOfonoCellBroadcast::propertyChanged(const QString &property, const QVariant &value)
+{
+    SUPER::propertyChanged(property, value);
+    if (property == QLatin1String("Powered")) {
+        Q_EMIT enabledChanged(value.toBool());
+    } else if (property == QLatin1String("Topics")) {
+        Q_EMIT topicsChanged(value.toString());
+    }
 }
 
 bool QOfonoCellBroadcast::enabled() const
 {
-    if ( d_ptr->cellBroadcast)
-        return d_ptr->properties["Powered"].value<bool>();
-    else
-        return false;
+    return getBool("Powered");
 }
 
 void QOfonoCellBroadcast::setEnabled(bool b)
 {
-    if ( d_ptr->cellBroadcast)
-        d_ptr->cellBroadcast->SetProperty("Powered",QDBusVariant(b));
+    setProperty("Powered", b);
 }
 
 QString QOfonoCellBroadcast::topics() const
 {
-    if ( d_ptr->cellBroadcast)
-        return d_ptr->properties["Topics"].value<QString>();
-    else
-        return QString();
+    return getString("Topics");
 }
 
 void QOfonoCellBroadcast::setTopics(const QString &topics) const
 {
-    if ( d_ptr->cellBroadcast)
-        d_ptr->cellBroadcast->SetProperty("Topics",QDBusVariant(topics));
-}
-
-void QOfonoCellBroadcast::propertyChanged(const QString& property, const QDBusVariant& dbusvalue)
-{
-    QVariant value = dbusvalue.variant();
-    d_ptr->properties.insert(property,value);
-
-    if (property == QLatin1String("Powered")) {
-        Q_EMIT enabledChanged(value.value<bool>());
-    } else if (property == QLatin1String("Topics")) {
-        Q_EMIT topicsChanged(value.value<QString>());
-    }
+    // It's not clear why this method is const (probably, copy/paste artifact)
+    // but it has to remain const to maintain ABI
+    ((QOfonoCellBroadcast*)this)->setProperty("Topics", topics);
 }
 
 bool QOfonoCellBroadcast::isValid() const
 {
-    return d_ptr->cellBroadcast->isValid();
+    return SUPER::isValid();
 }

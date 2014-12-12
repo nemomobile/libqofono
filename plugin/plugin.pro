@@ -13,15 +13,17 @@ equals(QT_MAJOR_VERSION, 4):{
 
 equals(QT_MAJOR_VERSION, 5): {
     QT += qml
-QT-=gui
+    QT -= gui
     LIBS += -L../src -lqofono-qt5
 }
 
 SOURCES =  \ 
-    qofonodeclarativeplugin.cpp 
+    qofonodeclarativeplugin.cpp \
+    qofononetworkoperatorlistmodel.cpp
 
 HEADERS = \
-    qofonodeclarativeplugin.h 
+    qofonodeclarativeplugin.h \
+    qofononetworkoperatorlistmodel.h
 
 INCLUDEPATH += ../src
 
