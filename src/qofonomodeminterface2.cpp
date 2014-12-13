@@ -110,6 +110,7 @@ void QOfonoModemInterface2::onModemInterfacesChanged(const QStringList &interfac
     } else if (d_ptr->interface) {
         delete d_ptr->interface;
         d_ptr->interface = NULL;
+        dbusInterfaceDropped();
     }
     bool valid = isValid();
     if (valid != wasValid) {
