@@ -95,6 +95,7 @@ Q_SIGNALS:
     void registrationError(const QString &errorMessage);
 
 private slots:
+    void onOperatorsChanged(const ObjectPathPropertiesList &operators);
     void onOperatorStatusChanged(const QString &status);
     void onScanFinished(QDBusPendingCallWatcher *watch);
     void onGetOperatorsFinished(QDBusPendingCallWatcher *watch);
@@ -104,9 +105,6 @@ protected:
     QDBusAbstractInterface *createDbusInterface(const QString &path);
     void dbusInterfaceDropped();
     void propertyChanged(const QString &property, const QVariant &value);
-
-private:
-    void setOperators(const ObjectPathPropertiesList &operators);
 
 private:
     class Private;

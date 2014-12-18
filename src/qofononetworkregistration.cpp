@@ -56,6 +56,9 @@ QDBusAbstractInterface *QOfonoNetworkRegistration::createDbusInterface(const QSt
 {
     OfonoNetworkRegistration* iface = new OfonoNetworkRegistration("org.ofono", path, QDBusConnection::systemBus(), this);
     iface->setTimeout(120*1000); //increase dbus timeout as scanning can take a long time
+    connect(iface,
+        SIGNAL(OperatorsChanged(ObjectPathPropertiesList)),
+        SLOT(onOperatorsChanged(ObjectPathPropertiesList)));
     connect(new QDBusPendingCallWatcher(iface->GetOperators(), iface),
         SIGNAL(finished(QDBusPendingCallWatcher*)),
         SLOT(onGetOperatorsFinished(QDBusPendingCallWatcher*)));
@@ -215,7 +218,7 @@ void QOfonoNetworkRegistration::propertyChanged(const QString &property, const Q
     }
 }
 
-void QOfonoNetworkRegistration::setOperators(const ObjectPathPropertiesList &list)
+void QOfonoNetworkRegistration::onOperatorsChanged(const ObjectPathPropertiesList &list)
 {
     QString oldPath = currentOperatorPath();
 
@@ -287,7 +290,7 @@ void QOfonoNetworkRegistration::onGetOperatorsFinished(QDBusPendingCallWatcher *
         Q_EMIT reportError(reply.error().message());
     } else {
         privateData()->initialized = true;
-        setOperators(reply.value());
+        onOperatorsChanged(reply.value());
         if (isValid()) validChanged(true);
     }
 }
@@ -300,7 +303,7 @@ void QOfonoNetworkRegistration::onScanFinished(QDBusPendingCallWatcher *watch)
         qDebug() << reply.error();
         Q_EMIT scanError(reply.error().message());
     } else {
-        setOperators(reply.value());
+        onOperatorsChanged(reply.value());
         Q_EMIT scanFinished();
     }
     privateData()->scanning = false;

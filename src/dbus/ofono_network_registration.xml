@@ -10,16 +10,19 @@
 		<method name="Deregister"/>
 		<method name="GetOperators">
 			<arg type="a(oa{sv})" direction="out"/>
-			<annotation name="org.qtproject.QtDBus.QtTypeName.Out0" value="QArrayOfPathProperties"/>
+			<annotation name="org.qtproject.QtDBus.QtTypeName.Out0" value="ObjectPathPropertiesList"/>
 		</method>
 		<method name="Scan">
 			<arg type="a(oa{sv})" direction="out"/>
-			<annotation name="org.qtproject.QtDBus.QtTypeName.Out0" value="QArrayOfPathProperties"/>
+			<annotation name="org.qtproject.QtDBus.QtTypeName.Out0" value="ObjectPathPropertiesList"/>
 		</method>
 		<signal name="PropertyChanged">
 			<arg type="s"/>
 			<arg type="v"/>
 		</signal>
+		<signal name="OperatorsChanged">
+			<arg type="a(oa{sv})"/>
+			<annotation name="org.qtproject.QtDBus.QtTypeName.In0" value="ObjectPathPropertiesList"/>
+		</signal>
 	</interface>
-
 </node>
