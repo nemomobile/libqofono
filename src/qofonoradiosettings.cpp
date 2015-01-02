@@ -16,10 +16,10 @@
 #include "qofonoradiosettings.h"
 #include "dbus/ofonoradiosettings.h"
 
-#define SUPER QOfonoObject
+#define SUPER QOfonoModemInterface
 
 QOfonoRadioSettings::QOfonoRadioSettings(QObject *parent) :
-    SUPER(parent)
+    SUPER(OfonoRadioSettings::staticInterfaceName(), parent)
 {
 }
 
@@ -32,20 +32,14 @@ QDBusAbstractInterface *QOfonoRadioSettings::createDbusInterface(const QString &
     return new OfonoRadioSettings("org.ofono", path, QDBusConnection::systemBus(), this);
 }
 
-void QOfonoRadioSettings::objectPathChanged(const QString &path, const QVariantMap *properties)
-{
-    SUPER::objectPathChanged(path, properties);
-    Q_EMIT modemPathChanged(path);
-}
-
 void QOfonoRadioSettings::setModemPath(const QString &path)
 {
-    setObjectPath(path);
+    SUPER::setModemPath(path);
 }
 
 QString QOfonoRadioSettings::modemPath() const
 {
-    return objectPath();
+    return SUPER::modemPath();
 }
 
 void QOfonoRadioSettings::propertyChanged(const QString &property, const QVariant &value)
