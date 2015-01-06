@@ -16,7 +16,7 @@
 #ifndef QOFONORadioSettings_H
 #define QOFONORadioSettings_H
 
-#include "qofonoobject.h"
+#include "qofonomodeminterface.h"
 #include "qofono_global.h"
 
 //! This class is used to access ofono radio settings API
@@ -24,7 +24,7 @@
  * The API is documented in
  * http://git.kernel.org/?p=network/ofono/ofono.git;a=blob_plain;f=doc/radio-settings-api.txt
  */
-class QOFONOSHARED_EXPORT QOfonoRadioSettings : public QOfonoObject
+class QOFONOSHARED_EXPORT QOfonoRadioSettings : public QOfonoModemInterface
 {
     Q_OBJECT
     Q_PROPERTY(QString modemPath READ modemPath WRITE setModemPath NOTIFY modemPathChanged)
@@ -64,7 +64,6 @@ Q_SIGNALS:
 protected:
     QDBusAbstractInterface *createDbusInterface(const QString &path);
     void propertyChanged(const QString &key, const QVariant &value);
-    void objectPathChanged(const QString &path, const QVariantMap *properties);
 };
 
 #endif // QOFONORadioSettings_H
