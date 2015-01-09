@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Jolla Ltd.
+** Copyright (C) 2013-2015 Jolla Ltd.
 ** Contact: lorn.potter@jollamobile.com
 **
 ** GNU Lesser General Public License Usage
@@ -14,7 +14,7 @@
 ****************************************************************************/
 
 #include "qofonoassistedsatellitenavigation.h"
-#include "dbus/ofonoassistedsatellitenavigation.h"
+#include "ofono_assisted_satellite_navigation_interface.h"
 
 class QOfonoAssistedSatelliteNavigationPrivate
 {

@@ -17,7 +17,7 @@
 		</method>
 		<method name="GetMessages">
 			<arg type="a(oa{sv})" direction="out"/>
-			<annotation name="org.qtproject.QtDBus.QtTypeName.Out0" value="QArrayOfPathProperties"/>
+			<annotation name="org.qtproject.QtDBus.QtTypeName.Out0" value="ObjectPathPropertiesList"/>
 		</method>
 		<signal name="PropertyChanged">
 			<arg type="s"/>

@@ -1,7 +1,6 @@
 <!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN"
 "http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
 <node name="">
-
 	<interface name="org.ofono.ConnectionManager">
 		<method name="GetProperties">
 			<arg type="a{sv}" direction="out"/>
@@ -21,7 +20,7 @@
 		<method name="DeactivateAll"/>
 		<method name="GetContexts">
 			<arg type="a(oa{sv})" direction="out"/>
-			<annotation name="org.qtproject.QtDBus.QtTypeName.Out0" value="QArrayOfPathProperties"/>
+			<annotation name="org.qtproject.QtDBus.QtTypeName.Out0" value="ObjectPathPropertiesList"/>
 		</method>
 		<signal name="PropertyChanged">
 			<arg type="s"/>
@@ -36,5 +35,4 @@
 			<arg type="o"/>
 		</signal>
 	</interface>
-
 </node>

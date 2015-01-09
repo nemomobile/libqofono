@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Jolla Ltd.
+** Copyright (C) 2013-2015 Jolla Ltd.
 ** Contact: lorn.potter@jollamobile.com
 **
 ** GNU Lesser General Public License Usage
@@ -14,7 +14,7 @@
 ****************************************************************************/
 
 #include "qofonohandsfreeaudiocard.h"
-#include "dbus/ofonohandsfreeaudiocard.h"
+#include "ofono_handsfree_audio_card_interface.h"
 
 
 class QOfonoHandsfreeAudioCardPrivate

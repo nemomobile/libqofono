@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013-2014 Jolla Ltd.
+** Copyright (C) 2013-2015 Jolla Ltd.
 ** Contact: lorn.potter@jollamobile.com
 **
 ** GNU Lesser General Public License Usage
@@ -14,9 +14,29 @@
 ****************************************************************************/
 
 #include "qofonosmartmessaging.h"
-#include "dbus/ofonosmartmessaging.h"
+#include "ofono_smart_messaging_interface.h"
 
 #define SUPER QOfonoModemInterface2
+
+class QOfonoSmartMessagingCallWatcher : public QDBusPendingCallWatcher {
+public:
+    typedef void (QOfonoSmartMessaging::*SignalSuccess)(const QString&);
+    typedef void (QOfonoSmartMessaging::*SignalError)(const QString&, const QString&);
+    const char* name;
+    QString objectPath;
+    SignalSuccess success;
+    SignalError error;
+    QOfonoSmartMessagingCallWatcher(QOfonoSmartMessaging* target,
+        OfonoSmartMessaging *parent, const char* callName,
+        const QString &path, const QDBusPendingCall &call,
+        SignalSuccess ok, SignalError err) :
+        QDBusPendingCallWatcher(call, parent),
+        name(callName), objectPath(path), success(ok), error(err)
+    {
+        connect(this, SIGNAL(finished(QDBusPendingCallWatcher*)),
+            target, SLOT(onDbusCallFinished(QDBusPendingCallWatcher*)));
+    }
+};
 
 QOfonoSmartMessaging::QOfonoSmartMessaging(QObject *parent) :
     SUPER(OfonoSmartMessaging::staticInterfaceName(), parent)
@@ -60,7 +80,10 @@ void QOfonoSmartMessaging::registerAgent(const QString &objectPath)
 {
     OfonoSmartMessaging *iface = (OfonoSmartMessaging*)dbusInterface();
     if (iface) {
-        iface->RegisterAgent(QDBusObjectPath(objectPath));
+        new QOfonoSmartMessagingCallWatcher(this, iface, "RegisterAgent",
+            objectPath, iface->RegisterAgent(QDBusObjectPath(objectPath)),
+            &QOfonoSmartMessaging::registered,
+            &QOfonoSmartMessaging::registerFailed);
     }
 }
 
@@ -68,7 +91,10 @@ void QOfonoSmartMessaging::unregisterAgent(const QString &objectPath)
 {
     OfonoSmartMessaging *iface = (OfonoSmartMessaging*)dbusInterface();
     if (iface) {
-        iface->UnregisterAgent(QDBusObjectPath(objectPath));
+        new QOfonoSmartMessagingCallWatcher(this, iface, "UnregisterAgent",
+            objectPath, iface->UnregisterAgent(QDBusObjectPath(objectPath)),
+            &QOfonoSmartMessaging::unregistered,
+            &QOfonoSmartMessaging::unregisterFailed);
     }
 }
 
@@ -85,4 +111,17 @@ void QOfonoSmartMessaging::setModemPath(const QString &path)
 bool QOfonoSmartMessaging::isValid() const
 {
     return SUPER::isValid();
+}
+
+void QOfonoSmartMessaging::onDbusCallFinished(QDBusPendingCallWatcher *watch)
+{
+    QOfonoSmartMessagingCallWatcher* call = (QOfonoSmartMessagingCallWatcher*)watch;
+    QDBusPendingReply<> reply(*call);
+    if (reply.isError()) {
+        qWarning() << call->name << "failed:" << reply.error();
+        (this->*call->error)(call->objectPath, reply.error().name());
+    } else {
+        (this->*call->success)(call->objectPath);
+    }
+    call->deleteLater();
 }

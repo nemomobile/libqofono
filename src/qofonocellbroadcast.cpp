@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013-2014 Jolla Ltd.
+** Copyright (C) 2013-2015 Jolla Ltd.
 ** Contact: lorn.potter@jollamobile.com
 **
 ** GNU Lesser General Public License Usage
@@ -14,7 +14,7 @@
 ****************************************************************************/
 
 #include "qofonocellbroadcast.h"
-#include "dbus/ofonocellbroadcast.h"
+#include "ofono_cell_broadcast_interface.h"
 
 #define SUPER QOfonoObject
 

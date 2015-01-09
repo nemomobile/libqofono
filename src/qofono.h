@@ -18,28 +18,6 @@
 
 #include "qofono_global.h"
 
-#include "dbus/ofonoassistedsatellitenavigation.h"
-#include "dbus/ofonoaudiosettings.h"
-#include "dbus/ofonocallbarring.h"
-#include "dbus/ofonocallforwarding.h"
-#include "dbus/ofonocallmeter.h"
-#include "dbus/ofonocallsettings.h"
-#include "dbus/ofonocallvolume.h"
-#include "dbus/ofonocellbroadcast.h"
-#include "dbus/ofonoconnectionmanager.h"
-#include "dbus/ofonomanager.h"
-#include "dbus/ofonomessagemanager.h"
-#include "dbus/ofonomodem.h"
-#include "dbus/ofononetworkoperator.h"
-#include "dbus/ofononetworkregistration.h"
-#include "dbus/ofonophonebook.h"
-#include "dbus/ofonopushnotification.h"
-#include "dbus/ofonosimmanager.h"
-#include "dbus/ofonosmartmessaging.h"
-#include "dbus/ofonosupplementaryservices.h"
-#include "dbus/ofonovoicecall.h"
-#include "dbus/ofonovoicecallmanager.h"
-
 class QOFONOSHARED_EXPORT QOfono
 {
 public:

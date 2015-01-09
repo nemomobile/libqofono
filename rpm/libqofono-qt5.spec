@@ -81,7 +81,6 @@ export QT_SELECT=5
 %{_libdir}/%{name}.so
 %{_libdir}/pkgconfig/qofono-qt5.pc
 %{_includedir}/qofono-qt5/*.h
-%{_includedir}/qofono-qt5/dbus/ofono*.h
 %{_includedir}/qofono-qt5/dbus/ofono*.xml
 %{_datadir}/qt5/mkspecs/features/qofono-qt5.prf
 

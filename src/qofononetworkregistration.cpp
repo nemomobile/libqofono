@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013-2014 Jolla Ltd.
+** Copyright (C) 2013-2015 Jolla Ltd.
 ** Contact: lorn.potter@jollamobile.com
 **
 ** GNU Lesser General Public License Usage
@@ -15,7 +15,7 @@
 
 #include "qofononetworkregistration.h"
 #include "qofononetworkoperator.h"
-#include "dbus/ofononetworkregistration.h"
+#include "ofono_network_registration_interface.h"
 
 #define SUPER QOfonoModemInterface
 

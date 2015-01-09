@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Jolla Ltd.
+** Copyright (C) 2013-2015 Jolla Ltd.
 ** Contact: lorn.potter@jollamobile.com
 **
 ** GNU Lesser General Public License Usage
@@ -14,19 +14,17 @@
 ****************************************************************************/
 
 #include "qofonosmartmessagingagent.h"
-#include "dbus/ofonosmartmessagingagent.h"
+#include "ofono_smart_messaging_agent_adaptor.h"
 
 class QOfonoSmartMessagingAgentPrivate
 {
 public:
     QOfonoSmartMessagingAgentPrivate();
-    QString agentPath;
-    QOfonoSmartMessagingAgentAdaptor *smartAdaptor;
+    bool registered;
 };
 
 QOfonoSmartMessagingAgentPrivate::QOfonoSmartMessagingAgentPrivate() :
-    agentPath(QString())
-  , smartAdaptor(0)
+    registered(false)
 {
 }
 
@@ -34,30 +32,38 @@ QOfonoSmartMessagingAgent::QOfonoSmartMessagingAgent(QObject *parent) :
     QObject(parent)
   , d_ptr(new QOfonoSmartMessagingAgentPrivate)
 {
+    new QOfonoSmartMessagingAgentAdaptor(this);
 }
 
 QOfonoSmartMessagingAgent::~QOfonoSmartMessagingAgent()
 {
+    if (d_ptr->registered)
+        QDBusConnection::systemBus().unregisterObject(smAgentPath);
     delete d_ptr;
 }
 
 void QOfonoSmartMessagingAgent::setAgentPath(const QString &path)
 {
-    if (!d_ptr->smartAdaptor) {
-        d_ptr->agentPath = path;
-        d_ptr->smartAdaptor = new QOfonoSmartMessagingAgentAdaptor(this);
-        if (d_ptr->smartAdaptor)
-            smAgentPath = path;
-
-        if (!QDBusConnection::systemBus().registerObject(smAgentPath, this)) {
-            qDebug() << "object not registered";
+    if (smAgentPath != path) {
+        QDBusConnection dbus = QDBusConnection::systemBus();
+        if (d_ptr->registered) {
+            dbus.unregisterObject(smAgentPath);
+            d_ptr->registered = false;
         }
+        smAgentPath = path;
+        if (!path.isEmpty()) {
+            if (!dbus.registerObject(path, this)) {
+                qWarning() << "Object registration failed:" << dbus.lastError();
+            }
+            d_ptr->registered = true;
+        }
+        Q_EMIT agentPathChanged(path);
     }
 }
 
 QString QOfonoSmartMessagingAgent::agentPath() const
 {
-    return d_ptr->agentPath;
+    return smAgentPath;
 }
 
 void QOfonoSmartMessagingAgent::ReceiveAppointment(const QByteArray &appointment, const QVariantMap &info)
@@ -74,31 +80,3 @@ void QOfonoSmartMessagingAgent::Release()
 {
     Q_EMIT release();
 }
-
-QOfonoSmartMessagingAgentAdaptor::QOfonoSmartMessagingAgentAdaptor(QOfonoSmartMessagingAgent *parent)
-    : QDBusAbstractAdaptor(parent),
-      smartAgent(parent)
-{
-}
-
-QOfonoSmartMessagingAgentAdaptor::~QOfonoSmartMessagingAgentAdaptor()
-{
-}
-
-void QOfonoSmartMessagingAgentAdaptor::ReceiveAppointment(const QByteArray &appointment, const QVariantMap &info)
-{
-    smartAgent->ReceiveAppointment(appointment, info);
-}
-
-void QOfonoSmartMessagingAgentAdaptor::ReceiveBusinessCard(const QByteArray &card, const QVariantMap &info)
-{
-    smartAgent->receiveAppointment(card, info);
-}
-
-void QOfonoSmartMessagingAgentAdaptor::Release()
-{
-    smartAgent->release();
-}
-
-
-

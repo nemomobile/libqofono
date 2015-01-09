@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013-2014 Jolla Ltd.
+** Copyright (C) 2013-2015 Jolla Ltd.
 ** Contact: lorn.potter@jollamobile.com
 **
 ** GNU Lesser General Public License Usage
@@ -12,13 +12,12 @@
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ****************************************************************************/
-#include <QStringList>
 
 #include "qofonomodem.h"
-#include "dbus/ofonomodem.h"
+#include "ofono_modem_interface.h"
+
 #include <QMap>
 #include <QWeakPointer>
-#include <QDBusPendingCallWatcher>
 
 typedef QMap<QString,QWeakPointer<QOfonoModem> > ModemMap;
 Q_GLOBAL_STATIC(ModemMap, modemMap)

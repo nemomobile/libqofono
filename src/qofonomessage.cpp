@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013-2014 Jolla Ltd.
+** Copyright (C) 2013-2015 Jolla Ltd.
 ** Contact: lorn.potter@jollamobile.com
 **
 ** GNU Lesser General Public License Usage
@@ -14,7 +14,7 @@
 ****************************************************************************/
 
 #include "qofonomessage.h"
-#include "dbus/ofonomessage.h"
+#include "ofono_message_interface.h"
 
 QOfonoMessage::QOfonoMessage(QObject *parent) :
     QOfonoObject(parent)
