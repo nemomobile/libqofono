@@ -49,7 +49,7 @@ void QOfonoVoiceCall::setVoiceCallPath(const QString &path)
 
 QString QOfonoVoiceCall::voiceCallPath() const
 {
-    return voiceCallPath();
+    return objectPath();
 }
 
 void QOfonoVoiceCall::objectPathChanged(const QString &path, const QVariantMap *properties)
