@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Jolla Ltd.
+** Copyright (C) 2013-2014 Jolla Ltd.
 ** Contact: lorn.potter@jollamobile.com
 **
 ** GNU Lesser General Public License Usage
@@ -16,16 +16,14 @@
 #ifndef QOFONOQOFONOPOSITIONINGREQUESTAGENT_H
 #define QOFONOQOFONOPOSITIONINGREQUESTAGENT_H
 
-#include <QObject>
-#include <QDBusVariant>
-#include <QDBusAbstractAdaptor>
+#include "qofono_global.h"
 
 class QOfonoPositioningRequestAgentPrivate;
 class QOfonoPositioningRequestAgent : public QObject
 {
     Q_OBJECT
     Q_DISABLE_COPY(QOfonoPositioningRequestAgent)
-    Q_PROPERTY(QString agentPath READ agentPath WRITE setAgentPath)
+    Q_PROPERTY(QString agentPath READ agentPath WRITE setAgentPath NOTIFY agentPathChanged)
 
 public:
     explicit QOfonoPositioningRequestAgent(QObject *parent = 0);
@@ -33,18 +31,16 @@ public:
 
     QString agentPath() const;
     void setAgentPath(const QString &path);
-
     bool isValid() const;
+
 Q_SIGNALS:
+    void agentPathChanged(const QString &path);
     void request(const QString &xmlElement);
     void positioningRequest();
     void release();
 
-public slots:
-    
 private:
     QOfonoPositioningRequestAgentPrivate *d_ptr;
-    friend class QOfonoPositioningRequestAgentAdaptor;
 
 private Q_SLOTS:
     void Request(const QString &xmlElement);
@@ -52,21 +48,4 @@ private Q_SLOTS:
     void Release();
 };
 
-class QOfonoPositioningRequestAgentAdaptor : public QDBusAbstractAdaptor
-{
-    Q_OBJECT
-    Q_CLASSINFO ("D-Bus Interface", "org.ofono.PositioningRequestAgent")
-public:
-    explicit QOfonoPositioningRequestAgentAdaptor(QOfonoPositioningRequestAgent *parent = 0);
-    virtual ~QOfonoPositioningRequestAgentAdaptor();
-
-public Q_SLOTS:
-    Q_NOREPLY void Request(const QString &xmlElement);
-    Q_NOREPLY void PositioningRequest();
-    Q_NOREPLY void Release();
-
-private:
-   QOfonoPositioningRequestAgent* positioningAgent;
-
-};
 #endif // QOFONOQOFONOPOSITIONINGREQUESTAGENT_H

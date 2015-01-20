@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Jolla Ltd.
+** Copyright (C) 2013-2015 Jolla Ltd.
 ** Contact: lorn.potter@jollamobile.com
 **
 ** GNU Lesser General Public License Usage
@@ -14,7 +14,7 @@
 ****************************************************************************/
 
 #include "qofonolocationreporting.h"
-#include "dbus/ofonolocationreporting.h"
+#include "ofono_location_reporting_interface.h"
 #include <unistd.h>
 
 class QOfonoLocationReportingPrivate

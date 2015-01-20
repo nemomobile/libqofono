@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Jolla Ltd.
+** Copyright (C) 2013-2015 Jolla Ltd.
 ** Contact: lorn.potter@jollamobile.com
 **
 ** GNU Lesser General Public License Usage
@@ -16,11 +16,8 @@
 #ifndef QOFONOSmartMessagingAgent_H
 #define QOFONOSmartMessagingAgent_H
 
-#include <QObject>
-#include <QDBusVariant>
-#include <QDBusAbstractAdaptor>
-
 #include "qofono_global.h"
+
 //! This class is used to access ofono cell broadcast API
 /*!
  * The API is documented in
@@ -31,7 +28,7 @@ class QOFONOSHARED_EXPORT QOfonoSmartMessagingAgent : public QObject
 {
     Q_OBJECT
     Q_DISABLE_COPY(QOfonoSmartMessagingAgent)
-    Q_PROPERTY(QString agentPath READ agentPath WRITE setAgentPath)
+    Q_PROPERTY(QString agentPath READ agentPath WRITE setAgentPath NOTIFY agentPathChanged)
 
 public:
     explicit QOfonoSmartMessagingAgent(QObject *parent = 0);
@@ -41,37 +38,19 @@ public:
     void setAgentPath(const QString &path);
 
 Q_SIGNALS:
+    void agentPathChanged(const QString &path);
     void receiveAppointment(const QByteArray &appointment, const QVariantMap &info);
     void receiveBusinessCard(const QByteArray &card, const QVariantMap &info);
     void release();
 
 private:
     QOfonoSmartMessagingAgentPrivate *d_ptr;
-    friend class QOfonoSmartMessagingAgentAdaptor;
     QString smAgentPath;
 
 private Q_SLOTS:
     void ReceiveAppointment(const QByteArray &appointment, const QVariantMap &info);
     void ReceiveBusinessCard(const QByteArray &card, const QVariantMap &info);
     void Release();
-};
-
-class QOfonoSmartMessagingAgentAdaptor : public QDBusAbstractAdaptor
-{
-    Q_OBJECT
-    Q_CLASSINFO ("D-Bus Interface", "org.ofono.SmartMessagingAgent")
-public:
-    explicit QOfonoSmartMessagingAgentAdaptor(QOfonoSmartMessagingAgent *parent = 0);
-    virtual ~QOfonoSmartMessagingAgentAdaptor();
-
-public Q_SLOTS:
-     Q_NOREPLY void ReceiveAppointment(const QByteArray &appointment, const QVariantMap &info);
-     Q_NOREPLY void ReceiveBusinessCard(const QByteArray &card, const QVariantMap &info);
-     Q_NOREPLY void Release();
-
-private:
-   QOfonoSmartMessagingAgent* smartAgent;
-
 };
 
 #endif // QOFONOSmartMessagingAgent_H

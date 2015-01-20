@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Jolla Ltd.
+** Copyright (C) 2013-2015 Jolla Ltd.
 ** Contact: lorn.potter@jollamobile.com
 **
 ** GNU Lesser General Public License Usage
@@ -14,96 +14,53 @@
 ****************************************************************************/
 
 #include "qofonotexttelephony.h"
-#include "dbus/ofonotexttelephony.h"
+#include "ofono_text_telephony_interface.h"
 
-class QOfonoTextTelephonyPrivate
-{
-public:
-    QOfonoTextTelephonyPrivate();
-    QString modemPath;
-    OfonoTextTelephony *textTelephony;
-    QVariantMap properties;
-
-};
-
-QOfonoTextTelephonyPrivate::QOfonoTextTelephonyPrivate() :
-    modemPath(QString())
-  , textTelephony(0)
-{
-}
+#define SUPER QOfonoModemInterface
 
 QOfonoTextTelephony::QOfonoTextTelephony(QObject *parent) :
-    QObject(parent)
-  , d_ptr(new QOfonoTextTelephonyPrivate)
+    SUPER(OfonoTextTelephony::staticInterfaceName(), parent)
 {
 }
 
 QOfonoTextTelephony::~QOfonoTextTelephony()
 {
-    delete d_ptr;
+}
+
+QDBusAbstractInterface *QOfonoTextTelephony::createDbusInterface(const QString &path)
+{
+    return new OfonoTextTelephony("org.ofono", path, QDBusConnection::systemBus(), this);
 }
 
 void QOfonoTextTelephony::setModemPath(const QString &path)
 {
-    if (path == d_ptr->modemPath ||
-            path.isEmpty())
-        return;
-
-    if (path != modemPath()) {
-        if (d_ptr->textTelephony) {
-            delete d_ptr->textTelephony;
-            d_ptr->textTelephony = 0;
-            d_ptr->properties.clear();
-        }
-        d_ptr->textTelephony = new OfonoTextTelephony("org.ofono", path, QDBusConnection::systemBus(),this);
-
-        if (d_ptr->textTelephony->isValid()) {
-            d_ptr->modemPath = path;
-
-            connect(d_ptr->textTelephony,SIGNAL(PropertyChanged(QString,QDBusVariant)),
-                    this,SLOT(propertyChanged(QString,QDBusVariant)));
-
-            QDBusPendingReply<QVariantMap> reply;
-            reply = d_ptr->textTelephony->GetProperties();
-            reply.waitForFinished();
-            d_ptr->properties = reply.value();
-            Q_EMIT modemPathChanged(path);
-        }
-    }
+    SUPER::setModemPath(path);
 }
 
 QString QOfonoTextTelephony::modemPath() const
 {
-    return d_ptr->modemPath;
+    return SUPER::modemPath();
 }
 
-
-void QOfonoTextTelephony::propertyChanged(const QString& property, const QDBusVariant& dbusvalue)
+void QOfonoTextTelephony::propertyChanged(const QString &property, const QVariant &value)
 {
-    QVariant value = dbusvalue.variant();
-    d_ptr->properties.insert(property,value);
-
+    SUPER::propertyChanged(property, value);
     if (property == QLatin1String("Enabled")) {
-        Q_EMIT setTtyEnabled(value.value<bool>());
+        Q_EMIT setTtyEnabled(value.toBool());
     }
 }
 
-
 bool QOfonoTextTelephony::ttyEnabled() const
 {
-    if (d_ptr->textTelephony)
-        return d_ptr->properties["Enabled"].value<bool>();
-    else
-        return false;
+    return getBool("Enabled");
 }
 
 void QOfonoTextTelephony::setTtyEnabled(bool enabled)
 {
-    if (d_ptr->textTelephony)
-        d_ptr->textTelephony->SetProperty(QLatin1String("Enabled"),QDBusVariant(enabled));
+    setProperty("Enabled", enabled);
 }
 
 bool QOfonoTextTelephony::isValid() const
 {
-    return d_ptr->textTelephony->isValid();
+    return SUPER::isValid();
 }

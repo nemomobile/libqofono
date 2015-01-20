@@ -36,12 +36,21 @@ public:
     void setModemPath(const QString &path);
     bool isValid() const;
 
-public slots:
+public Q_SLOTS:
     QDBusObjectPath sendAppointment(const QString &toPhoneNumber, const QByteArray &appointment);
     QDBusObjectPath sendBusinessCard(const QString &toPhoneNumber, const QByteArray &card);
 
     void registerAgent(const QString &objectPath);
     void unregisterAgent(const QString &objectPath);
+
+Q_SIGNALS:
+    void registered(const QString &objectPath);
+    void unregistered(const QString &objectPath);
+    void registerFailed(const QString &objectPath, const QString &error);
+    void unregisterFailed(const QString &objectPath, const QString &error);
+
+private Q_SLOTS:
+    void onDbusCallFinished(QDBusPendingCallWatcher *watch);
 
 protected:
     QDBusAbstractInterface *createDbusInterface(const QString &path);

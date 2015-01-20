@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013-2014 Jolla Ltd.
+** Copyright (C) 2013-2015 Jolla Ltd.
 ** Contact: lorn.potter@jollamobile.com
 **
 ** GNU Lesser General Public License Usage
@@ -14,7 +14,7 @@
 ****************************************************************************/
 
 #include "qofonocallvolume.h"
-#include "dbus/ofonocallvolume.h"
+#include "ofono_callvolume_interface.h"
 
 #define SUPER QOfonoModemInterface
 

@@ -73,7 +73,6 @@ rm -rf %{buildroot}
 %{_libdir}/%{name}.so
 %{_libdir}/pkgconfig/qofono.pc
 %{_includedir}/qofono/*.h
-%{_includedir}/qofono/dbus/ofono*.h
 %{_includedir}/qofono/dbus/ofono*.xml
 %{_datadir}/qt4/mkspecs/features/qofono.prf
 

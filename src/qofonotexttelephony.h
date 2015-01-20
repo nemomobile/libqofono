@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Jolla Ltd.
+** Copyright (C) 2013-2015 Jolla Ltd.
 ** Contact: lorn.potter@jollamobile.com
 **
 ** GNU Lesser General Public License Usage
@@ -16,17 +16,15 @@
 #ifndef QOFONOTextTelephony_H
 #define QOFONOTextTelephony_H
 
-#include <QObject>
-#include <QDBusVariant>
+#include "qofonomodeminterface.h"
 #include "qofono_global.h"
+
 //! This class is used to access ofono cell broadcast API
 /*!
  * The API is documented in
  * http://git.kernel.org/?p=network/ofono/ofono.git;a=blob_plain;f=doc/text-telephony-api.txt
  */
-
-class QOfonoTextTelephonyPrivate;
-class QOFONOSHARED_EXPORT QOfonoTextTelephony : public QObject
+class QOFONOSHARED_EXPORT QOfonoTextTelephony : public QOfonoModemInterface
 {
     Q_OBJECT
     Q_PROPERTY(QString modemPath READ modemPath WRITE setModemPath NOTIFY modemPathChanged)
@@ -39,22 +37,18 @@ public:
     QString modemPath() const;
     void setModemPath(const QString &path);
 
-
     bool ttyEnabled() const;
     void setTtyEnabled(bool enabled);
 
     bool isValid() const;
-Q_SIGNALS:
 
+Q_SIGNALS:
     void ttyEnabledChanged(bool);
     void modemPathChanged(const QString &path);
 
-public slots:
-    
-private:
-    QOfonoTextTelephonyPrivate *d_ptr;
-private slots:
-    void propertyChanged(const QString &property,const QDBusVariant &value);
+protected:
+    QDBusAbstractInterface *createDbusInterface(const QString &path);
+    void propertyChanged(const QString &key, const QVariant &value);
 };
 
 #endif // QOFONOTextTelephony_H

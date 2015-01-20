@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Jolla Ltd.
+** Copyright (C) 2013-2015 Jolla Ltd.
 ** Contact: lorn.potter@jollamobile.com
 **
 ** GNU Lesser General Public License Usage
@@ -14,30 +14,34 @@
 ****************************************************************************/
 
 #include "qofonopositioningrequestagent.h"
-#include "dbus/ofonopositioningrequestagent.h"
-
 #include "qofonoassistedsatellitenavigation.h"
+#include "ofono_positioning_request_agent_adaptor.h"
 
 class QOfonoPositioningRequestAgentPrivate
 {
 public:
     QOfonoPositioningRequestAgentPrivate();
+    ~QOfonoPositioningRequestAgentPrivate();
     QString positioningAgentPath;
-    OfonoPositioningRequestAgent *ofonoPositioningRequestAgent;
-    QOfonoAssistedSatelliteNavigation * satNav;
-
+    bool registered;
 };
 
 QOfonoPositioningRequestAgentPrivate::QOfonoPositioningRequestAgentPrivate() :
-    positioningAgentPath(QString()),
-    ofonoPositioningRequestAgent(0)
+    registered(false)
 {
+}
+
+QOfonoPositioningRequestAgentPrivate::~QOfonoPositioningRequestAgentPrivate()
+{
+    if (registered)
+        QDBusConnection::systemBus().unregisterObject(positioningAgentPath);
 }
 
 QOfonoPositioningRequestAgent::QOfonoPositioningRequestAgent(QObject *parent) :
     QObject(parent)
   , d_ptr(new QOfonoPositioningRequestAgentPrivate)
 {
+    new QOfonoPositioningRequestAgentAdaptor(this);
 }
 
 QOfonoPositioningRequestAgent::~QOfonoPositioningRequestAgent()
@@ -47,20 +51,21 @@ QOfonoPositioningRequestAgent::~QOfonoPositioningRequestAgent()
 
 void QOfonoPositioningRequestAgent::setAgentPath(const QString &path)
 {
-//    if (!d_ptr->ofonoPositioningRequestAgent) {
-
-//        d_ptr->positioningAgentPath = path;
-
-//        d_ptr->ofonoPositioningRequestAgent = new OfonoPositioningRequestAgent("org.ofono", path, QDBusConnection::systemBus(),this);
-
-        new QOfonoPositioningRequestAgentAdaptor(this);
+    if (d_ptr->positioningAgentPath != path) {
+        QDBusConnection dbus = QDBusConnection::systemBus();
+        if (d_ptr->registered) {
+            dbus.unregisterObject(d_ptr->positioningAgentPath);
+            d_ptr->registered = false;
+        }
         d_ptr->positioningAgentPath = path;
-//        QDBusConnection::systemBus().registerObject(agentPath, this);
-
-//        if (m_manager->isAvailable()) {
-//            m_manager->registerAgent(QString(agentPath));
-//        }
-   // }
+        if (!path.isEmpty()) {
+            if (!dbus.registerObject(path, this)) {
+                qWarning() << "Object registration failed:" << dbus.lastError();
+            }
+            d_ptr->registered = true;
+        }
+        Q_EMIT agentPathChanged(path);
+    }
 }
 
 QString QOfonoPositioningRequestAgent::agentPath() const
@@ -84,31 +89,5 @@ void QOfonoPositioningRequestAgent::Request(const QString &xmlElement)
 }
 bool QOfonoPositioningRequestAgent::isValid() const
 {
-    return d_ptr->ofonoPositioningRequestAgent->isValid();
+    return d_ptr->registered;
 }
-
-QOfonoPositioningRequestAgentAdaptor::QOfonoPositioningRequestAgentAdaptor(QOfonoPositioningRequestAgent *parent)
-    : QDBusAbstractAdaptor(parent),
-      positioningAgent(parent)
-{
-}
-
-QOfonoPositioningRequestAgentAdaptor::~QOfonoPositioningRequestAgentAdaptor()
-{
-}
-
-void QOfonoPositioningRequestAgentAdaptor::Release()
-{
-    positioningAgent->Release();
-}
-
-void QOfonoPositioningRequestAgentAdaptor::PositioningRequest()
-{
-    positioningAgent->PositioningRequest();
-}
-
-void QOfonoPositioningRequestAgentAdaptor::Request(const QString &xmlElement)
-{
-    positioningAgent->Request(xmlElement);
-}
-
