@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013-2014 Jolla Ltd.
+** Copyright (C) 2013-2015 Jolla Ltd.
 ** Contact: lorn.potter@jollamobile.com
 **
 ** GNU Lesser General Public License Usage
@@ -28,6 +28,7 @@ class QOFONOSHARED_EXPORT QOfonoConnectionContext : public QOfonoObject
 {
     Q_OBJECT
     Q_PROPERTY(bool active READ active WRITE setActive NOTIFY activeChanged)
+    Q_PROPERTY(bool provisioning READ provisioning NOTIFY provisioningChanged)
     Q_PROPERTY(QString accessPointName READ accessPointName WRITE setAccessPointName NOTIFY accessPointNameChanged)
     Q_PROPERTY(QString type READ type WRITE setType NOTIFY typeChanged)
     Q_PROPERTY(QString username READ username WRITE setUsername NOTIFY usernameChanged)
@@ -51,6 +52,8 @@ public:
 
     bool active() const;
     void setActive(bool);
+
+    bool provisioning() const;
 
     QString accessPointName() const;
     void setAccessPointName(const QString &);
@@ -82,19 +85,22 @@ public:
     bool isValid() const;
     QString modemPath() const;
 
-    Q_INVOKABLE bool validateProvisioning(); //check provision against mbpi
-    Q_INVOKABLE bool validateProvisioning(const QString &provider, const QString &mcc, const QString &mnc); //check provision against mbpi
+    bool validateProvisioning(); //check provision against mbpi
+    bool validateProvisioning(const QString &provider, const QString &mcc, const QString &mnc); //check provision against mbpi
     #if QT_VERSION < 0x050000
-    Q_INVOKABLE void provision(const QString &provider, const QString &mcc, const QString &mnc, const QString &type="internet");
+    void provision(const QString &provider, const QString &mcc, const QString &mnc, const QString &type="internet");
     #else
-    Q_INVOKABLE void provision(const QString &provider, const QString &mcc, const QString &mnc, const QString &type=QStringLiteral("internet")); // provision context against mbpi
+    void provision(const QString &provider, const QString &mcc, const QString &mnc, const QString &type=QStringLiteral("internet")); // provision context against mbpi
     #endif
-    Q_INVOKABLE void provisionForCurrentNetwork(const QString &type);
+    void provisionForCurrentNetwork(const QString &type);
+
     Q_INVOKABLE void disconnect();
+    Q_INVOKABLE bool provision();
 
 Q_SIGNALS:
     void disconnectRequested();
     void activeChanged(bool active);
+    void provisioningChanged(bool provisioning);
     void accessPointNameChanged(const QString &apn);
     void nameChanged(const QString &name);
     void typeChanged(const QString &type);
@@ -106,14 +112,21 @@ Q_SIGNALS:
     void settingsChanged(const QVariantMap &settingsMap);
     void IPv6SettingsChanged(const QVariantMap &ipv6SettingsMap);
     void contextPathChanged(const QString &contextPath);
-    void provisioningFinished();
+    void provisioningFinished(const QString &error);
     void modemPathChanged(const QString &path);
+
+private Q_SLOTS:
+    void onProvisionContextFinished(QDBusPendingCallWatcher *watch);
 
 protected:
     QDBusAbstractInterface *createDbusInterface(const QString &path);
     QVariant convertProperty(const QString &key, const QVariant &value);
     void propertyChanged(const QString &key, const QVariant &value);
     void objectPathChanged(const QString &path, const QVariantMap *properties);
+
+private:
+    class Private;
+    Private *privateData() const;
 };
 
 #endif // QOFONOCONNECTIONCONTEXT_H

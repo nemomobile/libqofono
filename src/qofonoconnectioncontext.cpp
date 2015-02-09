@@ -21,8 +21,15 @@
 
 #define SUPER QOfonoObject
 
+class QOfonoConnectionContext::Private : public SUPER::ExtData
+{
+public:
+    bool provisioning;
+    Private() : provisioning(false) {}
+};
+
 QOfonoConnectionContext::QOfonoConnectionContext(QObject *parent) :
-    SUPER(parent)
+    SUPER(new Private, parent)
 {
 }
 
@@ -221,6 +228,47 @@ bool QOfonoConnectionContext::isValid() const
     return SUPER::isValid();
 }
 
+bool QOfonoConnectionContext::provisioning() const
+{
+    return privateData()->provisioning;
+}
+
+QOfonoConnectionContext::Private *QOfonoConnectionContext::privateData() const
+{
+    return (QOfonoConnectionContext::Private*)SUPER::extData();
+}
+
+bool QOfonoConnectionContext::provision()
+{
+    Private *priv = privateData();
+    if (!priv->provisioning) {
+        OfonoConnectionContext *iface = (OfonoConnectionContext*)dbusInterface();
+        if (iface) {
+            priv->provisioning = true;
+            Q_EMIT provisioningChanged(true);
+            connect(new QDBusPendingCallWatcher(iface->ProvisionContext(), iface),
+                SIGNAL(finished(QDBusPendingCallWatcher*)),
+                SLOT(onProvisionContextFinished(QDBusPendingCallWatcher*)));
+            return true;
+        }
+    }
+    return false;
+}
+
+void QOfonoConnectionContext::onProvisionContextFinished(QDBusPendingCallWatcher *watch)
+{
+    watch->deleteLater();
+    QDBusPendingReply<> reply(*watch);
+    QString error;
+    if (reply.isError()) {
+        qWarning() << "Provisioning failed:" << reply.error();
+        error = reply.error().name();
+    }
+    privateData()->provisioning = false;
+    Q_EMIT provisioningChanged(false);
+    Q_EMIT provisioningFinished(error);
+}
+
 /*
  * These provisioning functions use the mobile broadband provider info database available from this url:
  * https://git.gnome.org/browse/mobile-broadband-provider-info/
@@ -240,6 +288,7 @@ bool QOfonoConnectionContext::validateProvisioning()
 
     QOfonoNetworkRegistration netReg;
     netReg.setModemPath(modem);
+    // This won't work because ofono queries are asynchronous:
     if (netReg.status() == "registered")
         return validateProvisioning(netReg.networkOperators().at(0),netReg.mcc(),netReg.mnc());
     return false;
@@ -455,5 +504,4 @@ void QOfonoConnectionContext::provision(const QString &provider, const QString &
         }
         break;
     }
-    Q_EMIT provisioningFinished();
 }
