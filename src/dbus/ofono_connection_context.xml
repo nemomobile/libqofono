@@ -10,6 +10,7 @@
 			<arg type="s" direction="in"/>
 			<arg type="v" direction="in"/>
 		</method>
+		<method name="ProvisionContext"/>
 		<signal name="PropertyChanged">
 			<arg type="s"/>
 			<arg type="v"/>
