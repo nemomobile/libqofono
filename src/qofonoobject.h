@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2014 Jolla Ltd.
+** Copyright (C) 2014-2015 Jolla Ltd.
 ** Contact: slava.monich@jolla.com
 **
 ** GNU Lesser General Public License Usage
@@ -44,7 +44,7 @@ public:
 Q_SIGNALS:
     void validChanged(bool valid);
     void setPropertyFinished();
-    void reportError(const QString &message);
+    void reportError(const QString &errorString);
 
 protected:
     virtual void objectPathChanged(const QString &path, const QVariantMap *properties) = 0;
@@ -73,6 +73,7 @@ protected:
     QDBusAbstractInterface *dbusInterface() const;
     void setDbusInterface(QDBusAbstractInterface *dbus, const QVariantMap *properties = NULL);
     void resetDbusInterface(const QVariantMap *properties = NULL);
+    void fixObjectPath(const QString &path);
 
 private slots:
     void onGetPropertiesFinished(QDBusPendingCallWatcher *watch);

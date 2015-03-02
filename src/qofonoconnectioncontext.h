@@ -117,6 +117,7 @@ Q_SIGNALS:
 
 private Q_SLOTS:
     void onProvisionContextFinished(QDBusPendingCallWatcher *watch);
+    void onManagerValidChanged(bool valid);
 
 protected:
     QDBusAbstractInterface *createDbusInterface(const QString &path);
