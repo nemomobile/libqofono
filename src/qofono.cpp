@@ -1928,24 +1928,23 @@ QOfono::QOfono()
 
 QString QOfono::mobileCountryCodeToAlpha2CountryCode(int mcc)
 {
+    const int n = sizeof(qofonoMccList)/sizeof(qofonoMccList[0]);
     int low = 0;
-    int high = (sizeof(qofonoMccList)/sizeof(qofonoMccList[0]))-1;
+    int high = n;
 
-    while (low <= high) {
-        int mid = (low + high)/2;
-        int val = qofonoMccList[mid].mcc;
-        if (val < mcc) {
-            low = mid + 1;
-        } else if (val > mcc) {
-            high = mid - 1;
+    while (low < high) {
+        const int mid = (low + high)/2;
+        if (qofonoMccList[mid].mcc >= mcc) {
+            high = mid;
         } else {
-            /* MCC is found. Back up a litte to the first entry */
-            while (mid > 0 && qofonoMccList[mid-1].mcc == val) mid--;
-            return QString(qofonoMccList[mid].cc);
+            low = mid + 1;
         }
     }
 
-    /* MCC not found. */
-    qWarning() << "Unknown Mobile Country Code:" << mcc;
-    return QString();
+    if (high < n && qofonoMccList[high].mcc == mcc) {
+        return QString(qofonoMccList[high].cc);
+    } else {
+        qWarning() << "Unknown Mobile Country Code:" << mcc;
+        return QString();
+    }
 }
