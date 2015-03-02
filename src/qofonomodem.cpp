@@ -164,10 +164,8 @@ QSharedPointer<QOfonoModem> QOfonoModem::instance(const QString &modemPath)
     QSharedPointer<QOfonoModem> modem = modemMap()->value(modemPath);
     if (modem.isNull()) {
         modem = QSharedPointer<QOfonoModem>::create();
-        modem->setModemPath(modemPath);
+        modem->fixObjectPath(modemPath);
         modemMap()->insert(modemPath, QWeakPointer<QOfonoModem>(modem));
-    } else if (!modem->isValid()) {
-        modem->resetDbusInterface();
     }
     return modem;
 }

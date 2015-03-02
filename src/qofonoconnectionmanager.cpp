@@ -16,6 +16,11 @@
 #include "qofonoconnectionmanager.h"
 #include "ofono_connection_manager_interface.h"
 
+typedef QWeakPointer<QOfonoConnectionManager> QOfonoConnectionManagerWeakPtr;
+typedef QSharedPointer<QOfonoConnectionManager> QOfonoConnectionManagerRef;
+typedef QMap<QString,QOfonoConnectionManagerWeakPtr> QOfonoConnectionManagerMap;
+Q_GLOBAL_STATIC(QOfonoConnectionManagerMap, ofonoConnectionManagerList)
+
 #define SUPER QOfonoModemInterface
 
 class QOfonoConnectionManager::Private : public QOfonoObject::ExtData
@@ -24,6 +29,7 @@ public:
     bool initialized;
     QStringList contexts;
     QHash<QString,QString> contextTypes;
+    QString modemPath;
     QString filter;
 
     Private() : initialized(false) {}
@@ -296,4 +302,16 @@ void QOfonoConnectionManager::setModemPath(const QString &path)
 QOfonoConnectionManager::Private *QOfonoConnectionManager::privateData() const
 {
     return (QOfonoConnectionManager::Private*)SUPER::extData();
+}
+
+QSharedPointer<QOfonoConnectionManager>
+QOfonoConnectionManager::instance(const QString &path)
+{
+    QOfonoConnectionManagerRef mgr = ofonoConnectionManagerList()->value(path);
+    if (mgr.isNull()) {
+        mgr = QOfonoConnectionManagerRef::create();
+        mgr->fixObjectPath(path);
+        ofonoConnectionManagerList()->insert(path, mgr);
+    }
+    return mgr;
 }

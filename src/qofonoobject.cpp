@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2014 Jolla Ltd.
+** Copyright (C) 2014-2015 Jolla Ltd.
 ** Contact: slava.monich@jolla.com
 **
 ** GNU Lesser General Public License Usage
@@ -22,11 +22,12 @@ public:
     QOfonoObject::ExtData *ext;
     QDBusAbstractInterface *interface;
     bool initialized;
+    bool fixedPath;
     QString objectPath;
     QVariantMap properties;
 
     Private(QOfonoObject::ExtData *data) : ext(data),
-        interface(NULL), initialized(false) {}
+        interface(NULL), initialized(false), fixedPath(false) {}
     ~Private() { delete ext; }
 
     QDBusPendingCall setProperty(const QString &key, const QVariant &value);
@@ -82,9 +83,24 @@ QString QOfonoObject::objectPath() const
 
 void QOfonoObject::setObjectPath(const QString &path, const QVariantMap *properties)
 {
-    if (d_ptr->objectPath != path) {
+    if (d_ptr->fixedPath) {
+        if (d_ptr->objectPath != path) {
+            qWarning() << "Attempt to change a fixed path";
+        }
+    } else if (d_ptr->objectPath != path) {
         d_ptr->objectPath = path;
         objectPathChanged(path, properties);
+    }
+}
+
+void QOfonoObject::fixObjectPath(const QString &path)
+{
+    if (d_ptr->fixedPath) {
+        qWarning() << "Attempt to fix object path more than once";
+    } else if (d_ptr->objectPath != path) {
+        d_ptr->objectPath = path;
+        d_ptr->fixedPath = true;
+        objectPathChanged(path, NULL);
     }
 }
 

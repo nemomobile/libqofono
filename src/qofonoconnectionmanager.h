@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013-2014 Jolla Ltd.
+** Copyright (C) 2013-2015 Jolla Ltd.
 ** Contact: lorn.potter@jollamobile.com
 **
 ** GNU Lesser General Public License Usage
@@ -58,6 +58,10 @@ public:
 
     QString filter() const;
     void setFilter(const QString &filter);
+
+    // Remember to keep a QSharedPointer to QOfonoConnectionManager, otherwise
+    // it may be destroyed.
+    static QSharedPointer<QOfonoConnectionManager> instance(const QString &path);
 
 Q_SIGNALS:
     void attachedChanged(bool value);
