@@ -18,6 +18,20 @@
 
 #define SUPER QOfonoModemInterface
 
+static const QString kPresent(QLatin1String("Present"));
+static const QString kSubscriberIdentity(QLatin1String("SubscriberIdentity"));
+static const QString kMobileCountryCode(QLatin1String("MobileCountryCode"));
+static const QString kMobileNetworkCode(QLatin1String("MobileNetworkCode"));
+static const QString kSubscriberNumbers(QLatin1String("SubscriberNumbers"));
+static const QString kServiceNumbers(QLatin1String("ServiceNumbers"));
+static const QString kPinRequired(QLatin1String("PinRequired"));
+static const QString kLockedPins(QLatin1String("LockedPins"));
+static const QString kCardIdentifier(QLatin1String("CardIdentifier"));
+static const QString kPreferredLanguages(QLatin1String("PreferredLanguages"));
+static const QString kRetries(QLatin1String("Retries"));
+static const QString kFixedDialing(QLatin1String("FixedDialing"));
+static const QString kBarredDialing(QLatin1String("BarredDialing"));
+
 namespace QOfonoSimManagerPrivate
 {
     static QHash<QOfonoSimManager::PinType, QString> pinTypes()
@@ -65,7 +79,7 @@ QVariant QOfonoSimManager::convertProperty(const QString &property, const QVaria
     //  (2) Possibility to compare with QVariant::operator== (comparing variants
     //      of user type is NOT supported with Qt < 5.2 and with Qt >= 5.2 it
     //      relies on QVariant::registerComparisonOperators)
-    if (property == QLatin1String("ServiceNumbers")) {
+    if (property == kServiceNumbers) {
         QVariantMap convertedNumbers;
         if (value.userType() == qMetaTypeId<QDBusArgument>()) {
             QMap<QString, QString> numbers;
@@ -75,7 +89,7 @@ QVariant QOfonoSimManager::convertProperty(const QString &property, const QVaria
             }
         }
         return convertedNumbers;
-    } else if (property == QLatin1String("LockedPins")) {
+    } else if (property == kLockedPins) {
         QVariantList convertedPins;
         if (value.userType() == qMetaTypeId<QStringList>()) {
             QStringList pins = value.value<QStringList>();
@@ -84,12 +98,12 @@ QVariant QOfonoSimManager::convertProperty(const QString &property, const QVaria
             }
         }
         return convertedPins;
-    } else if (property == QLatin1String("PinRequired")) {
+    } else if (property == kPinRequired) {
         // Use int instead of QString so that default value can be
         // default-constructed (NoPin corresponds to "none") (Also not
         // using PinType for above mentioned reason)
         return (int)pinTypeFromString(value.value<QString>());
-    } else if (property == QLatin1String("Retries")) {
+    } else if (property == kRetries) {
         QVariantMap convertedRetries;
         if (value.userType() == qMetaTypeId<QDBusArgument>()) {
             QMap<QString, unsigned char> retries;
@@ -112,103 +126,121 @@ QVariant QOfonoSimManager::convertProperty(const QString &property, const QVaria
 void QOfonoSimManager::propertyChanged(const QString &property, const QVariant &value)
 {
     SUPER::propertyChanged(property, value);
-    if (property == QLatin1String("Present")) {
-        Q_EMIT presenceChanged(value.value<bool>());
-    } else if (property == QLatin1String("SubscriberIdentity")) {
+    if (property == kPresent) {
+        const bool present = value.value<bool>();
+        Q_EMIT presenceChanged(present);
+        if (!present) {
+            // When "Present" becomes false, ofono stops reporting other
+            // properties, essentially meaning that for any practical purpose
+            // they no longer exist. There's no "PropertyRemoved" signal in
+            // the ofono API though, so we have to remove them from our cache
+            // manually. After SIM inserted and "Present" becomes true again,
+            // ofono is supposed to send "PropertyChanged" signal for each
+            // property and that will re-populate our property cache.
+            QStringList keys = getProperties().keys();
+            const int n = keys.count();
+            for (int i=0; i<n; i++) {
+                QString otherKey = keys.at(i);
+                if (otherKey != kPresent) {
+                    removeProperty(otherKey);
+                }
+            }
+        }
+    } else if (property == kSubscriberIdentity) {
         Q_EMIT subscriberIdentityChanged(value.value<QString>());
-    } else if (property == QLatin1String("MobileCountryCode")) {
+    } else if (property == kMobileCountryCode) {
         Q_EMIT mobileCountryCodeChanged(value.value<QString>());
-    } else if (property == QLatin1String("MobileNetworkCode")) {
+    } else if (property == kMobileNetworkCode) {
         Q_EMIT mobileNetworkCodeChanged(value.value<QString>());
-    } else if (property == QLatin1String("SubscriberNumbers")) {
+    } else if (property == kSubscriberNumbers) {
         Q_EMIT subscriberNumbersChanged(value.value<QStringList>());
-    } else if (property == QLatin1String("ServiceNumbers")) {
-        Q_EMIT serviceNumbersChanged(getVariantMap("ServiceNumbers"));
-    } else if (property == QLatin1String("PinRequired")) {
-        Q_EMIT pinRequiredChanged((PinType)getInt("PinRequired"));
-    } else if (property == QLatin1String("LockedPins")) {
-        Q_EMIT lockedPinsChanged(getVariantList("LockedPins"));
-    } else if (property == QLatin1String("CardIdentifier")) {
+    } else if (property == kServiceNumbers) {
+        Q_EMIT serviceNumbersChanged(getVariantMap(kServiceNumbers));
+    } else if (property == kPinRequired) {
+        Q_EMIT pinRequiredChanged((PinType)getInt(kPinRequired));
+    } else if (property == kLockedPins) {
+        Q_EMIT lockedPinsChanged(getVariantList(kLockedPins));
+    } else if (property == kCardIdentifier) {
         Q_EMIT cardIdentifierChanged(value.value<QString>());
-    } else if (property == QLatin1String("PreferredLanguages")) {
+    } else if (property == kPreferredLanguages) {
         Q_EMIT preferredLanguagesChanged(value.value<QStringList>());
-    } else if (property == QLatin1String("Retries")) {
-        Q_EMIT pinRetriesChanged(getVariantMap("Retries"));
-    } else if (property == QLatin1String("FixedDialing")) {
+    } else if (property == kRetries) {
+        Q_EMIT pinRetriesChanged(getVariantMap(kRetries));
+    } else if (property == kFixedDialing) {
         Q_EMIT fixedDialingChanged(value.value<bool>());
-    } else if (property == QLatin1String("BarredDialing")) {
+    } else if (property == kBarredDialing) {
         Q_EMIT barredDialingChanged(value.value<bool>());
     }
 }
 
 bool QOfonoSimManager::present() const
 {
-    return getBool("Present");
+    return getBool(kPresent);
 }
 
 QString QOfonoSimManager::subscriberIdentity() const
 {
-    return getString("SubscriberIdentity");
+    return getString(kSubscriberIdentity);
 }
 
 QString QOfonoSimManager::mobileCountryCode() const
 {
-    return getString("MobileCountryCode");
+    return getString(kMobileCountryCode);
 }
 
 QString QOfonoSimManager::mobileNetworkCode() const
 {
-    return getString("MobileNetworkCode");
+    return getString(kMobileNetworkCode);
 }
 
 QStringList QOfonoSimManager::subscriberNumbers() const
 {
-    return getStringList("SubscriberNumbers");
+    return getStringList(kSubscriberNumbers);
 }
 
 QVariantMap QOfonoSimManager::serviceNumbers() const //
 {
-    return getVariantMap("ServiceNumbers");
+    return getVariantMap(kServiceNumbers);
 }
 
 QOfonoSimManager::PinType QOfonoSimManager::pinRequired() const
 {
-    return (PinType)getInt("PinRequired");
+    return (PinType)getInt(kPinRequired);
 }
 
 QVariantList QOfonoSimManager::lockedPins() const
 {
-    return getVariantList("LockedPins");
+    return getVariantList(kLockedPins);
 }
 
 QString QOfonoSimManager::cardIdentifier() const
 {
-    return getString("CardIdentifier");
+    return getString(kCardIdentifier);
 }
 
 QStringList QOfonoSimManager::preferredLanguages() const
 {
-    return getStringList("PreferredLanguages");
+    return getStringList(kPreferredLanguages);
 }
 
 QVariantMap QOfonoSimManager::pinRetries() const
 {
-    return getVariantMap("Retries");
+    return getVariantMap(kRetries);
 }
 
 bool QOfonoSimManager::fixedDialing() const
 {
-    return getBool("FixedDialing");
+    return getBool(kFixedDialing);
 }
 
 bool QOfonoSimManager::barredDialing() const
 {
-    return getBool("BarredDialing");
+    return getBool(kBarredDialing);
 }
 
 void QOfonoSimManager::setSubscriberNumbers(const QStringList &numbers)
 {
-    setProperty("SubscriberNumbers", numbers);
+    setProperty(kSubscriberNumbers, numbers);
 }
 
 void QOfonoSimManager::changePin(QOfonoSimManager::PinType pinType, const QString &oldpin, const QString &newpin)

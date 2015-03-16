@@ -60,6 +60,7 @@ protected:
     void setProperty(const QString &key, const QVariant &value);
     bool setPropertySync(const QString &key, const QVariant &value);
 
+    void removeProperty(const QString &key);
     QVariantMap getProperties() const;
     QVariant getProperty(const QString &key) const;
     QString getString(const QString &key) const;

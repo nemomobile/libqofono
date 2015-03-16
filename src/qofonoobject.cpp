@@ -200,6 +200,13 @@ void QOfonoObject::getPropertiesFinished(const QVariantMap &properties, const QD
     }
 }
 
+void QOfonoObject::removeProperty(const QString &key)
+{
+    if (d_ptr->properties.remove(key) > 0) {
+        propertyChanged(key, QVariant());
+    }
+}
+
 QVariantMap QOfonoObject::getProperties() const
 {
     return d_ptr->properties;
