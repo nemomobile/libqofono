@@ -127,7 +127,25 @@ void QOfonoSimManager::propertyChanged(const QString &property, const QVariant &
 {
     SUPER::propertyChanged(property, value);
     if (property == kPresent) {
-        Q_EMIT presenceChanged(value.value<bool>());
+        const bool present = value.value<bool>();
+        Q_EMIT presenceChanged(present);
+        if (!present) {
+            // When "Present" becomes false, ofono stops reporting other
+            // properties, essentially meaning that for any practical purpose
+            // they no longer exist. There's no "PropertyRemoved" signal in
+            // the ofono API though, so we have to remove them from our cache
+            // manually. After SIM inserted and "Present" becomes true again,
+            // ofono is supposed to send "PropertyChanged" signal for each
+            // property and that will re-populate our property cache.
+            QStringList keys = getProperties().keys();
+            const int n = keys.count();
+            for (int i=0; i<n; i++) {
+                QString otherKey = keys.at(i);
+                if (otherKey != kPresent) {
+                    removeProperty(otherKey);
+                }
+            }
+        }
     } else if (property == kSubscriberIdentity) {
         Q_EMIT subscriberIdentityChanged(value.value<QString>());
     } else if (property == kMobileCountryCode) {
