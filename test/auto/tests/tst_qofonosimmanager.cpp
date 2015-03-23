@@ -1,6 +1,7 @@
 /*
  * This file is part of ofono-qt
  *
+ * Copyright (C) 2014-2015 Jolla Ltd.
  * Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
  *
  * Contact: Alexander Kanavin <alex.kanavin@gmail.com>
@@ -22,13 +23,11 @@
  */
 
 #include <QtTest/QtTest>
-#include <QtCore/QObject>
 
-#include "../../../src/qofonosimmanager.h"
-#include "../../../src/qofonomodem.h"
+#include "qofonosimmanager.h"
+#include "qofonomodem.h"
 
 #include <QtDebug>
-#include <QVariant>
 
 // Do it here to not break API compatibility - also see qRegisterMetaType below
 Q_DECLARE_METATYPE(QOfonoSimManager::Error)
@@ -76,18 +75,18 @@ private slots:
         QSignalSpy lockPin(m, SIGNAL(lockPinComplete(QOfonoSimManager::Error, QString)));
         QSignalSpy unlockPin(m, SIGNAL(unlockPinComplete(QOfonoSimManager::Error, QString)));
 
-        QCOMPARE(m->present(), true);
-        QCOMPARE(m->subscriberIdentity(), QString("246813579"));
-        QCOMPARE(m->mobileCountryCode(), QString("246"));
-        QCOMPARE(m->mobileNetworkCode(), QString("81"));
-        QVERIFY(m->subscriberNumbers().count() > 0);
+        QTRY_COMPARE(m->present(), true);
+        QTRY_COMPARE(m->subscriberIdentity(), QString("246813579"));
+        QTRY_COMPARE(m->mobileCountryCode(), QString("246"));
+        QTRY_COMPARE(m->mobileNetworkCode(), QString("81"));
+        QTRY_VERIFY(m->subscriberNumbers().count() > 0);
         QCOMPARE(m->subscriberNumbers()[0], QString("358501234567"));
-        QVERIFY(m->serviceNumbers().count() > 0);
+        QTRY_VERIFY(m->serviceNumbers().count() > 0);
         QCOMPARE(m->serviceNumbers().value(".HELP DESK").toString(), QString("2601"));
         QCOMPARE(m->pinRequired(),QOfonoSimManager::NoPin);
         QCOMPARE(m->lockedPins().count(), 0);
-        QCOMPARE(m->cardIdentifier(), QString("8949222074451242066"));
-        QVERIFY(m->preferredLanguages().count() > 0);
+        QTRY_COMPARE(m->cardIdentifier(), QString("8949222074451242066"));
+        QTRY_VERIFY(m->preferredLanguages().count() > 0);
         QCOMPARE(m->preferredLanguages()[0], QString("de"));
         QCOMPARE(m->pinRetries().count(), 0);
         QCOMPARE(m->fixedDialing(), false);
@@ -144,6 +143,7 @@ private slots:
         modem.setPowered(false);
         QTRY_COMPARE(modemPowered.count(), 1);
         QCOMPARE(modemPowered.takeFirst().at(0).toBool(), false);
+        QTRY_VERIFY(!m->isValid());
 
         QTRY_COMPARE(presence.count(), 1);
         QCOMPARE(presence.takeFirst().at(0).toBool(), false);
@@ -164,8 +164,15 @@ private slots:
         QTRY_COMPARE(preferredLanguages.count(), 1);
         QStringList languages = preferredLanguages.takeFirst().at(0).toStringList();
         QCOMPARE(languages.count(), 0);
+        QCOMPARE(pinRequired.count(), 1);
+        QCOMPARE(pinRequired.takeFirst().at(0).toBool(), false);
+        QCOMPARE(lockedPins.count(), 1);
+        QCOMPARE(lockedPins.takeFirst().at(0).toBool(), false);
+        QCOMPARE(fixedDialing.count(), 1);
+        QCOMPARE(fixedDialing.takeFirst().at(0).toBool(), false);
+        QCOMPARE(barredDialing.count(), 1);
+        QCOMPARE(barredDialing.takeFirst().at(0).toBool(), false);
 
-        QTest::qWait(REASONABLE_TIMEOUT);
         QCOMPARE(presence.count(), 0);
         QCOMPARE(subscriberIdentity.count(), 0);
         QCOMPARE(mcc.count(), 0);
@@ -185,6 +192,7 @@ private slots:
         modem.setOnline(true);
         QTRY_COMPARE(modemOnline.count(), 1);
         QCOMPARE(modemOnline.takeFirst().at(0).toBool(), true);
+        QTRY_VERIFY(m->isValid());
 
         QTRY_COMPARE(presence.count(), 1);
         QCOMPARE(presence.takeFirst().at(0).toBool(), true);
