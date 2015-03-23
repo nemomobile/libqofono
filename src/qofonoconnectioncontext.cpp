@@ -124,6 +124,8 @@ void QOfonoConnectionContext::propertyChanged(const QString &property, const QVa
         Q_EMIT accessPointNameChanged(value.value<QString>());
     } else if (property == QLatin1String("Type")) {
         Q_EMIT typeChanged(value.value<QString>());
+    } else if (property == QLatin1String("AuthenticationMethod")) {
+        Q_EMIT authMethodChanged(value.value<QString>());
     } else if (property == QLatin1String("Username")) {
         Q_EMIT usernameChanged(value.value<QString>());
     } else if (property == QLatin1String("Password")) {
@@ -154,6 +156,11 @@ QString QOfonoConnectionContext::accessPointName() const
 QString QOfonoConnectionContext::type() const
 {
     return getString("Type");
+}
+
+QString QOfonoConnectionContext::authMethod() const
+{
+    return getString("AuthenticationMethod");
 }
 
 QString QOfonoConnectionContext::username() const
@@ -213,6 +220,11 @@ void QOfonoConnectionContext::setAccessPointName(const QString &value)
 void QOfonoConnectionContext::setType(const QString &value)
 {
     setProperty("Type", value);
+}
+
+void QOfonoConnectionContext::setAuthMethod(const QString &value)
+{
+    setProperty("AuthenticationMethod", value);
 }
 
 void QOfonoConnectionContext::setUsername(const QString &value)

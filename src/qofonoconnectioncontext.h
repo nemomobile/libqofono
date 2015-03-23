@@ -31,6 +31,7 @@ class QOFONOSHARED_EXPORT QOfonoConnectionContext : public QOfonoObject
     Q_PROPERTY(bool provisioning READ provisioning NOTIFY provisioningChanged)
     Q_PROPERTY(QString accessPointName READ accessPointName WRITE setAccessPointName NOTIFY accessPointNameChanged)
     Q_PROPERTY(QString type READ type WRITE setType NOTIFY typeChanged)
+    Q_PROPERTY(QString authMethod READ authMethod WRITE setAuthMethod NOTIFY authMethodChanged)
     Q_PROPERTY(QString username READ username WRITE setUsername NOTIFY usernameChanged)
     Q_PROPERTY(QString password READ password WRITE setPassword NOTIFY passwordChanged)
     Q_PROPERTY(QString protocol READ protocol WRITE setProtocol NOTIFY protocolChanged)
@@ -60,6 +61,9 @@ public:
 
     QString type() const;
     void setType(const QString &);
+
+    QString authMethod() const;
+    void setAuthMethod(const QString &);
 
     QString username() const;
     void setUsername(const QString &);
@@ -104,6 +108,7 @@ Q_SIGNALS:
     void accessPointNameChanged(const QString &apn);
     void nameChanged(const QString &name);
     void typeChanged(const QString &type);
+    void authMethodChanged(const QString &method);
     void usernameChanged(const QString &uname);
     void passwordChanged(const QString &pw);
     void protocolChanged(const QString &proto);
