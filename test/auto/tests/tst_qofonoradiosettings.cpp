@@ -1,6 +1,7 @@
 /*
  * This file is part of ofono-qt
  *
+ * Copyright (C) 2014-2015 Jolla Ltd.
  * Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
  *
  * Contact: Alexander Kanavin <alex.kanavin@gmail.com>
@@ -25,8 +26,6 @@
 
 #include "qofonoradiosettings.h"
 
-#include <QtDebug>
-
 class TestQOfonoRadioSettings : public QObject
 {
     Q_OBJECT
@@ -36,17 +35,12 @@ private slots:
     {
         m = new QOfonoRadioSettings(this);
         m->setModemPath("/phonesim");
-
-        QEXPECT_FAIL("", "FIXME: radio settings interface is not supported by AT modems, "
-                "and consequently, phonesim", Abort);
         QTRY_VERIFY(m->isValid());
     }
 
     void testQOfonoRadioSettings()
     {
-        QSignalSpy preference(m, SIGNAL(technologyPreferenceChanged(QString)));
-
-        qDebug() << "technologyPreference():" << m->technologyPreference();
+        QCOMPARE(m->technologyPreference(), QString("any"));
     }
 
     void cleanupTestCase()
