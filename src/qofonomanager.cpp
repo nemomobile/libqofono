@@ -22,9 +22,8 @@ public:
     OfonoManager *ofonoManager;
     QStringList modems;
     bool available;
-    QDBusServiceWatcher *ofonoWatcher;
 
-    Private() : ofonoManager(NULL), available(false), ofonoWatcher(NULL) {}
+    Private() : ofonoManager(NULL), available(false) {}
 };
 
 QOfonoManager::QOfonoManager(QObject *parent) :
@@ -33,17 +32,16 @@ QOfonoManager::QOfonoManager(QObject *parent) :
 {
     QOfonoDbusTypes::registerObjectPathProperties();
     QDBusConnection systemBus(QDBusConnection::systemBus());
-    d_ptr->ofonoWatcher = new QDBusServiceWatcher("org.ofono", systemBus,
+    QDBusServiceWatcher *ofonoWatcher = new QDBusServiceWatcher("org.ofono", systemBus,
             QDBusServiceWatcher::WatchForRegistration |
             QDBusServiceWatcher::WatchForUnregistration, this);
 
-    connect(d_ptr->ofonoWatcher, SIGNAL(serviceRegistered(QString)),
+    connect(ofonoWatcher, SIGNAL(serviceRegistered(QString)),
             this, SLOT(connectToOfono(QString)));
-    connect(d_ptr->ofonoWatcher, SIGNAL(serviceUnregistered(QString)),
+    connect(ofonoWatcher, SIGNAL(serviceUnregistered(QString)),
             this, SLOT(ofonoUnregistered(QString)));
 
-    d_ptr->available = systemBus.interface()->isServiceRegistered("org.ofono");
-    if (d_ptr->available) {
+    if (systemBus.interface()->isServiceRegistered("org.ofono")) {
         connectToOfono(QString());
     }
 }
@@ -70,7 +68,9 @@ bool QOfonoManager::available() const
 
 bool QOfonoManager::isValid() const
 {
-    return d_ptr->ofonoManager && d_ptr->ofonoManager->isValid();
+    // isValid() is essentially the same as available(), keeping it around for
+    // backward compatibility
+    return d_ptr->available;
 }
 
 void QOfonoManager::onModemAdded(const QDBusObjectPath& path, const QVariantMap&)
@@ -126,16 +126,14 @@ void QOfonoManager::onGetModemsFinished(QDBusPendingCallWatcher* watcher)
         if (newDefault != prevDefault) {
             Q_EMIT defaultModemChanged(newDefault);
         }
+        d_ptr->available = true;
+        Q_EMIT availableChanged(true);
     }
     watcher->deleteLater();
 }
 
 void QOfonoManager::connectToOfono(const QString &)
 {
-    if (!d_ptr->available) {
-        d_ptr->available = true;
-        Q_EMIT availableChanged(true);
-    }
     if (!d_ptr->ofonoManager) {
         OfonoManager* mgr = new OfonoManager("org.ofono", "/", QDBusConnection::systemBus(), this);
         if (mgr->isValid()) {
