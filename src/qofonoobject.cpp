@@ -164,9 +164,9 @@ void QOfonoObject::setDbusInterface(QDBusAbstractInterface *iface, const QVarian
 void QOfonoObject::dbusInterfaceDropped()
 {
     if (!d_ptr->properties.isEmpty()) {
-        QStringList keys = d_ptr->properties.keys();
+        const QStringList keys = d_ptr->properties.keys();
         for (int i=0; i<keys.size(); i++) {
-            updateProperty(keys[i], QVariant());
+            updateProperty(keys.at(i), QVariant());
         }
     }
 }
@@ -214,7 +214,7 @@ QVariantMap QOfonoObject::getProperties() const
 
 QVariant QOfonoObject::getProperty(const QString &key) const
 {
-    return d_ptr->properties[key];
+    return d_ptr->properties.value(key);
 }
 
 QVariant QOfonoObject::convertProperty(const QString &key, const QVariant &value)
