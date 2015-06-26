@@ -240,6 +240,9 @@ void QOfonoObject::updateProperty(const QString &key, const QVariant &value)
             d_ptr->properties.remove(key);
         }
         propertyChanged(key, newValue);
+    } else if (!oldValue.isValid() && newValue.isValid()) {
+        // Not a change, but we need to insert the new value to make isReady() work.
+        d_ptr->properties.insert(key, newValue);
     }
 }
 
