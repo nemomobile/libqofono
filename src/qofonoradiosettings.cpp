@@ -47,6 +47,8 @@ void QOfonoRadioSettings::propertyChanged(const QString &property, const QVarian
     SUPER::propertyChanged(property, value);
     if (property == QLatin1String("TechnologyPreference")) {
         Q_EMIT technologyPreferenceChanged(value.value<QString>());
+    } else if (property == QLatin1String("AvailableTechnologies")) {
+        Q_EMIT availableTechnologiesChanged(value.value<QStringList>());
     } else if (property == QLatin1String("GsmBand")) {
         Q_EMIT gsmBandChanged(value.value<QString>());
     } else if (property == QLatin1String("UtmsBand")) {
@@ -64,6 +66,11 @@ QString QOfonoRadioSettings::technologyPreference() const
 void QOfonoRadioSettings::setTechnologyPreference(const QString &preference)
 {
     setProperty("TechnologyPreference",  preference);
+}
+
+QStringList QOfonoRadioSettings::availableTechnologies() const
+{
+    return getStringList("AvailableTechnologies");
 }
 
 QString QOfonoRadioSettings::gsmBand() const
