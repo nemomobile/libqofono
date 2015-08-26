@@ -29,7 +29,12 @@ QOfonoSupplementaryServices::~QOfonoSupplementaryServices()
 
 QDBusAbstractInterface *QOfonoSupplementaryServices::createDbusInterface(const QString &path)
 {
-    return new OfonoSupplementaryServices("org.ofono", path, QDBusConnection::systemBus(), this);
+    QDBusAbstractInterface *iface = new OfonoSupplementaryServices("org.ofono", path, QDBusConnection::systemBus(), this);
+
+    connect(iface, SIGNAL(NotificationReceived(QString)), this, SIGNAL(notificationReceived(QString)));
+    connect(iface, SIGNAL(RequestReceived(QString)), this, SIGNAL(requestReceived(QString)));
+
+    return iface;
 }
 
 void QOfonoSupplementaryServices::initiate(const QString &command)
