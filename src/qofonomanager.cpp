@@ -79,6 +79,7 @@ void QOfonoManager::onModemAdded(const QDBusObjectPath& path, const QVariantMap&
     if (!d_ptr->modems.contains(pathStr)) {
         QString prevDefault = defaultModem();
         d_ptr->modems.append(pathStr);
+        qSort(d_ptr->modems);
         Q_EMIT modemAdded(pathStr);
         Q_EMIT modemsChanged(d_ptr->modems);
         QString newDefault = defaultModem();
@@ -106,22 +107,16 @@ void QOfonoManager::onGetModemsFinished(QDBusPendingCallWatcher* watcher)
 {
     QDBusPendingReply<ObjectPathPropertiesList> reply(*watcher);
     if (reply.isValid() && !reply.isError()) {
-        // fugly I know... but we need sorted modems
-        // with hardware listed first
         QString prevDefault = defaultModem();
-        d_ptr->modems.clear();
-        foreach (ObjectPathProperties modem, reply.value()) {
-            QString modemPath = modem.path.path();
-            QString modemType = modem.properties["Type"].value<QString>();
-            if (modemType == "hardware" && !modemPath.contains("phonesim")) {
-                // running phonesim from desktop presents phonesim as hardware
-                d_ptr->modems.prepend(modemPath);
-            } else {
-                d_ptr->modems.append(modemPath);
-            }
-            Q_EMIT modemAdded(modemPath);
+        QStringList newModems;
+        Q_FOREACH(ObjectPathProperties modem, reply.value()) {
+            newModems.append(modem.path.path());
         }
-        Q_EMIT modemsChanged(d_ptr->modems);
+        qSort(newModems);
+        if (d_ptr->modems != newModems) {
+            d_ptr->modems = newModems;
+            Q_EMIT modemsChanged(d_ptr->modems);
+        }
         QString newDefault = defaultModem();
         if (newDefault != prevDefault) {
             Q_EMIT defaultModemChanged(newDefault);
