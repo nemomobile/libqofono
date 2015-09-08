@@ -164,14 +164,10 @@ private slots:
         QTRY_COMPARE(preferredLanguages.count(), 1);
         QStringList languages = preferredLanguages.takeFirst().at(0).toStringList();
         QCOMPARE(languages.count(), 0);
-        QCOMPARE(pinRequired.count(), 1);
-        QCOMPARE(pinRequired.takeFirst().at(0).toBool(), false);
-        QCOMPARE(lockedPins.count(), 1);
-        QCOMPARE(lockedPins.takeFirst().at(0).toBool(), false);
-        QCOMPARE(fixedDialing.count(), 1);
-        QCOMPARE(fixedDialing.takeFirst().at(0).toBool(), false);
-        QCOMPARE(barredDialing.count(), 1);
-        QCOMPARE(barredDialing.takeFirst().at(0).toBool(), false);
+        QCOMPARE(pinRequired.count(), 0);
+        QCOMPARE(lockedPins.count(), 0);
+        QCOMPARE(fixedDialing.count(), 0);
+        QCOMPARE(barredDialing.count(), 0);
 
         QCOMPARE(presence.count(), 0);
         QCOMPARE(subscriberIdentity.count(), 0);
