@@ -289,9 +289,9 @@ void QOfonoNetworkRegistration::onGetOperatorsFinished(QDBusPendingCallWatcher *
         qDebug() << reply.error();
         Q_EMIT reportError(reply.error().message());
     } else {
+        ValidTracker valid(this);
         privateData()->initialized = true;
         onOperatorsChanged(reply.value());
-        if (isValid()) validChanged(true);
     }
 }
 

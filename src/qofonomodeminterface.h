@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2014 Jolla Ltd.
+** Copyright (C) 2014-2015 Jolla Ltd.
 ** Contact: slava.monich@jolla.com
 **
 ** GNU Lesser General Public License Usage
@@ -39,6 +39,9 @@ protected:
 
     bool isReady() const;
 
+public:
+    bool isValid() const;
+
 Q_SIGNALS:
     void modemPathChanged(const QString &path);
     void readyChanged(/* No parameter for historical reasons */);
@@ -48,8 +51,9 @@ protected:
     void updateProperty(const QString &key, const QVariant &value);
     void objectPathChanged(const QString &path, const QVariantMap *properties);
 
-private slots:
+private Q_SLOTS:
     void onModemInterfacesChanged(const QStringList &interfaces);
+    void onModemValidChanged(bool valid);
 
 private:
     class Private;

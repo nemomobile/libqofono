@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2014 Jolla Ltd.
+** Copyright (C) 2014-2015 Jolla Ltd.
 ** Contact: slava.monich@jolla.com
 **
 ** GNU Lesser General Public License Usage
@@ -24,9 +24,10 @@ public:
     QString interfaceName;
     QSharedPointer<QOfonoModem> modem;
     QOfonoModem::ExtData *ext;
+    bool modemValid;
 
     Private(const QString &iface, QOfonoModem::ExtData *data) :
-        interfaceName(iface), ext(data) {}
+        interfaceName(iface), ext(data), modemValid(false) {}
     ~Private() { delete ext; }
 };
 
@@ -64,6 +65,11 @@ void QOfonoModemInterface::setModemPath(const QString &path)
     setObjectPath(path);
 }
 
+bool QOfonoModemInterface::isValid() const
+{
+    return privateData()->modemValid && SUPER::isValid();
+}
+
 void QOfonoModemInterface::objectPathChanged(const QString &path, const QVariantMap *)
 {
     // The base implementation would immediately create the D-Bus interface
@@ -72,24 +78,39 @@ void QOfonoModemInterface::objectPathChanged(const QString &path, const QVariant
     // isn't there (see onModemInterfacesChanged below)
     bool wasReady = isReady();
 
+    ValidTracker track(this);
     Private *d_ptr = privateData();
     if (!d_ptr->modem.isNull()) {
-        disconnect(d_ptr->modem.data(), SIGNAL(interfacesChanged(QStringList)),
+        QOfonoModem *modem = d_ptr->modem.data();
+        disconnect(modem, SIGNAL(interfacesChanged(QStringList)),
             this, SLOT(onModemInterfacesChanged(QStringList)));
+        disconnect(modem, SIGNAL(validChanged(bool)),
+            this, SLOT(onModemValidChanged(bool)));
+        d_ptr->modemValid = false;
         d_ptr->modem.reset();
     }
 
     setDbusInterface(NULL, NULL);
 
     d_ptr->modem = QOfonoModem::instance(objectPath());
-    connect(d_ptr->modem.data(), SIGNAL(interfacesChanged(QStringList)),
+    QOfonoModem *modem = d_ptr->modem.data();
+    connect(modem, SIGNAL(interfacesChanged(QStringList)),
         this, SLOT(onModemInterfacesChanged(QStringList)));
+    connect(modem, SIGNAL(validChanged(bool)),
+        this, SLOT(onModemValidChanged(bool)));
+    d_ptr->modemValid = modem->isValid();
 
     Q_EMIT modemPathChanged(path);
     onModemInterfacesChanged(d_ptr->modem->interfaces());
     if (wasReady != isReady()) {
         Q_EMIT readyChanged();
     }
+}
+
+void QOfonoModemInterface::onModemValidChanged(bool valid)
+{
+    ValidTracker track(this);
+    privateData()->modemValid = valid;
 }
 
 void QOfonoModemInterface::onModemInterfacesChanged(const QStringList &interfaces)

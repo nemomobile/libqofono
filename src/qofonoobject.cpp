@@ -23,11 +23,14 @@ public:
     QDBusAbstractInterface *interface;
     bool initialized;
     bool fixedPath;
+    bool validMark;
+    int validMarkCount;
     QString objectPath;
     QVariantMap properties;
 
     Private(QOfonoObject::ExtData *data) : ext(data),
-        interface(NULL), initialized(false), fixedPath(false) {}
+        interface(NULL), initialized(false), fixedPath(false),
+        validMark(false), validMarkCount(0) {}
     ~Private() { delete ext; }
 
     QDBusPendingCall setProperty(const QString &key, const QVariant &value);
@@ -43,6 +46,23 @@ public:
 
 QOfonoObject::ExtData::~ExtData()
 {
+}
+
+QOfonoObject::ValidTracker::ValidTracker(QOfonoObject* obj) : object(obj)
+{
+    if (!(object->d_ptr->validMarkCount++)) {
+        object->d_ptr->validMark = obj->isValid();
+    }
+}
+
+QOfonoObject::ValidTracker::~ValidTracker()
+{
+    if (!(--object->d_ptr->validMarkCount)) {
+        const bool valid = object->isValid();
+        if (object->d_ptr->validMark != valid) {
+            Q_EMIT object->validChanged(valid);
+        }
+    }
 }
 
 QDBusPendingCall QOfonoObject::Private::setProperty(const QString &key, const QVariant &value)
@@ -127,7 +147,7 @@ void QOfonoObject::resetDbusInterface(const QVariantMap *properties)
 
 void QOfonoObject::setDbusInterface(QDBusAbstractInterface *iface, const QVariantMap *properties)
 {
-    bool wasValid = isValid();
+    ValidTracker valid(this);
     d_ptr->initialized = false;
     if (d_ptr->interface) {
         delete d_ptr->interface;
@@ -154,10 +174,6 @@ void QOfonoObject::setDbusInterface(QDBusAbstractInterface *iface, const QVarian
         connect(iface,
             SIGNAL(PropertyChanged(QString,QDBusVariant)),
             SLOT(onPropertyChanged(QString,QDBusVariant)));
-    }
-    bool valid = isValid();
-    if (valid != wasValid) {
-        Q_EMIT validChanged(valid);
     }
 }
 
@@ -186,14 +202,12 @@ void QOfonoObject::onGetPropertiesFinished(QDBusPendingCallWatcher *watch)
 void QOfonoObject::getPropertiesFinished(const QVariantMap &properties, const QDBusError *error)
 {
     if (!error) {
+        ValidTracker valid(this);
         for (QVariantMap::ConstIterator it = properties.constBegin();
              it != properties.constEnd(); ++it) {
             updateProperty(it.key(), it.value());
         }
         d_ptr->initialized = true;
-        if (isValid()) {
-            Q_EMIT validChanged(true);
-        }
     } else {
         qDebug() << *error;
         Q_EMIT reportError(error->message());

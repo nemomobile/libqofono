@@ -26,8 +26,9 @@ class QOfonoConnectionContext::Private : public SUPER::ExtData
 {
 public:
     bool provisioning;
+    bool mgrValid;
     QSharedPointer<QOfonoConnectionManager> mgr;
-    Private() : provisioning(false) {}
+    Private() : provisioning(false), mgrValid(false) {}
     ~Private() {}
 };
 
@@ -66,38 +67,36 @@ QString QOfonoConnectionContext::modemPath() const
 void QOfonoConnectionContext::setContextPath(const QString &path)
 {
     if (path != objectPath()) {
+        ValidTracker valid(this);
         QString oldModemPath(modemPath());
         setObjectPath(path);
         QString newModemPath(modemPath());
         if (oldModemPath != newModemPath) {
             Private *priv = privateData();
-            const bool wasValid = isValid();
-            if (!priv->mgr.isNull()) priv->mgr->disconnect(this);
-            priv->mgr = QOfonoConnectionManager::instance(newModemPath);
-            connect(priv->mgr.data(), SIGNAL(validChanged(bool)), SLOT(onManagerValidChanged(bool)));
-            Q_EMIT modemPathChanged(newModemPath);
-            const bool valid = isValid();
-            if (wasValid != valid) {
-                Q_EMIT validChanged(valid);
+            if (!priv->mgr.isNull()) {
+                priv->mgr->disconnect(this);
+                priv->mgr.reset();
+                priv->mgrValid = false;
             }
+            if (!newModemPath.isEmpty()) {
+                priv->mgr = QOfonoConnectionManager::instance(newModemPath);
+                priv->mgrValid = priv->mgr.data()->isValid();
+                connect(priv->mgr.data(), SIGNAL(validChanged(bool)),
+                    this, SLOT(onManagerValidChanged(bool)));
+            }
+            Q_EMIT modemPathChanged(newModemPath);
         }
     }
 }
 
 void QOfonoConnectionContext::onManagerValidChanged(bool valid)
 {
+    ValidTracker track(this);
+    privateData()->mgrValid = valid;
     if (valid) {
         resetDbusInterface();
     } else {
-        // setDbusInterface(NULL) won't signal validChanged() because when
-        // it first calls isValid(), it would already return false. But we
-        // know that if SUPER::isValid() is true then this object was valid
-        // before ConnectionManager got invalidated.
-        bool wasValid = SUPER::isValid();
         setDbusInterface(NULL);
-        if (wasValid) {
-            Q_EMIT validChanged(false);
-        }
     }
 }
 
@@ -265,8 +264,7 @@ void QOfonoConnectionContext::disconnect()
 
 bool QOfonoConnectionContext::isValid() const
 {
-    Private *priv = privateData();
-    return !priv->mgr.isNull() && priv->mgr->isValid() && SUPER::isValid();
+    return privateData()->mgrValid && SUPER::isValid();
 }
 
 bool QOfonoConnectionContext::provisioning() const
