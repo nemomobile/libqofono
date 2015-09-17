@@ -23,6 +23,16 @@ class QOfonoObject : public QObject
     Q_OBJECT
     Q_PROPERTY(bool valid READ isValid NOTIFY validChanged)
 
+protected:
+    friend class ValidTracker;
+    class ValidTracker {
+    private:
+        QOfonoObject* object;
+    public:
+        ValidTracker(QOfonoObject* object);
+        ~ValidTracker();
+    };
+
 public:
     class ExtData {
     public:

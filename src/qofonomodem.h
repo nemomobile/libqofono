@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013-2014 Jolla Ltd.
+** Copyright (C) 2013-2015 Jolla Ltd.
 ** Contact: lorn.potter@jollamobile.com
 **
 ** GNU Lesser General Public License Usage
@@ -93,10 +93,17 @@ Q_SIGNALS:
     void interfacesChanged(const QStringList &interfaces);
     void modemPathChanged(const QString &path);
 
+private Q_SLOTS:
+    bool checkModemPathValidity();
+
 protected:
     QDBusAbstractInterface *createDbusInterface(const QString &path);
     void propertyChanged(const QString &key, const QVariant &value);
     void objectPathChanged(const QString &path, const QVariantMap *properties);
+
+private:
+    class Private;
+    Private* privateData() const;
 };
 
 #endif // QOFONOMODEM_H

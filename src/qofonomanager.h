@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013-2014 Jolla Ltd.
+** Copyright (C) 2013-2015 Jolla Ltd.
 ** Contact: lorn.potter@jollamobile.com
 **
 ** GNU Lesser General Public License Usage
@@ -39,6 +39,8 @@ public:
     QString defaultModem();
     bool available() const;
     bool isValid() const;
+
+    static QSharedPointer<QOfonoManager> instance();
 
 Q_SIGNALS: // SIGNALS
     void modemAdded(const QString &modem);

@@ -272,12 +272,12 @@ void QOfonoVoiceCallManager::onGetCallsFinished(QDBusPendingCallWatcher *watch)
         qDebug() << reply.error();
         Q_EMIT reportError(reply.error().message());
     } else {
+        ValidTracker valid(this);
         ObjectPathPropertiesList list = reply.value();
         privateData()->initialized = true;
         for (int i=0; i<list.count(); i++) {
             addCall(list[i].path.path());
         }
-        if (isValid()) validChanged(true);
     }
 }
 

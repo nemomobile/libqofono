@@ -167,3 +167,14 @@ void QOfonoManager::ofonoUnregistered(const QString &)
         }
     }
 }
+
+QSharedPointer<QOfonoManager> QOfonoManager::instance()
+{
+    static QWeakPointer<QOfonoManager> sharedInstance;
+    QSharedPointer<QOfonoManager> mgr = sharedInstance;
+    if (mgr.isNull()) {
+        mgr = QSharedPointer<QOfonoManager>::create();
+        sharedInstance = mgr;
+    }
+    return mgr;
+}

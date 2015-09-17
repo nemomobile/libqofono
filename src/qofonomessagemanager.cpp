@@ -166,13 +166,13 @@ void QOfonoMessageManager::onGetMessagesFinished(QDBusPendingCallWatcher *watch)
         qDebug() << reply.error();
         Q_EMIT reportError(reply.error().message());
     } else {
+        ValidTracker valid(this);
         ObjectPathPropertiesList list = reply.value();
         privateData()->initialized = true;
         for (int i=0; i<list.count(); i++) {
             addMessage(list[i].path.path());
         }
         Q_EMIT messagesFinished();
-        if (isValid()) validChanged(true);
     }
 }
 

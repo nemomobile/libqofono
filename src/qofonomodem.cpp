@@ -14,6 +14,7 @@
 ****************************************************************************/
 
 #include "qofonomodem.h"
+#include "qofonomanager.h"
 #include "ofono_modem_interface.h"
 
 #include <QMap>
@@ -24,9 +25,21 @@ Q_GLOBAL_STATIC(ModemMap, modemMap)
 
 #define SUPER QOfonoObject
 
-QOfonoModem::QOfonoModem(QObject *parent) :
-    SUPER(parent)
+class QOfonoModem::Private : public SUPER::ExtData
 {
+public:
+    bool modemPathValid;
+    QSharedPointer<QOfonoManager> mgr;
+    Private() : modemPathValid(false), mgr(QOfonoManager::instance()) {}
+};
+
+QOfonoModem::QOfonoModem(QObject *parent) :
+    SUPER(new Private, parent)
+{
+    QOfonoManager* mgr = privateData()->mgr.data();
+    connect(mgr, SIGNAL(availableChanged(bool)), SLOT(checkModemPathValidity()));
+    connect(mgr, SIGNAL(modemsChanged(QStringList)), SLOT(checkModemPathValidity()));
+    checkModemPathValidity();
 }
 
 QOfonoModem::~QOfonoModem()
@@ -40,8 +53,15 @@ QDBusAbstractInterface *QOfonoModem::createDbusInterface(const QString &path)
 
 void QOfonoModem::objectPathChanged(const QString &path, const QVariantMap *properties)
 {
-    SUPER::objectPathChanged(path, properties);
     Q_EMIT modemPathChanged(path);
+    if (!checkModemPathValidity()) {
+        // checkModemPathValidity() didn't do anything because modemPathValid
+        // flag hasn't changed. If the modem path has changed from one valid
+        // path to another, D-Bus interface has to be re-initialized.
+        if (privateData()->modemPathValid) {
+            resetDbusInterface(properties);
+        }
+    }
 }
 
 void QOfonoModem::setModemPath(const QString &path)
@@ -172,5 +192,36 @@ QSharedPointer<QOfonoModem> QOfonoModem::instance(const QString &modemPath)
 
 bool QOfonoModem::isValid() const
 {
-    return SUPER::isValid();
+    return SUPER::isValid() && privateData()->modemPathValid;
+}
+
+QOfonoModem::Private* QOfonoModem::privateData() const
+{
+    return (Private*)SUPER::extData();
+}
+
+bool QOfonoModem::checkModemPathValidity()
+{
+    ValidTracker valid(this);
+    bool modemPathValid;
+    Private* priv = privateData();
+    if (priv->mgr->isValid()) {
+        QString path = modemPath();
+        modemPathValid = !path.isEmpty() && priv->mgr->modems().contains(path);
+    } else {
+        modemPathValid = false;
+    }
+    if (priv->modemPathValid != modemPathValid) {
+        priv->modemPathValid = modemPathValid;
+        if (modemPathValid) {
+            resetDbusInterface();
+        } else {
+            setDbusInterface(NULL);
+        }
+        return true;
+    } else {
+        // Return false to indicate that this function didn't do anything
+        // because modemPathValid hasn't changed
+        return false;
+    }
 }
