@@ -41,6 +41,7 @@ protected:
 
 public:
     bool isValid() const;
+    void fixModemPath(const QString &path);
 
 Q_SIGNALS:
     void modemPathChanged(const QString &path);
