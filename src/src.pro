@@ -66,8 +66,6 @@ OTHER_FILES += $$XML_FILES\
     qofono.prf \
     qofono-qt5.prf
 
-INSTALLS += target
-
 SOURCES += \
     qofono.cpp \
     qofonodbustypes.cpp \
@@ -96,6 +94,7 @@ SOURCES += \
     qofonomessagemanager.cpp \
     qofonomessagewaiting.cpp \
     qofonosimmanager.cpp \
+    qofonosimwatcher.cpp \
     qofonophonebook.cpp \
     qofonopositioningrequestagent.cpp \
     qofonosmartmessaging.cpp \
@@ -135,6 +134,7 @@ PUBLIC_HEADERS += \
     qofonomessagemanager.h \
     qofonomessagewaiting.h \
     qofonosimmanager.h \
+    qofonosimwatcher.h \
     qofonophonebook.h \
     qofonopositioningrequestagent.h \
     qofonosmartmessaging.h \
@@ -333,5 +333,3 @@ QMAKE_PKGCONFIG_INCDIR = $$headers.path
 
 
 INSTALLS += target headers qtconfig xmlfiles pkgconfig
-
-

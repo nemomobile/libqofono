@@ -65,6 +65,11 @@ void QOfonoModemInterface::setModemPath(const QString &path)
     setObjectPath(path);
 }
 
+void QOfonoModemInterface::fixModemPath(const QString &path)
+{
+    fixObjectPath(path);
+}
+
 bool QOfonoModemInterface::isValid() const
 {
     return privateData()->modemValid && SUPER::isValid();
