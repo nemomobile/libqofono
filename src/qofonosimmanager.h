@@ -44,6 +44,8 @@ class QOFONOSHARED_EXPORT QOfonoSimManager : public QOfonoModemInterface
     Q_PROPERTY(bool barredDialing READ barredDialing NOTIFY barredDialingChanged)
 
 public:
+    class SharedPointer;
+
     enum Error {
         NoError,
         NotImplementedError,
@@ -145,6 +147,12 @@ private slots:
     void resetPinCallFinished(QDBusPendingCallWatcher *call);
     void lockPinCallFinished(QDBusPendingCallWatcher *call);
     void unlockPinCallFinished(QDBusPendingCallWatcher *call);
+};
+
+// Unlike the default QSharedPointer, deletes QOfonoSimManager with deleteLater
+class QOFONOSHARED_EXPORT QOfonoSimManager::SharedPointer : public QSharedPointer<QOfonoSimManager> {
+public:
+    SharedPointer(QOfonoSimManager * ptr = NULL) : QSharedPointer<QOfonoSimManager>(ptr, &QObject::deleteLater) {}
 };
 
 #endif // QOFONOSimManager_H

@@ -24,8 +24,8 @@ public:
 
     QOfonoSimWatcher *watcher;
     QSharedPointer<QOfonoManager> ofono;
-    QHash<QString, QSharedPointer<QOfonoSimManager> > allSims;
-    QList<QSharedPointer<QOfonoSimManager> > presentSims;
+    QHash<QString, QOfonoSimManager::SharedPointer> allSims;
+    QList<QOfonoSimManager::SharedPointer> presentSims;
     bool valid;
 
 private Q_SLOTS:
@@ -85,11 +85,11 @@ void QOfonoSimWatcher::Private::updateModems()
             QString path(newModems.at(i));
             if (!allSims.contains(path)) {
                 // This is a new modem
-                QOfonoSimManager *sim = new QOfonoSimManager(this);
+                QOfonoSimManager *sim = new QOfonoSimManager();
                 sim->fixModemPath(path);
                 connect(sim, SIGNAL(validChanged(bool)), SLOT(updateSims()));
                 connect(sim, SIGNAL(presenceChanged(bool)), SLOT(updateSims()));
-                allSims.insert(path, QSharedPointer<QOfonoSimManager>(sim));
+                allSims.insert(path, QOfonoSimManager::SharedPointer(sim));
             }
         }
         updateSims();
@@ -98,12 +98,12 @@ void QOfonoSimWatcher::Private::updateModems()
 
 void QOfonoSimWatcher::Private::updateSims()
 {
-    QList<QSharedPointer<QOfonoSimManager> > sims;
+    QList<QOfonoSimManager::SharedPointer> sims;
     QStringList modems = allSims.keys();
     modems.sort();
     int i, n = modems.count();
     for (i=0; i<n; i++) {
-        QSharedPointer<QOfonoSimManager> sim = allSims.value(modems.at(i));
+        QOfonoSimManager::SharedPointer sim = allSims.value(modems.at(i));
         if (sim->isValid() && sim->present()) {
             sims.append(sim);
         }
@@ -130,7 +130,7 @@ void QOfonoSimWatcher::Private::updateValid()
     // This object is valid if QOfonoManager and all SIM managers are valid.
     bool isValid = ofono->available();
     if (isValid) {
-        QList<QSharedPointer<QOfonoSimManager> > sims = allSims.values();
+        QList<QOfonoSimManager::SharedPointer> sims = allSims.values();
         const int n = sims.count();
         for (int i=0; i<n && isValid; i++) {
             isValid = sims.at(i)->isValid();
@@ -163,7 +163,7 @@ int QOfonoSimWatcher::presentSimCount() const
     return d_ptr->presentSims.count();
 }
 
-QList<QSharedPointer<QOfonoSimManager> > QOfonoSimWatcher::presentSimList() const
+QList<QOfonoSimManager::SharedPointer> QOfonoSimWatcher::presentSimList() const
 {
     return d_ptr->presentSims;
 }

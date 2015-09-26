@@ -32,7 +32,7 @@ public:
 
     bool isValid() const;
     int presentSimCount() const;
-    QList<QSharedPointer<QOfonoSimManager> > presentSimList() const;
+    QList<QOfonoSimManager::SharedPointer> presentSimList() const;
 
 Q_SIGNALS:
     void validChanged();
