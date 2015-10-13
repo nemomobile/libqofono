@@ -106,6 +106,7 @@ void QOfonoManager::onModemRemoved(const QDBusObjectPath& path)
 void QOfonoManager::onGetModemsFinished(QDBusPendingCallWatcher* watcher)
 {
     QDBusPendingReply<ObjectPathPropertiesList> reply(*watcher);
+    watcher->deleteLater();
     if (reply.isValid() && !reply.isError()) {
         QString prevDefault = defaultModem();
         QStringList newModems;
@@ -124,7 +125,6 @@ void QOfonoManager::onGetModemsFinished(QDBusPendingCallWatcher* watcher)
         d_ptr->available = true;
         Q_EMIT availableChanged(true);
     }
-    watcher->deleteLater();
 }
 
 void QOfonoManager::connectToOfono(const QString &)
