@@ -36,7 +36,6 @@ private Q_SLOTS:
 };
 
 QOfonoSimWatcher::Private::Private(QOfonoSimWatcher *parent) :
-    QObject(parent),
     watcher(parent),
     ofono(QOfonoManager::instance()),
     valid(false)
@@ -58,8 +57,12 @@ void QOfonoSimWatcher::Private::onOfonoAvailableChanged()
         allSims.clear();
         if (!presentSims.isEmpty()) {
             presentSims.clear();
-            Q_EMIT watcher->presentSimListChanged();
-            Q_EMIT watcher->presentSimCountChanged();
+            if (watcher) {
+                Q_EMIT watcher->presentSimListChanged();
+            }
+            if (watcher) {
+                Q_EMIT watcher->presentSimCountChanged();
+            }
         }
     }
 }
@@ -110,14 +113,20 @@ void QOfonoSimWatcher::Private::updateSims()
     }
     if (sims.count() != presentSims.count()) {
         presentSims = sims;
-        Q_EMIT watcher->presentSimListChanged();
-        Q_EMIT watcher->presentSimCountChanged();
+        if (watcher) {
+            Q_EMIT watcher->presentSimListChanged();
+        }
+        if (watcher) {
+            Q_EMIT watcher->presentSimCountChanged();
+        }
     } else {
         n = sims.count();
         for (i=0; i<n; i++) {
             if (sims.at(i).data() != presentSims.at(i).data()) {
                 presentSims = sims;
-                Q_EMIT watcher->presentSimListChanged();
+                if (watcher) {
+                    Q_EMIT watcher->presentSimListChanged();
+                }
                 break;
             }
         }
@@ -138,7 +147,9 @@ void QOfonoSimWatcher::Private::updateValid()
     }
     if (valid != isValid) {
         valid = isValid;
-        Q_EMIT watcher->validChanged();
+        if (watcher) {
+            Q_EMIT watcher->validChanged();
+        }
     }
 }
 
@@ -150,7 +161,8 @@ QOfonoSimWatcher::QOfonoSimWatcher(QObject *parent) :
 
 QOfonoSimWatcher::~QOfonoSimWatcher()
 {
-    // d_ptr is a child object, it gets deleted automatically
+    d_ptr->watcher = NULL;
+    d_ptr->deleteLater();
 }
 
 bool QOfonoSimWatcher::isValid() const
