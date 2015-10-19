@@ -1,4 +1,2 @@
-qofono
-======
-
-A library for accessing the ofono daemon, and a declarative plugin for it. This allows accessing ofono in qtquick and friends.
+This project has migrated to https://git.merproject.org/mer-core/libqofono
+as part of the Mer/Nemo merge work
